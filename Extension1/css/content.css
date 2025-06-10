@@ -1,0 +1,168 @@
+/* css/content.css */
+
+/* Icon Styling */
+#project1-icon { /* Ensure this ID matches the one set in content.js */
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+    transition: transform 0.1s ease-in-out;
+    cursor: pointer;
+    z-index: 2147483646; /* Very high z-index */
+    /* position: absolute; is set by JS */
+    /* background-color: white; /* Optional: if icon is transparent */
+}
+
+#project1-icon:hover {
+    transform: scale(1.2);
+}
+
+/* In-Page Menu Styling */
+#project1-inpage-menu {
+    all: initial; /* CSS Reset for isolation */
+    display: block;
+    /* position: absolute; is set by JS */
+    /* visibility: hidden; is set by JS initially */
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333333;
+    z-index: 2147483647; /* Max z-index, on top of icon */
+    min-width: 180px;
+    box-sizing: border-box;
+}
+
+/* Styling for elements within the menu, after 'all: initial' */
+#project1-inpage-menu p#project1-selected-text-paragraph {
+    all: initial;
+    display: block;
+    font-family: inherit;
+    font-size: 1em;
+    color: inherit;
+    margin: 0 0 10px 0;
+    padding: 0;
+    line-height: 1.4;
+    box-sizing: border-box;
+}
+
+#project1-inpage-menu p#project1-selected-text-paragraph em {
+    all: initial;
+    font-family: inherit;
+    font-size: 1em;
+    color: inherit;
+    font-style: italic;
+    box-sizing: border-box;
+}
+
+#project1-inpage-menu button {
+    all: initial;
+    display: block;
+    font-family: inherit;
+    font-size: 0.95em;
+    color: #333333;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    margin: 8px 0;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    box-sizing: border-box;
+    line-height: normal;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#project1-inpage-menu button:hover {
+    background-color: #e9e9e9;
+    border-color: #c5c5c5;
+}
+
+/* Styling for the translation area */
+#project1-translation-area {
+    all: initial;
+    /* display: none; is set by JS initially, then JS makes it 'block' */
+    display: none; 
+    font-family: inherit;
+    font-size: 1em;
+    color: inherit;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eeeeee;
+    line-height: 1.4;
+    box-sizing: border-box;
+}
+
+/* Styles for the structured translation text within translation-area */
+#project1-translation-area div.translation-block {
+    all: initial;
+    display: block;
+    font-family: inherit;
+    font-size: 0.9em; 
+    color: #555555;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+}
+
+#project1-translation-area div.translation-block .translation-label {
+    all: initial;
+    display: block;
+    font-family: inherit;
+    font-size: 1em; 
+    font-weight: bold;
+    color: inherit;
+    margin-bottom: 2px;
+    box-sizing: border-box;
+}
+
+#project1-translation-area div.translation-block .translation-text {
+    all: initial;
+    display: block;
+    font-family: inherit;
+    font-size: 1em; 
+    font-style: italic; 
+    color: #222222; 
+    box-sizing: border-box;
+    word-wrap: break-word; 
+}
+
+#project1-translation-area div.translation-block .translated-text {
+    font-style: normal;
+    font-weight: bold;  
+}
+
+/* --- NEW: Styles for User Feedback Notification --- */
+#project1-feedback-notification {
+    all: initial; /* Isolate from page styles */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #28a745; /* Green for success */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 2147483647; /* Max z-index */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; /* Fade out */
+    box-sizing: border-box;
+}
+
+#project1-feedback-notification.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0s; /* Fade in */
+}
+
+#project1-feedback-notification.error {
+    background-color: #dc3545; /* Red for error */
+}
+/* --- END NEW --- */

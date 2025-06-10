@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "project1",
+  "version": "0.2.5",
+  "description": "Provides quick actions via an in-page menu on double-clicked text.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "windows",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://www.ourwebsite.com/*",
+    "https://translation.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "scripts/utils/domPositioning.js",
+        "scripts/utils/uiBuilder.js",
+        "scripts/content.js"
+      ],
+      "css": ["css/content.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "images/icon-16.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "options_page": "html/options.html",
+
+  "options_ui": {
+    "page": "html/options.html",
+    "open_in_tab": true},
+  
+
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  }
+}
