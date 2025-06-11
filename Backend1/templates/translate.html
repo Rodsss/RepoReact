@@ -53,10 +53,9 @@
 
         <!-- Middle Pane: Content Display -->
         <div class="dashboard-pane pane-middle">
-            <h3 id="middle-pane-header">History</h3>
+            <h3 id="middle-pane-header">Lists</h3>
             <!-- The .scrollable-content class is added here to make this specific area scrollable -->
-            <div id="item-display-area" class="scrollable-content">
-                <p><em>(Your translation history and custom lists will be displayed here.)</em></p>
+        <div id="snippet-list-container" class="history-pane-content">                <p><em>(Your translation history and custom lists will be displayed here.)</em></p>
                 <!-- Placeholder items to demonstrate scrolling -->
                 <p>Item 1</p><p>Item 2</p><p>Item 3</p><p>Item 4</p><p>Item 5</p>
                 <p>Item 6</p><p>Item 7</p><p>Item 8</p><p>Item 9</p><p>Item 10</p>
@@ -75,4 +74,9 @@
 
     </div>
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/translate_app.js"></script>
 {% endblock %}

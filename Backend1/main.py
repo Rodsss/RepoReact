@@ -102,7 +102,14 @@ class GenericSuccessResponse(BaseModel):
 
 # --- CORS Middleware ---
 origins = ["*"]
+
+origins = [
+ "chrome-extension://your-published-extension-id-goes-here",
+ "https://www.ourwebsite.com"
+]
+
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
 
 # --- Database Setup & Helper Functions ---
 def get_db_connection():
@@ -182,6 +189,151 @@ async def dive_page(request: Request):
 #====================================================
 
 
+# --- Add these two new endpoints to main.py ---
+
+@app.post("/api/v1/snippets", response_model=SnippetResponse, status_code=status.HTTP_201_CREATED)
+async def create_simple_snippet(snippet_data: SnippetCreate = Body(...)):
+    """
+    Receives a simple text snippet from the extension and saves it for a default user.
+    """
+    user_id = "default-user" # Using a default user as user_id is not in the URL
+    logger.info(f"Received snippet for default user: '{snippet_data.selectedText}'")
+    conn = None
+    try:
+        conn = get_db_connection()
+        # The logic here is nearly identical to the /users/{user_id}/snippets endpoint
+        # You can expand on this or merge functionality later.
+        cursor = conn.cursor()
+        cursor.execute("BEGIN TRANSACTION")
+        cursor.execute(
+            "INSERT INTO CollectedItems (user_id, selected_text, source_url, page_title, timestamp_collected) VALUES (?, ?, ?, ?, ?)",
+            (user_id, snippet_data.selectedText, snippet_data.sourceUrl, snippet_data.pageTitle, snippet_data.timestamp)
+        )
+        new_item_id = cursor.lastrowid
+        if not new_item_id: raise sqlite3.Error("Failed to create new CollectedItem.")
+        
+        default_stack_id = _get_or_create_default_stack(conn, user_id)
+        if not default_stack_id: raise sqlite3.Error("Could not get or create a default stack.")
+
+        new_flashcard_id = _create_flashcard_in_db(conn, user_id, new_item_id, snippet_data.selectedText, "", default_stack_id)
+        if not new_flashcard_id: raise sqlite3.Error("Failed to create flashcard.")
+        
+        conn.commit()
+        return SnippetResponse(success=True, message="Snippet collected.", itemId=new_item_id, flashcardId=new_flashcard_id)
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    finally:
+        if conn: conn.close()
+
+@app.post("/api/v1/translation_logs", response_model=TranslationLogResponse, status_code=status.HTTP_201_CREATED)
+async def create_translation_log(log_data: TranslationLogCreate = Body(...)):
+    """
+    Receives a translation log from the extension and saves it.
+    """
+    user_id = "default-user" # Using a default user
+    logger.info(f"Received translation log for default user: '{log_data.originalText}' -> '{log_data.translatedText}'")
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("BEGIN TRANSACTION")
+        
+        # This log is also a type of CollectedItem, so we save it there.
+        # The table has columns to support this.
+        cursor.execute(
+            """
+            INSERT INTO CollectedItems (user_id, selected_text, is_translation, original_text, translated_text, source_language, target_language, source_url, timestamp_collected)
+            VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?)
+            """,
+            (user_id, log_data.translatedText, log_data.originalText, log_data.translatedText, log_data.sourceLanguage, log_data.targetLanguage, log_data.sourceUrl, log_data.timestamp)
+        )
+        new_item_id = cursor.lastrowid
+        if not new_item_id: raise sqlite3.Error("Failed to create translation log item.")
+        
+        # Also create a flashcard for the translation
+        default_stack_id = _get_or_create_default_stack(conn, user_id)
+        new_flashcard_id = _create_flashcard_in_db(conn, user_id, new_item_id, log_data.originalText, log_data.translatedText, default_stack_id)
+        
+        conn.commit()
+        return TranslationLogResponse(success=True, message="Translation logged.", logId=new_item_id, flashcardId=new_flashcard_id)
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    finally:
+        if conn: conn.close()
+
+
+
+@app.post("/api/v1/users/{user_id}/snippets", response_model=SnippetResponse, status_code=status.HTTP_201_CREATED)
+async def create_snippet(
+    user_id: str = Path(..., description="The ID of the user collecting the snippet."),
+    snippet_data: SnippetCreate = Body(...)
+):
+    """
+    Receives a text snippet from the extension, creates a CollectedItem,
+    and optionally creates a flashcard in the user's default stack.
+    """
+    logger.info(f"Received snippet from user {user_id}: '{snippet_data.selectedText}'")
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("BEGIN TRANSACTION")
+
+        # 1. Create the base CollectedItem
+        cursor.execute(
+            """
+            INSERT INTO CollectedItems 
+                (user_id, selected_text, source_url, page_title, timestamp_collected)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                snippet_data.selectedText,
+                snippet_data.sourceUrl,
+                snippet_data.pageTitle,
+                snippet_data.timestamp
+            )
+        )
+        new_item_id = cursor.lastrowid
+        if not new_item_id:
+            raise sqlite3.Error("Failed to create new CollectedItem.")
+
+        # 2. Get the user's default stack (or create it if it doesn't exist)
+        default_stack_id = _get_or_create_default_stack(conn, user_id)
+        if not default_stack_id:
+            raise sqlite3.Error("Could not get or create a default stack for the user.")
+
+        # 3. Create a basic flashcard from the snippet in the default stack
+        new_flashcard_id = _create_flashcard_in_db(
+            conn=conn,
+            user_id=user_id,
+            collected_item_id=new_item_id,
+            front_text=snippet_data.selectedText,
+            back_text="", # Back text is initially empty
+            target_stack_id=default_stack_id
+        )
+        if not new_flashcard_id:
+            raise sqlite3.Error("Failed to create a new flashcard for the snippet.")
+
+        conn.commit()
+        logger.info(f"Successfully created item {new_item_id} and flashcard {new_flashcard_id} for user {user_id}.")
+
+        return SnippetResponse(
+            success=True,
+            message="Snippet collected and flashcard created successfully.",
+            itemId=new_item_id,
+            flashcardId=new_flashcard_id
+        )
+
+    except sqlite3.Error as e:
+        logger.error(f"Database error for user {user_id} creating snippet: {e}", exc_info=True)
+        if conn: conn.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error: {str(e)}")
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.delete("/api/v1/users/{user_id}/lists/{list_id}/items/{item_id}", response_model=GenericSuccessResponse)
