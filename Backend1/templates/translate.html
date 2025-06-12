@@ -1,4 +1,3 @@
-<!-- In Backend1/templates/translate.html -->
 {% extends "base.html" %}
 
 {% block title %}Translate Workspace - 1Project{% endblock %}
@@ -6,77 +5,62 @@
 {% block content %}
 <div class="workspace-container">
 
-    <!-- The Submenu Bar / Action Toolkit -->
     <div class="pane-feature-navbar">
         <button id="feature-flashcard-button" class="tool-button active">🗂️ Flashcard</button>
-        <button id="feature-watch-listen-button" class="tool-button">📺 Watch/Listen</button>
-        <button id="feature-read-button" class="tool-button">📖 Read</button>
-        <button id="feature-enquire-button" class="tool-button">🔍 Enquire (Future)</button>
-        <button id="feature-connect-button" class="tool-button">🔗 Connect (Future)</button>
-    </div>
+        </div>
 
-    <!-- The Three-Pane Layout -->
     <div class="dashboard-container">
         
-        <!-- Left Pane: Translation Input and List Management -->
         <div class="dashboard-pane pane-left">
-            
             <div class="pane-section manual-translate-area">
                 <h3>Translate</h3>
                 <div class="form-group">
                     <label for="translate-input">Enter Text:</label>
-                    <textarea id="translate-input" rows="4" placeholder="Text to translate..."></textarea>
+                    <textarea id="translate-input" name="translate-input" rows="4"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="translate-output">Result:</label>
-                    <textarea id="translate-output" rows="4" placeholder="Translation..." readonly></textarea>
+                    <textarea id="translate-output" name="translate-output" rows="4" readonly></textarea>
                 </div>
                 <div class="button-group">
                     <button id="translate-button">Translate</button>
                     <button id="save-button" class="secondary-action">Save</button>
-                    <button id="create-list-button" class="secondary-action">Create List</button>
                 </div>
             </div>
-
-            <div class="pane-section linguistic-insights">
-                <h3>Insights</h3>
-                <details class="collapsible-submenu" open>
-                    <summary>Definition</summary>
-                    <p><em>(The definition of the translated word will appear here.)</em></p>
-                </details>
-                <details class="collapsible-submenu"><summary>Uses</summary><p><em>(Example sentences and uses will appear here.)</em></p></details>
-                <details class="collapsible-submenu"><summary>Etymology</summary><p><em>(Word origin information will appear here.)</em></p></details>
-                 <details class="collapsible-submenu"><summary>Synonym/Antonym</summary><p><em>(Synonyms and antonyms will appear here.)</em></p></details>
             </div>
 
-        </div>
-
-        <!-- Middle Pane: Content Display -->
         <div class="dashboard-pane pane-middle">
-            <h3 id="middle-pane-header">Lists</h3>
-            <!-- The .scrollable-content class is added here to make this specific area scrollable -->
-        <div id="snippet-list-container" class="history-pane-content">                <p><em>(Your translation history and custom lists will be displayed here.)</em></p>
-                <!-- Placeholder items to demonstrate scrolling -->
-                <p>Item 1</p><p>Item 2</p><p>Item 3</p><p>Item 4</p><p>Item 5</p>
-                <p>Item 6</p><p>Item 7</p><p>Item 8</p><p>Item 9</p><p>Item 10</p>
-                <p>Item 11</p><p>Item 12</p><p>Item 13</p><p>Item 14</p><p>Item 15</p>
-                <p>Item 16</p><p>Item 17</p><p>Item 18</p><p>Item 19</p><p>Item 20</p>
+            <div class="pane-header">
+                <div class="view-switcher">
+                    <button id="show-lists-view" class="view-button">Lists</button>
+                    <button id="show-history-view" class="view-button active">History</button>
+                </div>
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-checkbox" title="Select All">
+                    <label for="select-all-checkbox">Select All</label>
+                </div>
+                <div class="header-actions">
+                    <button id="main-delete-button" class="danger-button small-button hidden">Delete Selected</button>
+                    <button id="create-list-button" class="secondary-action small-button">Create List</button>
+                </div>
             </div>
+            <div id="snippet-list-container" class="scrollable-content">
+                </div>
         </div>
 
-        <!-- Right Pane: Dynamic Study Panel -->
         <div class="dashboard-pane pane-right">
             <h3>Study Tools</h3>
-            <div id="right-pane-content" class="scrollable-content">
-                 <p><em>(When an item is selected, tools like Flashcards will appear here.)</em></p>
+            <div id="flashcard-container" class="scrollable-content">
+                <div class="flashcard-placeholder">
+                    <p>Click the "Flashcard" button above to begin a study session.</p>
+                </div>
             </div>
         </div>
 
     </div>
 </div>
-
 {% endblock %}
 
-{% block scripts %}
-<script src="/static/js/translate_app.js"></script>
+{% block body_scripts %}
+    {{ super() }} <script src="/static/js/translate_app.js"></script>
 {% endblock %}
