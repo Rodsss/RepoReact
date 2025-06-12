@@ -10,9 +10,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "<all_urls>",
-    "http://www.ourwebsite.com/*",
-    "https://translation.googleapis.com/*"
+    "http://127.0.0.1:8000/*",
+    "http://www.ourwebsite.com/*"
   ],
   "background": {
     "service_worker": "scripts/background.js"
@@ -37,12 +36,10 @@
     }
   ],
   "options_page": "html/options.html",
-
   "options_ui": {
     "page": "html/options.html",
-    "open_in_tab": true},
-  
-
+    "open_in_tab": true
+  },
   "icons": {
     "16": "images/icon-16.png",
     "48": "images/icon-48.png",
