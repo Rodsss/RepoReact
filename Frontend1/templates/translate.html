@@ -46,6 +46,18 @@
                     <label for="select-all-checkbox">Select All</label>
                 </div>
                 <div class="header-actions">
+                    <div id="add-to-deck-container" class="action-container">
+                        <button id="add-to-deck-button" class="secondary-action small-button hidden">Add to Deck</button>
+                        <div id="add-to-deck-dropdown" class="action-dropdown hidden">
+                            <p><strong>Copy selected items to:</strong></p>
+                            <select id="dest-deck-select"></select>
+                            <div class="button-group">
+                                <button id="confirm-copy-btn">Copy</button>
+                                <button id="cancel-copy-btn" class="secondary-action">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                
                     <button id="main-delete-button" class="danger-button small-button hidden">Delete Selected</button>
                     <button id="create-list-button" class="secondary-action small-button">Create List</button>
                 </div>
@@ -54,14 +66,20 @@
                 </div>
         </div>
 
-        <div class="dashboard-pane pane-right">
-            <h3>Study Tools</h3>
-            <div id="flashcard-container" class="scrollable-content">
-                <div class="flashcard-placeholder">
-                    <p>Click the "Flashcard" button above to begin a study session.</p>
-                </div>
-            </div>
+      <div class="dashboard-pane pane-right">
+    <div id="deck-selector-menu">
+        <button id="deck-menu-button" class="tool-button">Select a Deck to Study ▼</button>
+        <div id="deck-menu-dropdown" class="action-dropdown hidden">
+            <p>Loading decks...</p>
         </div>
+    </div>
+    <h3>Study Tools</h3>
+    <div id="flashcard-container" class="scrollable-content">
+        <div class="flashcard-placeholder">
+            <p>Select a deck from the menu above to begin a study session.</p>
+        </div>
+    </div>
+</div>
 
     </div>
 </div>

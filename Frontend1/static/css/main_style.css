@@ -20,9 +20,9 @@ body {
     margin: 0;
     background-color: var(--primary-bg);
     color: var(--main-text);
-    display: flex; /* Key for sidebar layout */
+    display: flex;
     height: 100vh;
-    overflow: hidden; /* Prevent body-level scrolling */
+    overflow: hidden;
 }
 
 .hidden { display: none !important; }
@@ -37,7 +37,7 @@ a:hover { text-decoration: underline; }
     background: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
-    flex-shrink: 0; /* Prevents sidebar from shrinking */
+    flex-shrink: 0;
     transition: width 0.3s ease-in-out;
     z-index: 1000;
 }
@@ -45,7 +45,7 @@ a:hover { text-decoration: underline; }
 .main-content {
     flex-grow: 1;
     height: 100vh;
-    margin-left: 220px; /* Default sidebar width */
+    margin-left: 220px;
     transition: margin-left 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
@@ -55,7 +55,6 @@ a:hover { text-decoration: underline; }
 .main-content.collapsed { margin-left: 60px; }
 
 /* --- 3. Sidebar Content --- */
-.sidebar .brand { /* Your styles here */ }
 .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
 .sidebar .nav-link {
     display: flex;
@@ -90,7 +89,7 @@ a:hover { text-decoration: underline; }
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    min-height: 0; /* Critical for flexbox scrolling */
+    min-height: 0;
 }
 
 /* Top Feature Bar */
@@ -105,7 +104,7 @@ a:hover { text-decoration: underline; }
 /* Dashboard Container */
 .dashboard-container {
     display: grid;
-    grid-template-columns: 350px 1fr 1fr; /* Left, Middle, Right */
+    grid-template-columns: 350px 1fr 1fr;
     gap: 1rem;
     flex-grow: 1;
     overflow: hidden;
@@ -113,7 +112,7 @@ a:hover { text-decoration: underline; }
 }
 
 .dashboard-container.flashcard-mode-active {
-    grid-template-columns: auto auto 1fr; /* Panes shrink, flashcard pane grows */
+    grid-template-columns: auto auto 1fr;
 }
 .dashboard-pane {
     background: var(--pane-bg);
@@ -121,11 +120,10 @@ a:hover { text-decoration: underline; }
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
 }
 .scrollable-content {
     flex-grow: 1;
-    overflow-y: auto;
     padding-right: 10px;
 }
 
@@ -170,7 +168,7 @@ button.danger-button {
 .action-popup {
     margin-top: 10px;
     padding: 10px;
-    background: #2c3e50; /* Match dark theme */
+    background: #2c3e50;
     border: 1px solid var(--border-color);
     border-radius: 5px;
     display: flex;
@@ -191,3 +189,76 @@ button.danger-button {
 .flashcard-controls { margin-top: 1.5rem; display: flex; gap: 1rem; }
 .flashcard-progress { margin-top: 1rem; color: var(--secondary-text); }
 .flashcard-placeholder { text-align: center; color: var(--secondary-text); }
+
+/* Container for action buttons with dropdowns */
+.action-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* The dropdown itself */
+.action-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    background-color: #3a3f44;
+    border: 1px solid #4a4e54;
+    border-radius: 4px;
+    padding: 10px;
+    min-width: 250px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.action-dropdown.hidden {
+    display: none;
+}
+
+.action-dropdown select {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Styles for the new deck selector in Pane 3 */
+#deck-selector-menu {
+    position: sticky;
+    top: 0;
+    background-color: #2c2f33;
+    z-index: 20;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #4a4e54;
+    margin: -15px -15px 10px -15px;
+    padding: 10px 15px;
+}
+
+#deck-menu-button {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+}
+
+#deck-selector-menu .action-dropdown {
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#deck-menu-dropdown a {
+    display: block;
+    padding: 8px 12px;
+    color: #f0f0f0;
+    text-decoration: none;
+    border-bottom: 1px solid #4a4e54;
+    cursor: pointer;
+}
+
+#deck-menu-dropdown a:hover {
+    background-color: #4a4e54;
+}
+
+#deck-menu-dropdown a:last-child {
+    border-bottom: none;
+}

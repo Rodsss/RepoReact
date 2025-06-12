@@ -23,10 +23,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add listener for the new save button
     document.getElementById('save-to-list-button').addEventListener('click', handleSaveToListClick);
 
+    // Listeners for "Add to Deck" feature (middle pane)
+    document.getElementById('add-to-deck-button').addEventListener('click', handleAddToDeckClick);
+    document.getElementById('cancel-copy-btn').addEventListener('click', () => {
+        document.getElementById('add-to-deck-dropdown').classList.add('hidden');
+    });
+    document.getElementById('confirm-copy-btn').addEventListener('click', handleConfirmCopyToDeck);
+
+
     // Initial setup
     switchView(currentView);
     populateTextboxFromUrl();
     fetchAndPopulateStacksDropdown(); // <-- Add this call
+    populateDeckSelectorMenu(); // For the study deck dropdown
+    
 });
 
 // 1. Fetch stacks for the dropdown
@@ -54,6 +64,137 @@ async function fetchAndPopulateStacksDropdown() {
 
 
 // 2. Handle the new "Save to List" button
+
+async function handleAddToDeckClick() {
+    const dropdown = document.getElementById('add-to-deck-dropdown');
+    const isHidden = dropdown.classList.contains('hidden');
+
+    if (!isHidden) {
+        dropdown.classList.add('hidden');
+        return;
+    }
+
+    // If it's hidden, show it and populate it
+    const select = document.getElementById('dest-deck-select');
+    select.innerHTML = '<option>Loading decks...</option>';
+
+    try {
+        const userId = "default-user";
+        const stacks = await (await fetch(`/api/v1/users/${userId}/stacks`)).json();
+
+        let optionsHTML = '<option value="" disabled selected>Choose a deck...</option>';
+        if (stacks.length > 0) {
+            stacks.forEach(stack => {
+                // CORRECTED this line to properly create the option value
+                optionsHTML += `<option value="${stack.stack_id}">${stack.stack_name}</option>`;
+            });
+        } else {
+            optionsHTML = '<option value="" disabled>No decks found</option>';
+        }
+        select.innerHTML = optionsHTML;
+        dropdown.classList.remove('hidden'); // Show the dropdown
+    } catch (error) {
+        console.error("Failed to fetch decks for dropdown:", error);
+        select.innerHTML = '<option value="" disabled>Error loading decks</option>';
+    }
+}
+
+// ADDED this missing helper function for the "Copy" button
+async function handleConfirmCopyToDeck() {
+    const dropdown = document.getElementById('add-to-deck-dropdown');
+    const destStackId = document.getElementById('dest-deck-select').value;
+    const itemsToCopy = Array.from(selectedItems);
+
+    if (!destStackId) {
+        alert("Please select a destination deck.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/stacks/${destStackId}/add_flashcards`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ flashcard_ids: itemsToCopy })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Server error');
+        }
+        
+        alert(`Successfully copied ${itemsToCopy.length} items.`);
+        dropdown.classList.add('hidden'); // Hide dropdown on success
+        clearSelectionsAndRender(); // Unselect items and refresh view
+    } catch (error) {
+        alert(`Error copying items: ${error.message}`);
+    }
+}
+
+
+// Populates the new deck selector menu in the right pane
+async function populateDeckSelectorMenu() {
+    const menuButton = document.getElementById('deck-menu-button');
+    const dropdown = document.getElementById('deck-menu-dropdown');
+    if (!menuButton || !dropdown) return;
+
+    menuButton.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+    try {
+        const userId = "default-user";
+        const stacks = await (await fetch(`/api/v1/users/${userId}/stacks`)).json();
+
+        if (stacks.length > 0) {
+            dropdown.innerHTML = ''; // Clear "Loading..."
+            stacks.forEach(stack => {
+                const deckLink = document.createElement('a');
+                deckLink.href = '#';
+                deckLink.textContent = stack.stack_name;
+                deckLink.dataset.deckId = stack.stack_id;
+                deckLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    startDeckStudySession(stack.stack_id, stack.stack_name);
+                    dropdown.classList.add('hidden'); // Hide menu after selection
+                });
+                dropdown.appendChild(deckLink);
+            });
+        } else {
+            dropdown.innerHTML = '<p style="padding: 8px 12px;">No decks found.</p>';
+        }
+    } catch (error) {
+        console.error("Failed to fetch decks for menu:", error);
+        dropdown.innerHTML = '<p style="padding: 8px 12px;">Error loading decks.</p>';
+    }
+}
+
+// Starts a study session for a specific deck, overriding the general session
+async function startDeckStudySession(deckId, deckName) {
+    document.querySelector('.dashboard-container').classList.add('flashcard-mode-active');
+    const container = document.getElementById('flashcard-container');
+    container.innerHTML = `<p>Loading deck: <strong>${deckName}</strong>...</p>`;
+
+    try {
+        const userId = "default-user";
+        // CORRECTED this line to be a valid template string
+        const apiUrl = `/api/v1/users/${userId}/stacks/${deckId}/flashcards`;
+        const items = await (await fetch(apiUrl)).json();
+
+        if (items.length === 0) {
+            container.innerHTML = `<div class="flashcard-placeholder"><p>This deck is empty. Add some cards!</p></div>`;
+            return;
+        }
+
+        // Use the global deck variable and render logic for the study session
+        flashcardDeck = items.sort(() => Math.random() - 0.5);
+        currentCardIndex = 0;
+        renderCurrentFlashcard(); // This function is already defined and can be reused
+
+    } catch (error) {
+        console.error(`Failed to fetch flashcards for deck ${deckId}:`, error);
+        container.innerHTML = '<p class="error-message">Could not load this deck.</p>';
+    }
+}
+
+
 async function handleSaveToListClick() {
     const textInput = document.getElementById('translate-input');
     const textToSave = textInput.value.trim();
@@ -86,9 +227,9 @@ async function handleSaveToListClick() {
             textInput.value = '';
             // Refresh the middle pane if viewing that list's content
             if (currentView === 'stack_content') {
-                 // You may need to track the current stack ID being viewed
-                 // For now, let's just refresh the current view
-                 renderMiddlePane();
+               // You may need to track the current stack ID being viewed
+               // For now, let's just refresh the current view
+               renderMiddlePane();
             }
         } else {
             const errorData = await response.json();
@@ -128,7 +269,7 @@ function renderMiddlePane() {
 
 function clearSelectionsAndRender() {
     selectedItems.clear();
-    updateDeleteButtonVisibility();
+    updateActionButtonsVisibility();
     updateSelectAllCheckboxState();
     renderMiddlePane();
 }
@@ -213,7 +354,7 @@ async function handleFlashcardReview(outcome) {
 
     // Send the review to the backend
     try {
-        await fetch(`/api/v1/users/<span class="math-inline">\{userId\}/flashcards/</span>{card.flashcard_id}/review`, {
+        await fetch(`/api/v1/users/${userId}/flashcards/${card.flashcard_id}/review`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ outcome: outcome })
@@ -273,7 +414,7 @@ async function fetchAndDisplayStacks() {
 async function fetchAndDisplayStackContent(stackId, stackName) {
     currentView = 'stack_content';
     selectedItems.clear();
-    updateDeleteButtonVisibility();
+    updateActionButtonsVisibility();
 
     const userId = "default-user";
     const apiUrl = `/api/v1/users/${userId}/stacks/${stackId}/flashcards`;
@@ -369,18 +510,28 @@ function handleItemSelection(event, id) {
     } else {
         selectedItems.delete(intId);
     }
-    updateDeleteButtonVisibility();
+    updateActionButtonsVisibility();
     updateSelectAllCheckboxState();
 }
 
-function updateDeleteButtonVisibility() {
+// CORRECTED this function name and content
+function updateActionButtonsVisibility() {
     const deleteButton = document.getElementById('main-delete-button');
-    if (!deleteButton) return;
-    if (selectedItems.size > 0) {
-        deleteButton.classList.remove('hidden');
-        deleteButton.textContent = `Delete (${selectedItems.size}) Selected`;
-    } else {
-        deleteButton.classList.add('hidden');
+    const addToDeckButton = document.getElementById('add-to-deck-button');
+    const hasSelection = selectedItems.size > 0;
+
+    if (deleteButton) {
+        deleteButton.classList.toggle('hidden', !hasSelection);
+        if (hasSelection) {
+            deleteButton.textContent = `Delete (${selectedItems.size}) Selected`;
+        }
+    }
+    if (addToDeckButton) {
+        // Hide "Add to Deck" if we are in the main lists view
+        addToDeckButton.classList.toggle('hidden', !hasSelection || currentView === 'lists');
+        if (hasSelection) {
+            addToDeckButton.textContent = `Add (${selectedItems.size}) to Deck`;
+        }
     }
 }
 
@@ -417,7 +568,7 @@ function handleSelectAllClick(event) {
             selectedItems.delete(id);
         }
     });
-    updateDeleteButtonVisibility();
+    updateActionButtonsVisibility();
 }
 
 async function handleDeleteSelectedClick() {
