@@ -1,0 +1,193 @@
+/* === FINAL CONSOLIDATED STYLESHEET (Theme + Layout) === */
+
+/* --- 1. Variables & Base Theme --- */
+:root {
+    --primary-bg: #1a1a2e;
+    --pane-bg: #16213e;
+    --sidebar-bg: #0f192a;
+    --sidebar-text: #e0e0e0;
+    --sidebar-active-bg: #e94560;
+    --main-text: #e0e0e0;
+    --secondary-text: #a8a8a8;
+    --border-color: #4a4a58;
+    --accent-color: #e94560;
+    --success-color: #28a745;
+    --danger-color: #c0392b;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    background-color: var(--primary-bg);
+    color: var(--main-text);
+    display: flex; /* Key for sidebar layout */
+    height: 100vh;
+    overflow: hidden; /* Prevent body-level scrolling */
+}
+
+.hidden { display: none !important; }
+h1, h2, h3, h4 { color: #ffffff; font-weight: 300; }
+a { color: var(--accent-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- 2. Main Layout (Sidebar + Main Content) --- */
+.sidebar {
+    width: 220px;
+    height: 100vh;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0; /* Prevents sidebar from shrinking */
+    transition: width 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.main-content {
+    flex-grow: 1;
+    height: 100vh;
+    margin-left: 220px; /* Default sidebar width */
+    transition: margin-left 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed { width: 60px; }
+.main-content.collapsed { margin-left: 60px; }
+
+/* --- 3. Sidebar Content --- */
+.sidebar .brand { /* Your styles here */ }
+.sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: var(--secondary-text);
+    text-decoration: none;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: var(--sidebar-active-bg);
+    color: #fff;
+}
+.sidebar .link-text, .sidebar .brand-text { transition: opacity 0.2s ease, width 0.1s ease; }
+.sidebar.collapsed .link-text, .sidebar.collapsed .brand-text { opacity: 0; width: 0; overflow: hidden; }
+.sidebar-toggle-container { margin-top: auto; padding: 1rem; text-align: center; }
+#sidebar-toggle {
+    background: #34495e;
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+.sidebar.collapsed #sidebar-toggle { transform: rotate(180deg); }
+
+/* --- 4. Workspace & Three-Pane Dashboard --- */
+.content-wrapper { padding: 1rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+.workspace-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0; /* Critical for flexbox scrolling */
+}
+
+/* Top Feature Bar */
+.pane-feature-navbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 350px 1fr 1fr; /* Left, Middle, Right */
+    gap: 1rem;
+    flex-grow: 1;
+    overflow: hidden;
+    transition: grid-template-columns 0.4s ease;
+}
+
+.dashboard-container.flashcard-mode-active {
+    grid-template-columns: auto auto 1fr; /* Panes shrink, flashcard pane grows */
+}
+.dashboard-pane {
+    background: var(--pane-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.scrollable-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* --- 5. UI Components --- */
+.pane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 10px;
+}
+.collection-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+.collection-item .item-content.clickable:hover { color: var(--accent-color); cursor: pointer; }
+
+/* Component Styles */
+button, .tool-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+button:hover, .tool-button:hover {
+    filter: brightness(1.1);
+}
+button.secondary-action {
+    background-color: #4a4a58;
+}
+button.danger-button {
+    background-color: var(--danger-color);
+}
+
+.action-popup {
+    margin-top: 10px;
+    padding: 10px;
+    background: #2c3e50; /* Match dark theme */
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    display: flex;
+    gap: 10px;
+}
+.back-button {
+    margin-bottom: 1rem;
+}
+
+/* Flashcard Styles */
+#flashcard-container { display: flex; flex-direction: column; align-items: center; padding-top: 2rem; }
+.flashcard { background-color: transparent; width: 90%; max-width: 400px; height: 250px; perspective: 1000px; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); border-radius: 10px; }
+.flashcard.is-flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; padding: 20px; box-sizing: border-box; border-radius: 10px; }
+.flashcard-front { background-color: #2c3e50; color: white; border: 1px solid var(--border-color); }
+.flashcard-back { background-color: #34495e; color: white; transform: rotateY(180deg); }
+.flashcard-controls { margin-top: 1.5rem; display: flex; gap: 1rem; }
+.flashcard-progress { margin-top: 1rem; color: var(--secondary-text); }
+.flashcard-placeholder { text-align: center; color: var(--secondary-text); }

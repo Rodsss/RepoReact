@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}1Project Web App{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/main_style.css">
+    {% block head_styles %}{% endblock %}
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="/" class="brand">
+            <span class="icon">🚀</span> <span class="brand-text">1Project</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="/translate" class="nav-link {% if request.url.path == '/translate' %}active{% endif %}">
+                    <span class="icon">↔️</span> <span class="link-text">Translate</span>
+                </a></li>
+                </ul>
+        </nav>
+        <div class="sidebar-toggle-container">
+            <button id="sidebar-toggle" title="Toggle Sidebar">«</button>
+        </div>
+    </aside>
+    <main class="main-content" id="main-content">
+        <div class="content-wrapper">
+             {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% block body_scripts %}
+        <script src="/static/js/main_app.js"></script>
+    {% endblock %}
+</body>
+</html>
