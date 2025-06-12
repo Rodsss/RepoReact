@@ -12,18 +12,97 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach listeners to static elements once
     document.getElementById('show-lists-view').addEventListener('click', () => switchView('lists'));
     document.getElementById('show-history-view').addEventListener('click', () => switchView('history'));
-    document.getElementById('save-button').addEventListener('click', handleSaveClick);
+    // The old save-button is gone, so we remove its listener.
+    // document.getElementById('save-button').addEventListener('click', handleSaveClick);
     document.getElementById('create-list-button').addEventListener('click', handleCreateListClick);
     document.getElementById('main-delete-button').addEventListener('click', handleDeleteSelectedClick);
     document.getElementById('translate-button').addEventListener('click', handleOnPageTranslate);
     document.getElementById('select-all-checkbox').addEventListener('click', handleSelectAllClick);
     document.getElementById('feature-flashcard-button').addEventListener('click', startFlashcardSession);
 
+    // Add listener for the new save button
+    document.getElementById('save-to-list-button').addEventListener('click', handleSaveToListClick);
 
     // Initial setup
     switchView(currentView);
     populateTextboxFromUrl();
+    fetchAndPopulateStacksDropdown(); // <-- Add this call
 });
+
+// 1. Fetch stacks for the dropdown
+async function fetchAndPopulateStacksDropdown() {
+    const dropdown = document.getElementById('stack-select-dropdown');
+    const userId = "default-user";
+    const apiUrl = `/api/v1/users/${userId}/stacks`;
+
+    try {
+        const stacks = await (await fetch(apiUrl)).json();
+        dropdown.innerHTML = '<option value="" disabled selected>Select a list</option>'; // Reset
+        if (stacks.length > 0) {
+            stacks.forEach(stack => {
+                const option = document.createElement('option');
+                option.value = stack.stack_id;
+                option.textContent = stack.stack_name;
+                dropdown.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching stacks for dropdown:", error);
+        dropdown.innerHTML = '<option value="" disabled>Could not load lists</option>';
+    }
+}
+
+
+// 2. Handle the new "Save to List" button
+async function handleSaveToListClick() {
+    const textInput = document.getElementById('translate-input');
+    const textToSave = textInput.value.trim();
+    const stackDropdown = document.getElementById('stack-select-dropdown');
+    const selectedStackId = stackDropdown.value;
+
+    if (!textToSave) {
+        alert("The textbox is empty.");
+        return;
+    }
+    if (!selectedStackId) {
+        alert("Please select a list to save to.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/stacks/${selectedStackId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                text: textToSave,
+                sourceUrl: window.location.href, // Or any other relevant source
+                pageTitle: document.title 
+            })
+        });
+
+        if (response.ok) {
+            alert("Item saved successfully!");
+            // Optionally, clear the input
+            textInput.value = '';
+            // Refresh the middle pane if viewing that list's content
+            if (currentView === 'stack_content') {
+                 // You may need to track the current stack ID being viewed
+                 // For now, let's just refresh the current view
+                 renderMiddlePane();
+            }
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Failed to save item.");
+        }
+    } catch (error) {
+        console.error("Failed to save item to list:", error);
+        alert(`Error: ${error.message}`);
+    }
+}
+
+
+
+
 
 // --- VIEW AND RENDER LOGIC ---
 function switchView(view) {
