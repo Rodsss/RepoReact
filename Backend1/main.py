@@ -17,10 +17,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Absolute Path Configuration ---
+# --- Absolute Path Configuration ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = os.path.join(BASE_DIR, "1project_mvp.db")
-static_path = os.path.join(BASE_DIR, "static")
-templates_path = os.path.join(BASE_DIR, "templates")
+static_path = os.path.join(BASE_DIR, "../Frontend1/static")
+templates_path = os.path.join(BASE_DIR, "../Frontend1/templates")
 
 # --- FastAPI Application Instance and Template Setup ---
 app = FastAPI(
