@@ -305,3 +305,42 @@ button.danger-button {
     flex-grow: 1;
     min-height: 0; /* Critical for enabling scrolling within these containers */
 }
+
+/* === Styles for Notes Editor === */
+
+.notes-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: #1f2a47; /* Slightly different from pane bg */
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.notes-tool-button, .notes-tool-item {
+    background-color: var(--pane-bg);
+    border: 1px solid var(--border-color);
+    color: var(--main-text);
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.notes-tool-button:hover {
+    border-color: var(--accent-color);
+}
+
+#note-editor {
+    padding: 1rem;
+    font-size: 16px;
+    line-height: 1.6;
+    flex-grow: 1;
+    /* Allows the editor to have its own scrollbar */
+    overflow-y: auto;
+}
+
+/* Removes the default browser outline on the editor when focused */
+#note-editor:focus {
+    outline: none;
+}
