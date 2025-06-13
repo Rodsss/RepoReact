@@ -8,7 +8,8 @@
     {% block head_styles %}{% endblock %}
 </head>
 <body>
-    <aside class="sidebar" id="sidebar">
+
+    <aside class="sidebar collapsed" id="sidebar">
         <a href="/" class="brand">
             <span class="icon">🚀</span> <span class="brand-text">1Project</span>
         </a>
@@ -23,11 +24,13 @@
             <button id="sidebar-toggle" title="Toggle Sidebar">«</button>
         </div>
     </aside>
-    <main class="main-content" id="main-content">
+
+    <main class="main-content collapsed" id="main-content">
         <div class="content-wrapper">
-             {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
         </div>
     </main>
+
     {% block body_scripts %}
         <script src="/static/js/main_app.js"></script>
     {% endblock %}

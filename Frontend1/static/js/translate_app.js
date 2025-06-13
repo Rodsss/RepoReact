@@ -97,7 +97,8 @@ async function handleAddToDeckClick() {
         let optionsHTML = '<option value="" disabled selected>Choose a deck...</option>';
         if (stacks.length > 0) {
             stacks.forEach(stack => {
-                optionsHTML += `<option value="<span class="math-inline">\{stack\.stack\_id\}"\></span>{stack.stack_name}</option>`;
+                // CORRECTED this line to properly create the option value
+                optionsHTML += `<option value="${stack.stack_id}">${stack.stack_name}</option>`;
             });
         } else {
             optionsHTML = '<option value="" disabled>No decks found</option>';
@@ -110,6 +111,7 @@ async function handleAddToDeckClick() {
     }
 }
 
+// ADDED this missing helper function for the "Copy" button
 async function handleConfirmCopyToDeck() {
     const dropdown = document.getElementById('add-to-deck-dropdown');
     const destStackId = document.getElementById('dest-deck-select').value;
@@ -184,7 +186,8 @@ async function startDeckStudySession(deckId, deckName) {
 
     try {
         const userId = "default-user";
-        const apiUrl = `/api/v1/users/<span class="math-inline">\{userId\}/stacks/</span>{deckId}/flashcards`;
+        // CORRECTED this line to be a valid template string
+        const apiUrl = `/api/v1/users/${userId}/stacks/${deckId}/flashcards`;
         const items = await (await fetch(apiUrl)).json();
 
         if (items.length === 0) {
@@ -361,7 +364,8 @@ async function handleFlashcardReview(outcome) {
 
     // Send the review to the backend
     try {
-        await fetch(`/api/v1/users/<span class="math-inline">\{userId\}/flashcards/</span>{card.flashcard_id}/review`, {
+        // CORRECTED this line to be a valid template string
+        await fetch(`/api/v1/users/${userId}/flashcards/${card.flashcard_id}/review`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ outcome: outcome })
@@ -402,8 +406,8 @@ async function fetchAndDisplayStacks() {
             li.className = 'collection-item stack-item';
             li.innerHTML = `
                 <input type="checkbox" class="item-checkbox" data-id="${stack.stack_id}">
-                <div class="item-content clickable" title="View content of <span class="math-inline">\{stack\.stack\_name\}"\>
-<p\><strong\></span>{stack.stack_name}</strong></p>
+                <div class="item-content clickable" title="View content of ${stack.stack_name}">
+                    <p><strong>${stack.stack_name}</strong></p>
                 </div>
             `;
             li.querySelector('.item-content').addEventListener('click', () => fetchAndDisplayStackContent(stack.stack_id, stack.stack_name));
@@ -424,7 +428,7 @@ async function fetchAndDisplayStackContent(stackId, stackName) {
     updateActionButtonsVisibility();
 
     const userId = "default-user";
-    const apiUrl = `/api/v1/users/<span class="math-inline">\{userId\}/stacks/</span>{stackId}/flashcards`;
+    const apiUrl = `/api/v1/users/${userId}/stacks/${stackId}/flashcards`;
     const container = document.getElementById('snippet-list-container');
     container.innerHTML = `<p>Loading content for <strong>${stackName}</strong>...</p>`;
     
@@ -450,8 +454,8 @@ async function fetchAndDisplayStackContent(stackId, stackName) {
                 const li = document.createElement('li');
                 li.className = 'collection-item';
                 li.innerHTML = `
-                    <input type="checkbox" class="item-checkbox" data-id="<span class="math-inline">\{item\.flashcard\_id\}"\>
-<div class\="item\-content"\><p\></span>{item.front_text}</p></div>
+                    <input type="checkbox" class="item-checkbox" data-id="${item.flashcard_id}">
+                    <div class="item-content"><p>${item.front_text}</p></div>
                 `;
                 li.querySelector('.item-checkbox').addEventListener('change', (e) => handleItemSelection(e, item.flashcard_id));
                 ul.appendChild(li);
@@ -490,11 +494,11 @@ async function fetchAndDisplayHistory() {
         items.forEach(item => {
             const li = document.createElement('li');
             li.className = 'collection-item';
-            const textToShow = item.is_translation ? `"<span class="math-inline">\{item\.original\_text\}" → "</span>{item.translated_text}"` : item.front_text;
+            const textToShow = item.is_translation ? `"${item.original_text}" → "${item.translated_text}"` : item.front_text;
             li.innerHTML = `
-                <input type="checkbox" class="item-checkbox" data-id="<span class="math-inline">\{item\.flashcard\_id\}"\>
-<div class\="item\-content"\>
-<p\></span>{textToShow}</p>
+                <input type="checkbox" class="item-checkbox" data-id="${item.flashcard_id}">
+                <div class="item-content">
+                    <p>${textToShow}</p>
                     <small>From: <a href="${item.source_url}" target="_blank">Source</a></small>
                 </div>
             `;
@@ -590,8 +594,8 @@ async function handleDeleteSelectedClick() {
     const deletePromises = itemsToDelete.map(id => {
         const userId = "default-user";
         const endpoint = currentView === 'lists' 
-            ? `/api/v1/users/<span class="math-inline">\{userId\}/stacks/</span>{id}`
-            : `/api/v1/users/<span class="math-inline">\{userId\}/flashcards/</span>{id}`;
+            ? `/api/v1/users/${userId}/stacks/${id}`
+            : `/api/v1/users/${userId}/flashcards/${id}`;
         return fetch(endpoint, { method: 'DELETE' });
     });
 
@@ -661,7 +665,7 @@ function showAddToListUI(text, stacks) {
     if (stacks.length === 0) {
         select.innerHTML = '<option value="" disabled selected>Create a list first</option>';
     } else {
-        stacks.forEach(stack => select.innerHTML += `<option value="<span class="math-inline">\{stack\.stack\_id\}"\></span>{stack.stack_name}</option>`);
+        stacks.forEach(stack => select.innerHTML += `<option value="${stack.stack_id}">${stack.stack_name}</option>`);
     }
     const addButton = document.createElement('button');
     addButton.textContent = 'Add';
@@ -762,10 +766,10 @@ function renderCurrentFlashcard() {
         <div class="flashcard">
             <div class="flashcard-inner">
                 <div class="flashcard-front">
-                    <p><span class="math-inline">\{card\.front\_text\}</p\>
-</div\>
-<div class\="flashcard\-back"\>
-<p\></span>{card.back_text || card.translated_text || "(No translation)"}</p>
+                    <p>${card.front_text}</p>
+                </div>
+                <div class="flashcard-back">
+                    <p>${card.back_text || card.translated_text || "(No translation)"}</p>
                 </div>
             </div>
         </div>
@@ -803,7 +807,7 @@ async function handleFlashcardReview(outcome) {
     
     // Send the review to the backend API endpoint
     try {
-        await fetch(`/api/v1/users/<span class="math-inline">\{userId\}/flashcards/</span>{card.flashcard_id}/review`, {
+        await fetch(`/api/v1/users/${userId}/flashcards/${card.flashcard_id}/review`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ outcome: outcome })
