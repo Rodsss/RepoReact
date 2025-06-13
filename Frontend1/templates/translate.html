@@ -2,11 +2,15 @@
 
 {% block title %}Translate Workspace - 1Project{% endblock %}
 
+{% block head_styles %}
+<style>
+    /* This page now only contains the translate feature. 
+       Other styles are in their respective files or main_style.css */
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="workspace-container">
-
-    <div class="pane-feature-navbar">
-    </div>
 
     <div class="dashboard-container">
         
@@ -21,109 +25,17 @@
                     <label for="translate-output">Result:</label>
                     <textarea id="translate-output" name="translate-output" rows="4" readonly></textarea>
                 </div>
-               <div class="button-group">
-    <button id="translate-button">Translate</button>
-    
-    <div id="save-to-list-action" class="action-group">
-        <select id="stack-select-dropdown" name="stack-select" required>
-            <option value="" disabled selected>Select a list</option>
-        </select>
-        <button id="save-to-list-button" class="secondary-action">Save to List</button>
-    </div>
-</div>
-            </div>
-            </div>
-
-        <div class="dashboard-pane pane-middle">
-            <div class="pane-header">
-                <div class="view-switcher">
-                    <button id="show-lists-view" class="view-button">Lists</button>
-                    <button id="show-history-view" class="view-button active">History</button>
-                </div>
-                <div class="select-all-container">
-                    <input type="checkbox" id="select-all-checkbox" title="Select All">
-                    <label for="select-all-checkbox">Select All</label>
-                </div>
-                <div class="header-actions">
-                    <div id="add-to-deck-container" class="action-container">
-                        <button id="add-to-deck-button" class="secondary-action small-button hidden">Add to Deck</button>
-                        <div id="add-to-deck-dropdown" class="action-dropdown hidden">
-                            <p><strong>Copy selected items to:</strong></p>
-                            <select id="dest-deck-select"></select>
-                            <div class="button-group">
-                                <button id="confirm-copy-btn">Copy</button>
-                                <button id="cancel-copy-btn" class="secondary-action">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <button id="main-delete-button" class="danger-button small-button hidden">Delete Selected</button>
-                    <button id="create-list-button" class="secondary-action small-button">Create List</button>
-                </div>
-            </div>
-            <div id="snippet-list-container" class="scrollable-content">
-                </div>
-        </div>
-
-        <div class="dashboard-pane pane-right">
-            <div class="pane-main-nav">
-                <button id="show-flashcard-view" class="pane-nav-button active">Flashcards</button>
-                <button id="show-notes-view" class="pane-nav-button">Notes</button>
-            </div>
-        
-            <div id="flashcard-view-container" class="pane-view-content">
-                <div id="deck-selector-menu">
-                    <button id="deck-menu-button" class="tool-button">Select a Deck to Study ▼</button>
-                    <div id="deck-menu-dropdown" class="action-dropdown hidden">
-                        <p>Loading decks...</p>
-                    </div>
-                </div>
-                <div id="flashcard-container" class="scrollable-content">
-                    <div class="flashcard-placeholder">
-                        <p>Select a deck from the menu above to begin a study session.</p>
+                <div class="button-group">
+                    <button id="translate-button">Translate</button>
+                    
+                    <div id="save-to-list-action" class="action-group">
+                        <select id="stack-select-dropdown" name="stack-select" required>
+                            <option value="" disabled selected>Select a list</option>
+                        </select>
+                        <button id="save-to-list-button" class="secondary-action">Save to List</button>
                     </div>
                 </div>
             </div>
-        
-            <div id="notes-view-container" class="pane-view-content hidden">
-    <div class="notes-workspace">
-        
-        <div class="notes-sidebar">
-            <div class="notes-sidebar-header">
-                <h4>Folders</h4>
-                <button id="create-folder-btn" title="Create New Folder" class="notes-tool-button">+</button>
-            </div>
-            <div id="notes-folder-list" class="scrollable-content">
-                <p style="padding: 10px; color: var(--secondary-text);">No folders yet.</p>
-            </div>
-        </div>
-
-        <div class="notes-list-pane">
-             <div id="note-list-container" class="scrollable-content">
-                <p style="padding: 10px; color: var(--secondary-text);">Select a folder to see notes.</p>
-             </div>
-        </div>
-
-        <div class="notes-main-content">
-            <div class="notes-toolbar">
-                <select id="notes-font-select" class="notes-tool-item">
-                    <option value="Arial">Arial</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Verdana">Verdana</option>
-                </select>
-                <button id="notes-bold-btn" class="notes-tool-button"><b>B</b></button>
-                <button id="notes-italic-btn" class="notes-tool-button"><i>I</i></button>
-                <button id="notes-underline-btn" class="notes-tool-button"><u>U</u></button>
-                <button id="notes-save-btn" class="notes-tool-button secondary-action" style="margin-left: auto;">Save Note</button>
-            </div>
-            <div id="note-editor" class="scrollable-content" contenteditable="true">
-                Select or create a note to begin...
-            </div>
-        </div>
-
-    </div>
-</div>
         </div>
 
     </div>
@@ -131,5 +43,6 @@
 {% endblock %}
 
 {% block body_scripts %}
-    {{ super() }} <script src="/static/js/translate_app.js"></script>
+    {{ super() }} 
+    <script src="/static/js/translate_app.js"></script>
 {% endblock %}

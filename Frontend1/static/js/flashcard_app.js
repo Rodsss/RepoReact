@@ -1,13 +1,12 @@
 // static/js/flashcard_app.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    
     const dashboardContainer = document.querySelector('.dashboard-container');
     if (!dashboardContainer) { return; } 
 
     // --- Configuration ---
-    const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
-    const USER_ID_PLACEHOLDER = 'temp_user_id_mvp_snippet'; 
+    const API_BASE_URL = '/api/v1'; // Use relative URL
+    const USER_ID_PLACEHOLDER = 'default-user'; 
 
     // --- Element Selectors ---
     const elements = {
@@ -33,9 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // --- State Management ---
-    let currentFlashcards = []; let currentCardIndex = 0;
-    let currentStackIdForReview = null; let currentStackNameForReview = "";
-    let isEditingFlashcard = false; let ytPlayer;
+    let currentFlashcards = []; 
+    let currentCardIndex = 0;
+    let currentStackIdForReview = null; 
+    let currentStackNameForReview = "";
+    let isEditingFlashcard = false; 
+    let ytPlayer;
 
     // --- YouTube IFrame API Setup ---
     window.onYouTubeIframeAPIReady = function() { console.log("YouTube IFrame API is ready."); };
@@ -45,7 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // --- View Management ---
     function showReviewView(stackId, stackName) {
-        currentStackIdForReview = stackId; currentStackNameForReview = stackName;
+        currentStackIdForReview = stackId; 
+        currentStackNameForReview = stackName;
         if (elements.currentStackNameSpan) elements.currentStackNameSpan.textContent = escapeHtml(stackName);
         if (elements.addToStackNameSpan) elements.addToStackNameSpan.textContent = escapeHtml(stackName);
         if (elements.addFlashcardForm) elements.addFlashcardForm.style.display = 'block';
@@ -58,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             elements.loadingStacksMsg.style.display = 'block'; 
             elements.stacksListUl.innerHTML = ''; 
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/stacks`);
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/stacks`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const stacks = await response.json();
             elements.loadingStacksMsg.style.display = 'none'; 
@@ -89,28 +92,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const stackName = elements.newStackNameInput.value.trim();
         if (!stackName) { alert('Please enter a stack name.'); return; }
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/stacks`, {
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/stacks`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ stack_name: stackName }),
             });
             const result = await response.json(); 
             if (!response.ok) throw new Error(result.detail || `HTTP error!`);
-            alert(`Stack "${escapeHtml(result.stack.stack_name)}" created!`);
+            alert(`Stack "${escapeHtml(result.stack_name)}" created!`);
             elements.newStackNameInput.value = ''; 
             fetchAndDisplayStacks(); 
         } catch (error) { console.error('Error creating stack:', error); alert(`Failed to create stack.`); }
     }
 
     async function handleDeleteStackClick(stackId, stackName) {
-        if (!confirm(`Delete stack "${escapeHtml(stackName)}"?`)) return;
+        if (!confirm(`Delete stack "${escapeHtml(stackName)}"? This will delete all flashcards in it.`)) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/stacks/${stackId}`, { method: 'DELETE'});
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.detail || `HTTP error!`);
-            alert(result.message);
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/stacks/${stackId}`, { method: 'DELETE'});
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
+            }
+            alert(`Stack "${escapeHtml(stackName)}" deleted.`);
             fetchAndDisplayStacks(); 
             if (currentStackIdForReview == stackId) {
-                elements.flashcardDisplayDiv.innerHTML = '<p><em>Select a stack from the left.</em></p>';
+                elements.flashcardDisplayDiv.innerHTML = '<p><em>Select a stack from the list.</em></p>';
                 elements.reviewControlsDiv.innerHTML = '';
                 elements.addFlashcardForm.style.display = 'none';
                 elements.currentStackNameSpan.textContent = 'Select a stack';
@@ -124,26 +129,27 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             elements.flashcardDisplayDiv.innerHTML = '<p>Loading cards...</p>';
             elements.reviewControlsDiv.innerHTML = ''; 
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/stacks/${stackId}/flashcards`);
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/stacks/${stackId}/flashcards`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             currentFlashcards = await response.json();
-            currentCardIndex = 0; isEditingFlashcard = false; 
+            currentCardIndex = 0; 
+            isEditingFlashcard = false; 
             if (currentFlashcards.length > 0) { displayCurrentFlashcard(); } 
-            else { elements.flashcardDisplayDiv.innerHTML = '<p>This stack is empty. Add a card above!</p>'; }
+            else { elements.flashcardDisplayDiv.innerHTML = '<p>This stack is empty. Add a card below!</p>'; }
         } catch (error) { console.error('Error fetching flashcards:', error); }
     }
 
     function displayCurrentFlashcard() {
         elements.reviewControlsDiv.innerHTML = ''; 
         if (currentFlashcards.length === 0) {
-            elements.flashcardDisplayDiv.innerHTML = "<p>This stack is now empty.</p>";
+            elements.flashcardDisplayDiv.innerHTML = "<p>This stack is empty.</p>";
             return;
         }
         const card = currentFlashcards[currentCardIndex];
         elements.flashcardDisplayDiv.innerHTML = `
-            <div class="flashcard" data-flashcard-id="${card.flashcard_id}">
-                <div class="front" contentEditable="${isEditingFlashcard}">${escapeHtml(card.front_text)}</div>
-                <div class="back" style="display:none;" contentEditable="${isEditingFlashcard}">${escapeHtml(card.back_text || '(No back text)')}</div>
+            <div class="flashcard" data-flashcard-id="<span class="math-inline">\{card\.flashcard\_id\}"\>
+<div class\="front" contentEditable\="</span>{isEditingFlashcard}"><span class="math-inline">\{escapeHtml\(card\.front\_text\)\}</div\>
+<div class\="back" style\="display\:none;" contentEditable\="</span>{isEditingFlashcard}">${escapeHtml(card.back_text || '(No back text)')}</div>
                 <div class="flashcard-actions"></div>
             </div>`;
         
@@ -181,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function handleReviewOutcome(outcome) {
         const flashcardId = currentFlashcards[currentCardIndex].flashcard_id;
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/flashcards/${flashcardId}/review`, {
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/flashcards/${flashcardId}/review`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ outcome: outcome }),
             });
@@ -208,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const backText = cardElement.querySelector('.back').textContent.trim();
         if (!frontText) { alert('Front text cannot be empty.'); return; }
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/flashcards/${flashcardId}`, {
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/flashcards/${flashcardId}`, {
                 method: 'PUT', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ front_text: frontText, back_text: backText || null })
             });
@@ -217,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Flashcard updated!');
             isEditingFlashcard = false;
             const index = currentFlashcards.findIndex(fc => fc.flashcard_id == flashcardId);
-            if (index !== -1) currentFlashcards[index] = result.flashcard;
+            if (index !== -1) currentFlashcards[index] = result;
             displayCurrentFlashcard(); 
         } catch (error) { console.error('Error updating flashcard:', error); alert(`Failed to update flashcard.`); }
     }
@@ -226,10 +232,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const flashcardId = event.target.closest('.flashcard').dataset.flashcardId;
         if (!confirm(`Are you sure you want to delete this flashcard?`)) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/flashcards/${flashcardId}`, { method: 'DELETE'});
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.detail || 'Failed to delete');
-            alert(result.message || `Flashcard deleted!`);
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/flashcards/${flashcardId}`, { method: 'DELETE'});
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to delete');
+            }
+            alert(`Flashcard deleted!`);
             currentFlashcards = currentFlashcards.filter(fc => fc.flashcard_id != flashcardId);
             if (currentCardIndex >= currentFlashcards.length) currentCardIndex = 0;
             displayCurrentFlashcard();
@@ -242,14 +250,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!frontText) { alert('Front text is required.'); return; }
         if (currentStackIdForReview === null) { alert('No stack selected.'); return; }
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${USER_ID_PLACEHOLDER}/stacks/${currentStackIdForReview}/flashcards`, {
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/users/</span>{USER_ID_PLACEHOLDER}/stacks/${currentStackIdForReview}/flashcards`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ front_text: frontText, back_text: backText || null })
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.detail || 'Failed to create');
             alert(`Flashcard created in "${escapeHtml(currentStackNameForReview)}"!`);
-            elements.newFlashcardFrontInput.value = ''; elements.newFlashcardBackInput.value = '';
+            elements.newFlashcardFrontInput.value = ''; 
+            elements.newFlashcardBackInput.value = '';
             fetchFlashcardsForStack(currentStackIdForReview); 
         } catch (error) { console.error('Error saving new flashcard:', error); alert(`Failed to save flashcard.`); }
     }
@@ -286,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) { console.warn("Could not destroy YT player", e); } }
 
         try {
-            const url = `${API_BASE_URL}/media/youtube-clips?term=${encodeURIComponent(term)}`;
+            const url = `<span class="math-inline">\{API\_BASE\_URL\}/media/youtube\-clips?term\=</span>{encodeURIComponent(term)}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
             const clips = await response.json();

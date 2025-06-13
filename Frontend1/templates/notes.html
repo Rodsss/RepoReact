@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Notes - 1Project{% endblock %}
+
+{% block head_styles %}
+<style>
+    /* Styles for the notes list items and delete buttons */
+    .notes-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 4px;
+        margin-bottom: 2px;
+    }
+
+    .notes-list-item a {
+        padding: 8px 10px;
+        text-decoration: none;
+        color: var(--main-text);
+        display: block;
+        flex-grow: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .notes-list-item:hover {
+        background-color: #3a3f44;
+    }
+
+    .notes-list-item a.active {
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+    }
+
+    .delete-item-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--secondary-text);
+        padding: 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        visibility: hidden; /* Hide by default */
+    }
+
+    .notes-list-item:hover .delete-item-btn {
+        visibility: visible; /* Show on hover */
+    }
+
+    .delete-item-btn:hover {
+        background-color: #c82333;
+        color: white;
+    }
+
+    /* Styles for the note title input */
+    #note-title-input-container {
+        padding: 10px 15px;
+        border-bottom: 1px solid #4a4e54;
+    }
+
+    #note-title-input {
+        width: 100%;
+        font-size: 1.4em;
+        font-weight: bold;
+        background-color: transparent;
+        border: none;
+        color: #fff;
+        padding: 5px 0;
+    }
+
+    #note-title-input:focus {
+        outline: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="notes-view-container" class="pane-view-content">
+    <div class="notes-workspace">
+        
+        <div class="notes-sidebar">
+            <div class="notes-sidebar-header">
+                <h4>Folders</h4>
+                <button id="create-folder-btn" title="Create New Folder" class="notes-tool-button">+</button>
+            </div>
+            <div id="notes-folder-list" class="scrollable-content">
+                </div>
+        </div>
+
+        <div class="notes-list-pane">
+            <div class="pane-header">
+                <h4>Notes</h4>
+                <button id="create-new-note-btn" title="Create New Note" class="notes-tool-button" style="margin-left: auto;">+</button>
+            </div>
+            <div id="note-list-container" class="scrollable-content">
+                <p style="padding: 10px; color: var(--secondary-text);">Select a folder to see notes.</p>
+            </div>
+        </div>
+
+        <div class="notes-main-content">
+            <div id="note-title-input-container">
+                <input type="text" id="note-title-input" placeholder="Note Title...">
+            </div>
+            <div class="notes-toolbar">
+                <select id="notes-font-select" class="notes-tool-item">
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Verdana">Verdana</option>
+                </select>
+                <button id="notes-bold-btn" class="notes-tool-button"><b>B</b></button>
+                <button id="notes-italic-btn" class="notes-tool-button"><i>I</i></button>
+                <button id="notes-underline-btn" class="notes-tool-button"><u>U</u></button>
+                <button id="notes-save-btn" class="notes-tool-button secondary-action" style="margin-left: auto;">Save Note</button>
+            </div>
+            <div id="note-editor" class="scrollable-content" contenteditable="true">
+                Select or create a note to begin...
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+    {{ super() }} 
+    <script src="/static/js/notes_app.js"></script>
+{% endblock %}

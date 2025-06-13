@@ -3,47 +3,124 @@
 {% block title %}Dashboard - 1Project{% endblock %}
 
 {% block head_styles %}
-    <style>
-        .dashboard-intro { text-align: center; margin-bottom: 40px; }
-        .dashboard-intro p { font-size: 1.1em; color: #adb5bd; }
-        .dashboard-cards { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
-        .card { 
-            background-color: #2c2f33; border: 1px solid #4a4e54; 
-            border-radius: 8px; padding: 20px; width: calc(33.333% - 20px); 
-            min-width: 280px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            text-align: center; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; 
-        }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .card h3 { color: #FFB74D; }
-        .card p { font-size: 0.95em; color: #adb5bd; min-height: 60px; }
-        .card .button { 
-            display: inline-block; margin-top: 15px; padding: 10px 20px; 
-            background-color: #007bff; color: white; border-radius: 5px; 
-            text-decoration: none; font-weight: 500;
-        }
-        .card .button:hover { background-color: #0056b3; }
-        .card-icon { font-size: 2.5em; margin-bottom: 15px; color: #007bff; }
-    </style>
+<style>
+    /* Add all necessary component styles here */
+    .notes-list-item { display: flex; justify-content: space-between; align-items: center; border-radius: 4px; margin-bottom: 2px; }
+    .notes-list-item a { padding: 8px 10px; text-decoration: none; color: var(--main-text); display: block; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notes-list-item:hover { background-color: #3a3f44; }
+    .notes-list-item a.active { background-color: #007bff; color: white; border-radius: 4px; }
+    .delete-item-btn { background: none; border: none; cursor: pointer; color: var(--secondary-text); padding: 8px; border-radius: 4px; font-size: 0.9em; visibility: hidden; }
+    .notes-list-item:hover .delete-item-btn { visibility: visible; }
+    .delete-item-btn:hover { background-color: #c82333; color: white; }
+    #note-title-input-container { padding: 10px 15px; border-bottom: 1px solid #4a4e54; }
+    #note-title-input { width: 100%; font-size: 1.4em; font-weight: bold; background-color: transparent; border: none; color: #fff; padding: 5px 0; }
+    #note-title-input:focus { outline: none; }
+</style>
 {% endblock %}
 
 {% block content %}
-    <div class="dashboard-intro">
-        <!-- The h1 tag has been removed -->
-        <p>Manage your collected web content, flashcards, and insights.</p>
-    </div>
+<div class="workspace-container">
+    <div class="dashboard-container">
+        
+        <div class="dashboard-pane pane-left">
+            <div class="pane-section manual-translate-area">
+                <h3>Translate</h3>
+                <div class="form-group">
+                    <label for="translate-input">Enter Text:</label>
+                    <textarea id="translate-input" name="translate-input" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="translate-output">Result:</label>
+                    <textarea id="translate-output" name="translate-output" rows="4" readonly></textarea>
+                </div>
+                <div class="button-group">
+                    <button id="translate-button">Translate</button>
+                    <div id="save-to-list-action" class="action-group">
+                        <select id="stack-select-dropdown" name="stack-select" required>
+                            <option value="" disabled selected>Select a list</option>
+                        </select>
+                        <button id="save-to-list-button" class="secondary-action">Save to List</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="dashboard-cards">
-        <div class="card">
-            <div class="card-icon">🗂️</div>
-            <h3>Flashcards & Stacks</h3>
-            <p>Create, manage, and review your flashcard stacks to master new concepts.</p>
-            <a href="/flashcards" class="button">Go to Flashcards</a>
+        <div class="dashboard-pane pane-middle">
+            <div class="pane-header">
+                <div class="view-switcher">
+                    <button id="show-lists-view" class="view-button">Lists</button>
+                    <button id="show-history-view" class="view-button active">History</button>
+                </div>
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-checkbox" title="Select All">
+                    <label for="select-all-checkbox">Select All</label>
+                </div>
+                <div class="header-actions">
+                    <button id="main-delete-button" class="danger-button small-button hidden">Delete</button>
+                    <button id="create-list-button" class="secondary-action small-button">Create List</button>
+                </div>
+            </div>
+            <div id="snippet-list-container" class="scrollable-content"></div>
         </div>
-        <div class="card">
-            <div class="card-icon">❏</div>
-            <h3>All Collections</h3>
-            <p>View a complete log of all the text snippets and translations you've collected from the web.</p>
-            <a href="#" class="button">View All Items (future)</a>
+
+        <div class="dashboard-pane pane-right">
+            <div class="pane-main-nav">
+                <button id="show-flashcard-view" class="pane-nav-button active">Flashcards</button>
+                <button id="show-notes-view" class="pane-nav-button">Notes</button>
+            </div>
+        
+            <div id="flashcard-view-container" class="pane-view-content">
+                <div id="deck-selector-menu">
+                    <button id="deck-menu-button" class="tool-button">Select a Deck to Study ▼</button>
+                    <div id="deck-menu-dropdown" class="action-dropdown hidden"></div>
+                </div>
+                <div id="flashcard-container" class="scrollable-content">
+                    <div class="flashcard-placeholder"><p>Select a deck to begin.</p></div>
+                </div>
+            </div>
+        
+            <div id="notes-view-container" class="pane-view-content hidden">
+                <div class="notes-workspace">
+                    <div class="notes-sidebar">
+                        <div class="notes-sidebar-header">
+                            <h4>Folders</h4>
+                            <button id="create-folder-btn" title="Create New Folder" class="notes-tool-button">+</button>
+                        </div>
+                        <div id="notes-folder-list" class="scrollable-content"></div>
+                    </div>
+                    <div class="notes-list-pane">
+                        <div class="pane-header">
+                            <h4>Notes</h4>
+                            <button id="create-new-note-btn" title="Create New Note" class="notes-tool-button" style="margin-left: auto;">+</button>
+                        </div>
+                        <div id="note-list-container" class="scrollable-content"></div>
+                    </div>
+                    <div class="notes-main-content">
+                        <div id="note-title-input-container">
+                            <input type="text" id="note-title-input" placeholder="Note Title...">
+                        </div>
+                        <div class="notes-toolbar">
+                            <select id="notes-font-select" class="notes-tool-item">
+                                <option value="Arial">Arial</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Verdana">Verdana</option>
+                            </select>
+                            <button id="notes-bold-btn" class="notes-tool-button"><b>B</b></button>
+                            <button id="notes-italic-btn" class="notes-tool-button"><i>I</i></button>
+                            <button id="notes-underline-btn" class="notes-tool-button"><u>U</u></button>
+                            <button id="notes-save-btn" class="notes-tool-button secondary-action" style="margin-left: auto;">Save Note</button>
+                        </div>
+                        <div id="note-editor" class="scrollable-content" contenteditable="true"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+    {{ super() }} 
+    <script src="/static/js/dashboard_app.js"></script>
 {% endblock %}

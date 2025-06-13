@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Collections - 1Project{% endblock %}
+
+{% block head_styles %}
+<style>
+    /* Most styles for this page are in the main_style.css file.
+       Any page-specific styles can be added here. */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+
+    <div class="dashboard-container">
+        
+        <div class="dashboard-pane pane-middle">
+            <div class="pane-header">
+                <div class="view-switcher">
+                    <button id="show-lists-view" class="view-button">Lists</button>
+                    <button id="show-history-view" class="view-button active">History</button>
+                </div>
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-checkbox" title="Select All">
+                    <label for="select-all-checkbox">Select All</label>
+                </div>
+                <div class="header-actions">
+                    <div id="add-to-deck-container" class="action-container">
+                        <button id="add-to-deck-button" class="secondary-action small-button hidden">Add to Deck</button>
+                        <div id="add-to-deck-dropdown" class="action-dropdown hidden">
+                            <p><strong>Copy selected items to:</strong></p>
+                            <select id="dest-deck-select"></select>
+                            <div class="button-group">
+                                <button id="confirm-copy-btn">Copy</button>
+                                <button id="cancel-copy-btn" class="secondary-action">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <button id="main-delete-button" class="danger-button small-button hidden">Delete Selected</button>
+                    <button id="create-list-button" class="secondary-action small-button">Create List</button>
+                </div>
+            </div>
+            <div id="snippet-list-container" class="scrollable-content">
+                </div>
+        </div>
+
+        <div class="dashboard-pane pane-right">
+            <div class="pane-main-nav">
+                <button id="show-flashcard-view" class="pane-nav-button active">Flashcards</button>
+            </div>
+        
+            <div id="flashcard-view-container" class="pane-view-content">
+                <div id="deck-selector-menu">
+                    <button id="deck-menu-button" class="tool-button">Select a Deck to Study ▼</button>
+                    <div id="deck-menu-dropdown" class="action-dropdown hidden">
+                        <p>Loading decks...</p>
+                    </div>
+                </div>
+                <div id="flashcard-container" class="scrollable-content">
+                    <div class="flashcard-placeholder">
+                        <p>Select a deck from the menu above to begin a study session.</p>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+    {{ super() }} 
+    <script src="/static/js/collections_app.js"></script>
+{% endblock %}
