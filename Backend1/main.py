@@ -1,5 +1,6 @@
 # main.py - Consolidated and Corrected
 
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import FastAPI, HTTPException, Body, status, Path, Request
 from fastapi.middleware.cors import CORSMiddleware 
 from fastapi.responses import HTMLResponse
@@ -206,13 +207,13 @@ async def startup_event():
 async def home_page(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
-@app.get("/translate", response_class=HTMLResponse)
-async def translate_page(request: Request):
-    return templates.TemplateResponse("translate.html", {"request": request})
+@app.get("/translate", response_class=RedirectResponse, include_in_schema=False)
+async def redirect_translate_to_home(request: Request):
+    return RedirectResponse(url=request.url_for('home_page'))
 
-@app.get("/collections", response_class=HTMLResponse)
-async def collections_page(request: Request):
-    return templates.TemplateResponse("collections.html", {"request": request})
+@app.get("/collections", response_class=RedirectResponse, include_in_schema=False)
+async def redirect_translate_to_home(request: Request):
+    return RedirectResponse(url=request.url_for('home_page'))
 
 #====================================================
 # --- API DATA ENDPOINTS ---
@@ -483,9 +484,9 @@ async def get_notes_in_folder(folder_id: int):
     finally:
         if conn: conn.close()
 
-@app.get("/notes", response_class=HTMLResponse)
-async def notes_page(request: Request):
-    return templates.TemplateResponse("notes.html", {"request": request})
+@app.get("/notes", response_class=RedirectResponse, include_in_schema=False)
+async def redirect_notes_to_home(request: Request):
+    return RedirectResponse(url=request.url_for('home_page'))
         
 @app.delete("/api/v1/folders/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_folder(folder_id: int, user_id: str = "default-user"):
