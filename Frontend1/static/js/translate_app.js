@@ -9,6 +9,9 @@ let selectedItems = new Set(); // Use a Set to store IDs of selected items
 
 // --- MAIN EVENT LISTENERS ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Listeners for Pane 3 view switching
+    document.getElementById('show-flashcard-view').addEventListener('click', () => switchPane3View('flashcards'));
+    document.getElementById('show-notes-view').addEventListener('click', () => switchPane3View('notes'));
     // Attach listeners to static elements once
     document.getElementById('show-lists-view').addEventListener('click', () => switchView('lists'));
     document.getElementById('show-history-view').addEventListener('click', () => switchView('history'));
@@ -18,7 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('main-delete-button').addEventListener('click', handleDeleteSelectedClick);
     document.getElementById('translate-button').addEventListener('click', handleOnPageTranslate);
     document.getElementById('select-all-checkbox').addEventListener('click', handleSelectAllClick);
-    document.getElementById('feature-flashcard-button').addEventListener('click', startFlashcardSession);
+    // Note: The original #feature-flashcard-button was removed from the HTML, this listener will not find an element.
+    const featureFlashcardButton = document.getElementById('feature-flashcard-button');
+    if (featureFlashcardButton) {
+        featureFlashcardButton.addEventListener('click', startFlashcardSession);
+    }
 
     // Add listener for the new save button
     document.getElementById('save-to-list-button').addEventListener('click', handleSaveToListClick);
@@ -36,12 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     populateTextboxFromUrl();
     fetchAndPopulateStacksDropdown(); // <-- Add this call
     populateDeckSelectorMenu(); // For the study deck dropdown
-    
+    // Set the initial view for Pane 3
+    switchPane3View('flashcards'); 
 });
 
 // 1. Fetch stacks for the dropdown
 async function fetchAndPopulateStacksDropdown() {
     const dropdown = document.getElementById('stack-select-dropdown');
+    if (!dropdown) return;
     const userId = "default-user";
     const apiUrl = `/api/v1/users/${userId}/stacks`;
 
@@ -85,7 +94,6 @@ async function handleAddToDeckClick() {
         let optionsHTML = '<option value="" disabled selected>Choose a deck...</option>';
         if (stacks.length > 0) {
             stacks.forEach(stack => {
-                // CORRECTED this line to properly create the option value
                 optionsHTML += `<option value="${stack.stack_id}">${stack.stack_name}</option>`;
             });
         } else {
@@ -99,7 +107,6 @@ async function handleAddToDeckClick() {
     }
 }
 
-// ADDED this missing helper function for the "Copy" button
 async function handleConfirmCopyToDeck() {
     const dropdown = document.getElementById('add-to-deck-dropdown');
     const destStackId = document.getElementById('dest-deck-select').value;
@@ -174,7 +181,6 @@ async function startDeckStudySession(deckId, deckName) {
 
     try {
         const userId = "default-user";
-        // CORRECTED this line to be a valid template string
         const apiUrl = `/api/v1/users/${userId}/stacks/${deckId}/flashcards`;
         const items = await (await fetch(apiUrl)).json();
 
@@ -226,9 +232,7 @@ async function handleSaveToListClick() {
             // Optionally, clear the input
             textInput.value = '';
             // Refresh the middle pane if viewing that list's content
-            if (currentView === 'stack_content') {
-               // You may need to track the current stack ID being viewed
-               // For now, let's just refresh the current view
+            if (currentView === 'history') {
                renderMiddlePane();
             }
         } else {
@@ -514,7 +518,6 @@ function handleItemSelection(event, id) {
     updateSelectAllCheckboxState();
 }
 
-// CORRECTED this function name and content
 function updateActionButtonsVisibility() {
     const deleteButton = document.getElementById('main-delete-button');
     const addToDeckButton = document.getElementById('add-to-deck-button');
@@ -810,4 +813,25 @@ async function handleFlashcardReview(outcome) {
     // Move to the next card
     currentCardIndex++;
     renderCurrentFlashcard();
+}
+
+// --- PANE 3 VIEW SWITCHING ---
+
+function switchPane3View(viewToShow) {
+    // Get the view containers and buttons from the third pane
+    const flashcardContainer = document.getElementById('flashcard-view-container');
+    const notesContainer = document.getElementById('notes-view-container');
+    const flashcardButton = document.getElementById('show-flashcard-view');
+    const notesButton = document.getElementById('show-notes-view');
+
+    // Ensure elements exist before trying to modify them
+    if (flashcardContainer && notesContainer && flashcardButton && notesButton) {
+        // Toggle the 'active' class on the navigation buttons
+        flashcardButton.classList.toggle('active', viewToShow === 'flashcards');
+        notesButton.classList.toggle('active', viewToShow === 'notes');
+
+        // Toggle the 'hidden' class on the corresponding content containers
+        flashcardContainer.classList.toggle('hidden', viewToShow !== 'flashcards');
+        notesContainer.classList.toggle('hidden', viewToShow !== 'notes');
+    }
 }

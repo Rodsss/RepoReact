@@ -6,7 +6,6 @@
 <div class="workspace-container">
 
     <div class="pane-feature-navbar">
-        <button id="feature-flashcard-button" class="tool-button active">🗂️ Flashcard</button>
         </div>
 
     <div class="dashboard-container">
@@ -66,20 +65,32 @@
                 </div>
         </div>
 
-      <div class="dashboard-pane pane-right">
-    <div id="deck-selector-menu">
-        <button id="deck-menu-button" class="tool-button">Select a Deck to Study ▼</button>
-        <div id="deck-menu-dropdown" class="action-dropdown hidden">
-            <p>Loading decks...</p>
+        <div class="dashboard-pane pane-right">
+            <div class="pane-main-nav">
+                <button id="show-flashcard-view" class="pane-nav-button active">Flashcards</button>
+                <button id="show-notes-view" class="pane-nav-button">Notes</button>
+            </div>
+        
+            <div id="flashcard-view-container" class="pane-view-content">
+                <div id="deck-selector-menu">
+                    <button id="deck-menu-button" class="tool-button">Select a Deck to Study ▼</button>
+                    <div id="deck-menu-dropdown" class="action-dropdown hidden">
+                        <p>Loading decks...</p>
+                    </div>
+                </div>
+                <div id="flashcard-container" class="scrollable-content">
+                    <div class="flashcard-placeholder">
+                        <p>Select a deck from the menu above to begin a study session.</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div id="notes-view-container" class="pane-view-content hidden">
+                <div class="notes-placeholder" style="text-align: center; color: var(--secondary-text); padding-top: 2rem;">
+                    <p>Notes functionality will be available here.</p>
+                </div>
+            </div>
         </div>
-    </div>
-    <h3>Study Tools</h3>
-    <div id="flashcard-container" class="scrollable-content">
-        <div class="flashcard-placeholder">
-            <p>Select a deck from the menu above to begin a study session.</p>
-        </div>
-    </div>
-</div>
 
     </div>
 </div>

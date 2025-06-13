@@ -262,3 +262,46 @@ button.danger-button {
 #deck-menu-dropdown a:last-child {
     border-bottom: none;
 }
+
+/* === Styles for Pane 3 Main Navigation === */
+
+.pane-main-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+    /* Ensures the nav doesn't shrink when content is added */
+    flex-shrink: 0;
+}
+
+.pane-nav-button {
+    flex-grow: 1;
+    background-color: transparent;
+    color: var(--secondary-text);
+    border: none;
+    border-bottom: 3px solid transparent; /* Placeholder for active indicator */
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 1rem;
+}
+
+.pane-nav-button:hover {
+    color: var(--main-text);
+}
+
+.pane-nav-button.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+
+/*
+ This rule ensures the content containers below the new nav bar
+ (like the flashcard system and future notes system)
+ correctly fill the remaining space in the pane.
+*/
+.pane-view-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0; /* Critical for enabling scrolling within these containers */
+}
