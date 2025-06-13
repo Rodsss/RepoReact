@@ -1,8 +1,7 @@
-// --- STATE MANAGEMENT ---
-
-
 let flashcardDeck = [];
 let currentCardIndex = 0;
+let currentNoteId = null;
+let currentFolderId = null;
 
 let currentView = 'history'; // Can be 'lists', 'history', or 'stack_content'
 let selectedItems = new Set(); // Use a Set to store IDs of selected items
@@ -36,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('add-to-deck-dropdown').classList.add('hidden');
     });
     document.getElementById('confirm-copy-btn').addEventListener('click', handleConfirmCopyToDeck);
+    document.getElementById('create-folder-btn').addEventListener('click', handleCreateFolderClick);
 
 
     // Initial setup
@@ -97,7 +97,6 @@ async function handleAddToDeckClick() {
         let optionsHTML = '<option value="" disabled selected>Choose a deck...</option>';
         if (stacks.length > 0) {
             stacks.forEach(stack => {
-                // CORRECTED this line to properly create the option value
                 optionsHTML += `<option value="${stack.stack_id}">${stack.stack_name}</option>`;
             });
         } else {
@@ -111,7 +110,6 @@ async function handleAddToDeckClick() {
     }
 }
 
-// ADDED this missing helper function for the "Copy" button
 async function handleConfirmCopyToDeck() {
     const dropdown = document.getElementById('add-to-deck-dropdown');
     const destStackId = document.getElementById('dest-deck-select').value;
@@ -186,7 +184,6 @@ async function startDeckStudySession(deckId, deckName) {
 
     try {
         const userId = "default-user";
-        // CORRECTED this line to be a valid template string
         const apiUrl = `/api/v1/users/${userId}/stacks/${deckId}/flashcards`;
         const items = await (await fetch(apiUrl)).json();
 
@@ -840,6 +837,249 @@ function switchPane3View(viewToShow) {
         // Toggle the 'hidden' class on the corresponding content containers
         flashcardContainer.classList.toggle('hidden', viewToShow !== 'flashcards');
         notesContainer.classList.toggle('hidden', viewToShow !== 'notes');
+        // If we are switching to the notes view, load the folders
+if (viewToShow === 'notes') {
+    loadAndDisplayFolders();
+}
+    }
+}
+
+// --- NOTES EDITOR LOGIC ---
+
+function initializeNotesEditor() {
+    const editor = document.getElementById('note-editor');
+    if (!editor) return; // Exit if the editor elements are not on the current page
+
+    // --- Formatting Buttons ---
+    document.getElementById('notes-bold-btn').addEventListener('click', () => {
+        document.execCommand('bold', false, null);
+        editor.focus(); // Return focus to the editor after click
+    });
+
+    document.getElementById('notes-italic-btn').addEventListener('click', () => {
+        document.execCommand('italic', false, null);
+        editor.focus();
+    });
+
+    document.getElementById('notes-underline-btn').addEventListener('click', () => {
+        document.execCommand('underline', false, null);
+        editor.focus();
+    });
+
+    // --- Font Selector ---
+    document.getElementById('notes-font-select').addEventListener('change', (e) => {
+        const fontName = e.target.value;
+        document.execCommand('fontName', false, fontName);
+        editor.focus();
+    });
+
+    // --- Save Button (Phase 1: Placeholder) ---
+    // This will be connected to the backend in a future step.
+    // For now, it will log the content to the browser's console.
+   // --- Save Button (Connected to Backend) ---
+document.getElementById('notes-save-btn').addEventListener('click', async () => {
+    const noteContent = editor.innerHTML;
+    // For now, we'll use a static title. We can add a title input later.
+    const noteTitle = "My Note"; 
+
+    const payload = {
+        title: noteTitle,
+        content: noteContent
+    };
+
+    try {
+        let response;
+        let url = '/api/v1/notes';
+        let method = 'POST';
+
+        // If we are editing a note that has already been saved, update it (PUT).
+        if (currentNoteId) {
+            url = `/api/v1/notes/${currentNoteId}`;
+            method = 'PUT';
+        }
+
+        response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to save note');
+        }
+
+        const savedNote = await response.json();
+        
+        // After the first save, store the new note's ID.
+        // This ensures the next save will be an update, not a new note.
+        currentNoteId = savedNote.note_id; 
+
+        alert('Note saved successfully!');
+        console.log('Saved Note:', savedNote);
+
+    } catch (error) {
+        console.error('Error saving note:', error);
+        alert(`Failed to save note: ${error.message}`);
+    }
+});
+}
+
+// --- NOTES EDITOR LOGIC ---
+
+function initializeNotesEditor() {
+    const editor = document.getElementById('note-editor');
+    if (!editor) return; // Exit if the editor elements are not on the current page
+
+    // --- Formatting Buttons ---
+    document.getElementById('notes-bold-btn').addEventListener('click', () => {
+        document.execCommand('bold', false, null);
+        editor.focus(); // Return focus to the editor after click
+    });
+
+    document.getElementById('notes-italic-btn').addEventListener('click', () => {
+        document.execCommand('italic', false, null);
+        editor.focus();
+    });
+
+    document.getElementById('notes-underline-btn').addEventListener('click', () => {
+        document.execCommand('underline', false, null);
+        editor.focus();
+    });
+
+    // --- Font Selector ---
+    document.getElementById('notes-font-select').addEventListener('change', (e) => {
+        const fontName = e.target.value;
+        document.execCommand('fontName', false, fontName);
+        editor.focus();
+    });
+
+    // --- Save Button (Phase 1: Placeholder) ---
+    // This will be connected to the backend in a future step.
+    // For now, it will log the content to the browser's console.
+    document.getElementById('notes-save-btn').addEventListener('click', () => {
+        const noteContent = editor.innerHTML;
+        console.log("Note Content Saved (HTML preview):", noteContent);
+        alert("Note content has been logged to the browser's console (Press F12 to view).");
+    });
+}
+
+async function handleCreateFolderClick() {
+    const folderName = prompt("Enter a name for the new folder:");
+    if (!folderName || folderName.trim() === '') {
+        return; // Exit if the user cancels or enters an empty name
+    }
+    try {
+        const response = await fetch('/api/v1/folders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folder_name: folderName.trim() })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to create folder');
+        }
+        
+        await response.json(); // Consume the JSON from the successful response
+        alert(`Folder "${folderName}" created successfully!`);
+        loadAndDisplayFolders(); // Refresh the folder list to show the new folder
+    } catch (error) {
+        console.error('Error creating folder:', error);
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function loadAndDisplayFolders() {
+    const folderListContainer = document.getElementById('notes-folder-list');
+    folderListContainer.innerHTML = '<p style="padding: 10px; color: var(--secondary-text);">Loading folders...</p>';
+    try {
+        const response = await fetch('/api/v1/folders');
+        if (!response.ok) {
+            throw new Error('Failed to fetch folders');
+        }
+        const folders = await response.json();
+
+        folderListContainer.innerHTML = ''; // Clear the container
+        if (folders.length === 0) {
+            folderListContainer.innerHTML = '<p style="padding: 10px; color: var(--secondary-text);">No folders yet.</p>';
+            return;
+        }
+
+        folders.forEach(folder => {
+            const folderLink = document.createElement('a');
+            folderLink.href = '#';
+            folderLink.textContent = folder.folder_name;
+            folderLink.dataset.folderId = folder.folder_id;
+folderLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    loadAndDisplayNotes(folder.folder_id);
+});
+        });
+    } catch (error) {
+        console.error('Error loading folders:', error);
+        folderListContainer.innerHTML = '<p style="padding: 10px; color: red;">Could not load folders.</p>';
+    }
+}
+
+async function loadAndDisplayNotes(folderId) {
+    currentFolderId = folderId; // Keep track of the selected folder
+    const noteListContainer = document.getElementById('note-list-container');
+    noteListContainer.innerHTML = `<p style="padding: 10px; color: var(--secondary-text);">Loading notes...</p>`;
+
+    // Highlight the selected folder
+    document.querySelectorAll('#notes-folder-list a').forEach(a => {
+        a.classList.toggle('active', a.dataset.folderId == folderId);
+    });
+
+    try {
+        const response = await fetch(`/api/v1/folders/${folderId}/notes`);
+        if (!response.ok) throw new Error('Failed to fetch notes for this folder.');
+        const notes = await response.json();
+
+        noteListContainer.innerHTML = '';
+        if (notes.length === 0) {
+            noteListContainer.innerHTML = `<p style="padding: 10px; color: var(--secondary-text);">This folder is empty.</p>`;
+        } else {
+            notes.forEach(note => {
+                const noteLink = document.createElement('a');
+                noteLink.href = '#';
+                noteLink.textContent = note.title || "Untitled Note";
+                noteLink.dataset.noteId = note.note_id;
+noteLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    loadNoteIntoEditor(note.note_id);
+});
+            });
+        }
+    } catch (error) {
+        console.error('Error loading notes:', error);
+        noteListContainer.innerHTML = `<p style="padding: 10px; color: red;">Error loading notes.</p>`;
+    }
+}
+
+async function loadNoteIntoEditor(noteId) {
+    const editor = document.getElementById('note-editor');
+    editor.innerHTML = '<em>Loading note...</em>';
+    try {
+        const response = await fetch(`/api/v1/notes/${noteId}`);
+        if (!response.ok) {
+            throw new Error('Failed to load the selected note.');
+        }
+        const note = await response.json();
+        
+        editor.innerHTML = note.content;
+        currentNoteId = note.note_id; // Set the current note ID for future saves
+
+        // Highlight this note as active in the note list
+        document.querySelectorAll('#note-list-container a').forEach(a => {
+            a.classList.toggle('active', a.dataset.noteId == noteId);
+        });
+
+    } catch (error) {
+        console.error('Error loading note:', error);
+        editor.innerHTML = '<p style="color: red;">Could not load the selected note.</p>';
+        currentNoteId = null; // Clear the ID on error
     }
 }
 

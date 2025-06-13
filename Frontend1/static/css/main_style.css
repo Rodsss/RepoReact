@@ -344,3 +344,75 @@ button.danger-button {
 #note-editor:focus {
     outline: none;
 }
+
+/* === Styles for Notes Folder Layout === */
+
+.notes-workspace {
+    display: grid;
+    /* Folders | Note List | Editor */
+    grid-template-columns: 220px 250px 1fr; 
+    gap: 1rem;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.notes-sidebar, .notes-main-content {
+    display: flex;
+    flex-direction: column;
+    background-color: #1f2a47; /* A slightly different shade for nesting */
+    border-radius: 5px;
+    overflow: hidden; /* Hide overflow for child elements */
+}
+
+.notes-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+#create-folder-btn {
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0 8px;
+}
+
+#notes-folder-list a { /* For when we add folder links */
+    display: block;
+    padding: 12px 15px; /* Increased vertical padding */
+    color: var(--secondary-text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.5; /* Added for standard top-down spacing */
+    transition: all 0.2s ease-in-out;
+}
+
+.notes-list-pane {
+    display: flex;
+    flex-direction: column;
+    background-color: #1f2a47;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#note-list-container a {
+    display: block;
+    padding: 12px 15px;
+    color: var(--secondary-text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.5;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#note-list-container a:hover, #note-list-container a.active {
+    background-color: var(--accent-color);
+    color: white;
+}
