@@ -20,7 +20,6 @@ body {
     margin: 0;
     background-color: var(--primary-bg);
     color: var(--main-text);
-    display: flex;
     height: 100vh;
     overflow: hidden;
 }
@@ -32,6 +31,9 @@ a:hover { text-decoration: underline; }
 
 /* --- 2. Main Layout (Sidebar + Main Content) --- */
 .sidebar {
+    position: fixed; 
+    top: 0;         
+    left: 0;         
     width: 220px;
     height: 100vh;
     background: var(--sidebar-bg);
@@ -43,16 +45,21 @@ a:hover { text-decoration: underline; }
 }
 
 .main-content {
-    flex-grow: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 220px; /* This pins the left edge 220px from the side */
     height: 100vh;
-    margin-left: 220px;
-    transition: margin-left 0.3s ease-in-out;
+    transition: left 0.3s ease-in-out; /* Animate the 'left' property */
     display: flex;
     flex-direction: column;
 }
 
 .sidebar.collapsed { width: 60px; }
-.main-content.collapsed { margin-left: 60px; }
+.main-content.collapsed {
+    left: 60px; /* This pins the left edge 60px from the side */
+}
 
 /* --- 3. Sidebar Content --- */
 .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
@@ -349,8 +356,8 @@ button.danger-button {
 
 .notes-workspace {
     display: grid;
-    /* Folders | Note List | Editor */
-    grid-template-columns: 220px 250px 1fr; 
+    /* Combined Sidebar | Editor */
+    grid-template-columns: 320px 1fr; /* Widen the sidebar */
     gap: 1rem;
     flex-grow: 1;
     overflow: hidden;
@@ -390,13 +397,6 @@ button.danger-button {
     transition: all 0.2s ease-in-out;
 }
 
-.notes-list-pane {
-    display: flex;
-    flex-direction: column;
-    background-color: #1f2a47;
-    border-radius: 5px;
-    overflow: hidden;
-}
 
 #note-list-container a {
     display: block;
@@ -414,5 +414,65 @@ button.danger-button {
 
 #note-list-container a:hover, #note-list-container a.active {
     background-color: var(--accent-color);
+    color: white;
+}
+
+/* === NEW STYLES FOR ACCORDION FOLDER VIEW === */
+
+.folder-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.folder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.folder-header:hover {
+    background-color: #2c3a58; /* A subtle hover effect */
+}
+
+.folder-header.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.folder-name {
+    font-weight: bold;
+    flex-grow: 1;
+}
+
+.folder-icon {
+    margin-right: 10px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.folder-header.expanded .folder-icon {
+    transform: rotate(90deg);
+}
+
+.notes-list-wrapper {
+    padding-left: 20px; /* Indent the notes list */
+    background-color: #1a243b; /* Slightly different background for notes */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.notes-list-wrapper.expanded {
+    max-height: 500px; /* Animate the height */
+    transition: max-height 0.5s ease-in;
+}
+
+/* Keep individual note styling */
+#notes-folder-list .notes-list-item a:hover {
+    background-color: #3a3f44;
+}
+#notes-folder-list .notes-list-item a.active {
+    background-color: #007bff;
     color: white;
 }

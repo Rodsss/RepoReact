@@ -84,16 +84,12 @@
                     <div class="notes-sidebar">
                         <div class="notes-sidebar-header">
                             <h4>Folders</h4>
-                            <button id="create-folder-btn" title="Create New Folder" class="notes-tool-button">+</button>
+                            <div>
+                                <button id="create-new-note-btn" title="Create New Note" class="notes-tool-button">+</button>
+                                <button id="create-folder-btn" title="Create New Folder" class="notes-tool-button">+</button>
+                            </div>
                         </div>
                         <div id="notes-folder-list" class="scrollable-content"></div>
-                    </div>
-                    <div class="notes-list-pane">
-                        <div class="pane-header">
-                            <h4>Notes</h4>
-                            <button id="create-new-note-btn" title="Create New Note" class="notes-tool-button" style="margin-left: auto;">+</button>
-                        </div>
-                        <div id="note-list-container" class="scrollable-content"></div>
                     </div>
                     <div class="notes-main-content">
                         <div id="note-title-input-container">
@@ -115,7 +111,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
     </div>
 </div>
 {% endblock %}
