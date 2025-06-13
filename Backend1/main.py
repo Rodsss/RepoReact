@@ -17,7 +17,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Absolute Path Configuration ---
-# --- Absolute Path Configuration ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = os.path.join(BASE_DIR, "1project_mvp.db")
 static_path = os.path.join(BASE_DIR, "../Frontend1/static")
@@ -114,7 +113,7 @@ class StackResponseItem(BaseModel):
 class NoteCreate(BaseModel):
     title: Optional[str] = "Untitled Note"
     content: Optional[str] = ""
-    folder_id: Optional[int] = None # Add this line
+    folder_id: Optional[int] = None # This is important for creating and updating
 
 class NoteItem(BaseModel):
     note_id: int
@@ -123,8 +122,7 @@ class NoteItem(BaseModel):
     content: Optional[str]
     creation_date: str
     last_modified_date: str
-
-
+    folder_id: Optional[int] # Ensure this is in the response model
 
 # --- CORRECTED: CORS Middleware Configuration ---
 origins = ["*"] # For local development
@@ -260,8 +258,6 @@ async def add_item_to_stack(stack_id: int = Path(...), item_data: TextItemCreate
     finally:
         if conn: conn.close()
 
-        # In main.py, you can add this function before the get_all_collected_items endpoint
-
 @app.get("/api/v1/users/{user_id}/stacks", response_model=List[StackResponseItem])
 async def get_user_stacks(user_id: str = Path(...)):
     conn = get_db_connection()
@@ -304,8 +300,6 @@ async def get_flashcards_in_stack(user_id: str = Path(...), stack_id: int = Path
     finally:
         if conn: conn.close()
 
-
-# In main.py, you can add these after the existing API endpoints
 
 @app.delete("/api/v1/users/{user_id}/stacks/{stack_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_stack(user_id: str = Path(...), stack_id: int = Path(...)):
@@ -350,7 +344,6 @@ async def create_new_note(note_data: NoteCreate = Body(...)):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        # MODIFIED: Added folder_id to the INSERT statement
         cursor.execute(
             "INSERT INTO Notes (user_id, title, content, folder_id, creation_date, last_modified_date) VALUES (?, ?, ?, ?, ?, ?)",
             (user_id, note_data.title, note_data.content, note_data.folder_id, ts, ts)
@@ -358,7 +351,8 @@ async def create_new_note(note_data: NoteCreate = Body(...)):
         new_note_id = cursor.lastrowid
         conn.commit()
         
-        new_note = cursor.execute("SELECT * FROM Notes WHERE note_id = ?", (new_note_id,)).fetchone()
+        # Use a consistent select method to fetch the newly created note
+        new_note = conn.execute("SELECT * FROM Notes WHERE note_id = ?", (new_note_id,)).fetchone()
         return dict(new_note)
         
     except sqlite3.Error as e:
@@ -398,15 +392,20 @@ async def update_note(note_id: int, note_data: NoteCreate = Body(...)):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        
+        # --- THIS IS THE CORRECTED PART ---
+        # It now includes folder_id in the update, making it more robust
         cursor.execute(
-            "UPDATE Notes SET title = ?, content = ?, last_modified_date = ? WHERE note_id = ? AND user_id = ?",
-            (note_data.title, note_data.content, ts, note_id, user_id)
+            "UPDATE Notes SET title = ?, content = ?, folder_id = ?, last_modified_date = ? WHERE note_id = ? AND user_id = ?",
+            (note_data.title, note_data.content, note_data.folder_id, ts, note_id, user_id)
         )
+        # --- END OF CORRECTION ---
+
         if cursor.rowcount == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found.")
         conn.commit()
 
-        updated_note = cursor.execute("SELECT * FROM Notes WHERE note_id = ?", (note_id,)).fetchone()
+        updated_note = conn.execute("SELECT * FROM Notes WHERE note_id = ?", (note_id,)).fetchone()
         return dict(updated_note)
         
     except sqlite3.Error as e:
@@ -444,7 +443,7 @@ async def create_new_folder(folder_data: FolderCreate = Body(...)):
         new_folder_id = cursor.lastrowid
         conn.commit()
         
-        new_folder = cursor.execute("SELECT * FROM Folders WHERE folder_id = ?", (new_folder_id,)).fetchone()
+        new_folder = conn.execute("SELECT * FROM Folders WHERE folder_id = ?", (new_folder_id,)).fetchone()
         return dict(new_folder)
         
     except sqlite3.Error as e:
@@ -484,4 +483,32 @@ async def get_notes_in_folder(folder_id: int):
     finally:
         if conn: conn.close()
 
-# ... (Include other functional endpoints like get_user_stacks, create_user_stack, flashcard review/delete, etc.)
+@app.get("/notes", response_class=HTMLResponse)
+async def notes_page(request: Request):
+    return templates.TemplateResponse("notes.html", {"request": request})
+        
+@app.delete("/api/v1/folders/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_folder(folder_id: int, user_id: str = "default-user"):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        
+        # First, ensure the folder exists for the user
+        folder = cursor.execute("SELECT folder_id FROM Folders WHERE folder_id = ? AND user_id = ?", (folder_id, user_id)).fetchone()
+        if not folder:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found.")
+
+        # Delete all notes within that folder
+        cursor.execute("DELETE FROM Notes WHERE folder_id = ? AND user_id = ?", (folder_id, user_id))
+        
+        # Then, delete the folder itself
+        cursor.execute("DELETE FROM Folders WHERE folder_id = ? AND user_id = ?", (folder_id, user_id))
+        
+        conn.commit()
+        
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        logger.error(f"Database error deleting folder {folder_id}: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database operation failed.")
+    finally:
+        if conn: conn.close()
