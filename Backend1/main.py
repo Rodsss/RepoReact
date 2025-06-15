@@ -35,6 +35,17 @@ templates = Jinja2Templates(directory=templates_path)
 
 # --- Pydantic Models ---
 
+# UPDATED to include transcript data for the player feature
+class MediaSearchResult(BaseModel):
+    id: str  # Changed to string to accommodate YouTube IDs
+    media_type: str
+    title: str
+    author: str
+    url: str
+    thumbnail_url: str
+    transcript: Optional[List[dict]] = None
+
+
 class FolderCreate(BaseModel):
     folder_name: str
 
@@ -219,12 +230,73 @@ async def redirect_translate_to_home(request: Request):
 # --- API DATA ENDPOINTS ---
 #====================================================
 
+# UPDATED to provide realistic mock data for frontend development
+@app.get("/api/v1/media-search", response_model=List[MediaSearchResult], tags=["Media Search"])
+def search_media_mock(query: str = ""):
+    """
+    A mock endpoint that returns a hard-coded but realistic search result
+    for a single YouTube video, including a sample transcript.
+    """
+    logger.info(f"Mock media search received for query: '{query}'")
+    
+    mock_video_data = {
+        "id": "Tk35942nI3o",  # Real YouTube Video ID
+        "media_type": "youtube",
+        "title": "The new FastAPI framework",
+        "author": "Sebastián Ramírez (tiangolo)",
+        "url": "https://www.youtube.com/watch?v=Tk35942nI3o",
+        "thumbnail_url": "https://i.ytimg.com/vi/Tk35942nI3o/hqdefault.jpg",
+        "transcript": [
+            {"start": 5.2, "text": "Hi everyone. Thank you for coming."},
+            {"start": 7.1, "text": "My name is Sebastián Ramírez, I'm the creator of FastAPI."},
+            {"start": 10.5, "text": "And today I'm going to show you a little bit about it."},
+            {"start": 13.0, "text": "So FastAPI is a modern web framework for building APIs."},
+            {"start": 17.3, "text": "It's based on standard Python type hints."},
+            {"start": 20.0, "text": "It gives you automatic data validation, serialization, and documentation."},
+            {"start": 25.8, "text": "This means you can write very clean and robust code."},
+        ]
+    }
+    return [mock_video_data]
+
+
+@app.post("/api/v1/translation_logs", response_model=TranslationLogResponse, status_code=status.HTTP_201_CREATED)
+async def create_translation_log(log_data: TranslationLogCreate = Body(...)):
+    user_id = "default-user" # Placeholder
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO TranslationLogs 
+                (user_id, original_text, translated_text, source_language, target_language, source_url, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id, 
+                log_data.originalText, 
+                log_data.translatedText, 
+                log_data.sourceLanguage, 
+                log_data.targetLanguage, 
+                log_data.sourceUrl, 
+                log_data.timestamp
+            )
+        )
+        log_id = cursor.lastrowid
+        conn.commit()
+        return TranslationLogResponse(success=True, message="Log created successfully", logId=log_id)
+    except sqlite3.Error as e:
+        if conn: conn.rollback()
+        logger.error(f"Database error creating translation log: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database operation failed.")
+    finally:
+        if conn: conn.close()
+
+
 @app.post("/api/v1/translate", status_code=status.HTTP_200_OK)
 async def handle_translation_request(translate_request: TranslateRequest = Body(...)):
     user_id = "default-user"
     original_text = translate_request.text
     translated_text = f"[MOCK Translated: {original_text}]"
-    # ... (Full implementation as provided in previous steps) ...
     return {"translated_text": translated_text}
 
 @app.post("/api/v1/stacks/{stack_id}/items", response_model=SnippetResponse, status_code=status.HTTP_201_CREATED)
@@ -307,7 +379,6 @@ async def delete_stack(user_id: str = Path(...), stack_id: int = Path(...)):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        # The ON DELETE CASCADE in the table definitions will handle deleting associated flashcards
         cursor.execute("DELETE FROM Stacks WHERE stack_id = ? AND user_id = ?", (stack_id, user_id))
         conn.commit()
         if cursor.rowcount == 0:
@@ -336,11 +407,12 @@ async def delete_flashcard(user_id: str = Path(...), flashcard_id: int = Path(..
     finally:
         if conn: conn.close()
 
+
 # --- API ENDPOINTS FOR NOTES ---
 
 @app.post("/api/v1/notes", response_model=NoteItem, status_code=status.HTTP_201_CREATED)
 async def create_new_note(note_data: NoteCreate = Body(...)):
-    user_id = "default-user" # Placeholder user ID
+    user_id = "default-user" 
     ts = datetime.now(timezone.utc).isoformat()
     conn = get_db_connection()
     try:
@@ -352,7 +424,6 @@ async def create_new_note(note_data: NoteCreate = Body(...)):
         new_note_id = cursor.lastrowid
         conn.commit()
         
-        # Use a consistent select method to fetch the newly created note
         new_note = conn.execute("SELECT * FROM Notes WHERE note_id = ?", (new_note_id,)).fetchone()
         return dict(new_note)
         
@@ -394,13 +465,10 @@ async def update_note(note_id: int, note_data: NoteCreate = Body(...)):
     try:
         cursor = conn.cursor()
         
-        # --- THIS IS THE CORRECTED PART ---
-        # It now includes folder_id in the update, making it more robust
         cursor.execute(
             "UPDATE Notes SET title = ?, content = ?, folder_id = ?, last_modified_date = ? WHERE note_id = ? AND user_id = ?",
             (note_data.title, note_data.content, note_data.folder_id, ts, note_id, user_id)
         )
-        # --- END OF CORRECTION ---
 
         if cursor.rowcount == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found.")
@@ -470,12 +538,10 @@ async def get_notes_in_folder(folder_id: int):
     user_id = "default-user"
     conn = get_db_connection()
     try:
-        # First, check if the folder exists for the user
         folder = conn.execute("SELECT folder_id FROM Folders WHERE folder_id = ? AND user_id = ?", (folder_id, user_id)).fetchone()
         if not folder:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found.")
         
-        # Then, fetch all notes within that folder
         notes_raw = conn.execute(
             "SELECT * FROM Notes WHERE user_id = ? AND folder_id = ? ORDER BY last_modified_date DESC",
             (user_id, folder_id)
@@ -494,15 +560,11 @@ async def delete_folder(folder_id: int, user_id: str = "default-user"):
     try:
         cursor = conn.cursor()
         
-        # First, ensure the folder exists for the user
         folder = cursor.execute("SELECT folder_id FROM Folders WHERE folder_id = ? AND user_id = ?", (folder_id, user_id)).fetchone()
         if not folder:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found.")
 
-        # Delete all notes within that folder
         cursor.execute("DELETE FROM Notes WHERE folder_id = ? AND user_id = ?", (folder_id, user_id))
-        
-        # Then, delete the folder itself
         cursor.execute("DELETE FROM Folders WHERE folder_id = ? AND user_id = ?", (folder_id, user_id))
         
         conn.commit()
