@@ -1,24 +1,25 @@
-// Variables and constants scoped to the flashcards module
+// State and constants scoped to the flashcards module
+let state = null; // Will hold the global appState
 let flashcardDeck = [];
 let currentCardIndex = 0;
 const API_BASE_URL = '/api/v1';
-const USER_ID = 'default-user';
 
-// The main initializer function that the main app will call
-export function initializeFlashcardsFeature() {
-    // When the app starts, check if the flashcard view is active and populate the decks if needed.
-    // The main event listener for the tab is in dashboard_app.js, but this ensures it's ready.
+/**
+ * Main initializer for the Flashcards feature.
+ * @param {object} appState The global application state.
+ */
+export function initializeFlashcardsFeature(appState) {
+    state = appState;
     if (!document.getElementById('flashcard-view-container').classList.contains('hidden')) {
         populateDeckSelectorMenu();
     }
 }
 
-// --- All Flashcard-specific functions are moved here ---
-
 async function populateDeckSelectorMenu() {
     const dropdown = document.getElementById('deck-menu-dropdown');
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/stacks`);
+        // Use the userId from the global state
+        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`);
         const stacks = await response.json();
         dropdown.innerHTML = '';
         if (stacks.length > 0) {
@@ -42,7 +43,7 @@ async function startDeckStudySession(deckId, deckName) {
     const container = document.getElementById('flashcard-container');
     container.innerHTML = `<p>Loading deck: <strong>${deckName}</strong>...</p>`;
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/stacks/${deckId}/flashcards`);
+        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks/${deckId}/flashcards`);
         flashcardDeck = await response.json();
         if (flashcardDeck.length === 0) {
             container.innerHTML = `<div class="flashcard-placeholder"><p>This deck is empty.</p></div>`;
@@ -80,7 +81,6 @@ function renderCurrentFlashcard() {
 }
 
 async function handleFlashcardReview(outcome) {
-    // This function can be expanded with more sophisticated review logic
     currentCardIndex++;
     renderCurrentFlashcard();
 }

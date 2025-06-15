@@ -1,26 +1,24 @@
 // State and constants scoped to the Collections module
+let state = null; // Will hold the global appState
 let currentView = 'history';
 let selectedItems = new Set();
 const API_BASE_URL = '/api/v1';
-const USER_ID = 'default-user';
 
-// The main initializer function that the main app will call
-export function initializeCollectionsFeature() {
-    // Attach all event listeners for this feature
+/**
+ * Main initializer for the Collections feature.
+ * @param {object} appState The global application state.
+ */
+export function initializeCollectionsFeature(appState) {
+    state = appState;
     document.getElementById('show-lists-view').addEventListener('click', () => switchView('lists'));
     document.getElementById('show-history-view').addEventListener('click', () => switchView('history'));
     document.getElementById('create-list-button').addEventListener('click', handleCreateListClick);
     document.getElementById('main-delete-button').addEventListener('click', handleDeleteSelectedClick);
     document.getElementById('select-all-checkbox').addEventListener('click', handleSelectAllClick);
-
-    // Initial render of the middle pane
     renderMiddlePane();
 }
 
-// --- All Collections-specific functions are moved here ---
-
 function switchView(view) {
-    // This function now manages the state within this module
     currentView = view;
     document.getElementById('show-lists-view').classList.toggle('active', view === 'lists');
     document.getElementById('show-history-view').classList.toggle('active', view === 'history');
@@ -44,7 +42,7 @@ async function fetchAndDisplayStacks() {
     const container = document.getElementById('snippet-list-container');
     container.innerHTML = '<p>Loading lists...</p>';
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/stacks`);
+        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`);
         const stacks = await response.json();
         container.innerHTML = '';
         if (stacks.length === 0) { container.innerHTML = '<p>No lists created yet.</p>'; return; }
@@ -66,7 +64,7 @@ async function fetchAndDisplayHistory() {
     const container = document.getElementById('snippet-list-container');
     container.innerHTML = '<p>Loading history...</p>';
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/collected_items`);
+        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/collected_items`);
         const items = await response.json();
         container.innerHTML = '';
         if (items.length === 0) { container.innerHTML = '<p>No history yet.</p>'; return; }
@@ -91,7 +89,7 @@ async function fetchAndDisplayStackContent(stackId, stackName) {
     const container = document.getElementById('snippet-list-container');
     container.innerHTML = `<p>Loading content for <strong>${stackName}</strong>...</p>`;
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/stacks/${stackId}/flashcards`);
+        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks/${stackId}/flashcards`);
         const items = await response.json();
         const backButton = `<button class="back-button" onclick="document.getElementById('show-lists-view').click()">← Back to all lists</button>`;
         let listHTML = `<h4>Items in "${stackName}"</h4><ul class="collection-list">`;
@@ -112,7 +110,7 @@ async function handleCreateListClick() {
     const listName = prompt("Enter a name for your new list:");
     if (!listName || !listName.trim()) return;
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/stacks`, {
+        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ stack_name: listName.trim() })
@@ -162,7 +160,7 @@ async function handleDeleteSelectedClick() {
     if (!confirm(confirmMessage)) return;
 
     const deletePromises = Array.from(selectedItems).map(id => {
-        const endpoint = currentView === 'lists' ? `${API_BASE_URL}/users/${USER_ID}/stacks/${id}` : `${API_BASE_URL}/users/${USER_ID}/flashcards/${id}`;
+        const endpoint = currentView === 'lists' ? `${API_BASE_URL}/users/${state.userId}/stacks/${id}` : `${API_BASE_URL}/users/${state.userId}/flashcards/${id}`;
         return fetch(endpoint, { method: 'DELETE' });
     });
 

@@ -67,6 +67,7 @@
             <div class="pane-main-nav">
                 <button id="show-flashcard-view" class="pane-nav-button active">Flashcards</button>
                 <button id="show-notes-view" class="pane-nav-button">Notes</button>
+                <button id="show-media-search-view" class="pane-nav-button">Discover</button> 
             </div>
         
             <div id="flashcard-view-container" class="pane-view-content">
@@ -111,7 +112,38 @@
                     </div>
                 </div>
             </div>
+
+            <div id="media-search-view-container" class="pane-view-content hidden">
+                <div class="feature-container">
+                    <h3 class="p-3">Discover Videos & Podcasts</h3>
+                    <div class="custom-search-bar">
+                        <input type="text" id="media-search-input" name="media-search" class="custom-search-input" placeholder="Search for a topic...">
+                        <button class="custom-search-btn" type="button" id="media-search-button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div id="media-search-results" class="results-list">
+    <div id="search-status-message"></div>
+
+    <div id="fake-player-container" class="hidden p-3">
+        <div id="fake-player-screen" class="mb-2">
+            <span id="player-status-text">Stopped</span>
+        </div>
+        <div id="fake-player-controls" class="mb-3">
+            <button id="play-btn" class="btn btn-success"><i class="bi bi-play-fill"></i> Play</button>
+            <button id="stop-btn" class="btn btn-danger"><i class="bi bi-stop-fill"></i> Stop</button>
+            <button id="replay-btn" class="btn btn-secondary"><i class="bi bi-arrow-counterclockwise"></i> Replay</button>
+        </div>
+        <div>
+            <label class="form-label">Captions</label>
+            <div id="caption-box" class="p-3 border rounded" style="height: 200px; overflow-y: auto;">
             </div>
+        </div>
+    </div>
+</div>
+                </div>
+            </div>
+        </div> 
     </div>
 </div>
 {% endblock %}

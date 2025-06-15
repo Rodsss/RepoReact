@@ -1,0 +1,9 @@
+// In Frontend1/static/scss/main.scss
+
+// 1. Import your original layout styles first to form the base.
+@use 'layout';
+
+// 2. Import the new custom search bar styles.
+@use 'search-bar';
+
+// As you create more custom components, you will add them here.

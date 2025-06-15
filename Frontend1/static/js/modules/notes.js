@@ -1,23 +1,24 @@
 // State and constants scoped to the Notes module
+let state = null; // Will hold the global appState
 let currentNoteId = null;
 let currentFolderId = null;
 const API_BASE_URL = '/api/v1';
 
 /**
- * This is the main initializer function that the main app will call.
- * It sets up the main buttons for the notes feature.
+ * Main initializer for the Notes feature.
+ * @param {object} appState The global application state.
  */
-export function initializeNotesFeature() {
+export function initializeNotesFeature(appState) {
+    state = appState; // Store the global state
     document.getElementById('create-folder-btn').addEventListener('click', handleCreateFolderClick);
     document.getElementById('create-new-note-btn').addEventListener('click', handleNewNoteClick);
     initializeNotesEditor();
-    loadAndDisplayFolders(); // Initial load of the folder structure
+    loadAndDisplayFolders();
 }
 
-/**
- * Fetches all folders and builds the new accordion UI.
- * Each folder is a clickable header with a container for its notes.
- */
+// ... the rest of your notes.js functions remain the same ...
+// No other changes are needed in this file, as it was already well-structured.
+// Just ensure this initializeNotesFeature function signature is updated.
 async function loadAndDisplayFolders() {
     const listContainer = document.getElementById('notes-folder-list');
     listContainer.innerHTML = '<p>Loading folders...</p>';
@@ -33,7 +34,6 @@ async function loadAndDisplayFolders() {
         folders.forEach(f => {
             const folderItem = document.createElement('div');
             folderItem.className = 'folder-item';
-            // Each folder now has a header and a wrapper for its notes list
             folderItem.innerHTML = `
                 <div class="folder-header" data-folder-id="${f.folder_id}">
                     <span class="folder-icon">▶</span>
@@ -46,22 +46,17 @@ async function loadAndDisplayFolders() {
             const header = folderItem.querySelector('.folder-header');
             const notesWrapper = folderItem.querySelector('.notes-list-wrapper');
 
-            // Add click listener to the header to expand/collapse and load notes
             header.addEventListener('click', (e) => {
                 if (e.target.classList.contains('delete-item-btn')) return;
-
                 const isExpanded = header.classList.toggle('expanded');
                 notesWrapper.classList.toggle('expanded', isExpanded);
-
-                // Load notes only on the first time a folder is expanded
                 if (isExpanded && notesWrapper.childElementCount === 0) {
                     loadAndDisplayNotes(f.folder_id, notesWrapper);
                 }
             });
 
-            // Add click listener to the delete button
             folderItem.querySelector('.delete-item-btn').addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the header click event from firing
+                e.stopPropagation();
                 handleDeleteFolderClick(f.folder_id, f.folder_name);
             });
 
@@ -73,18 +68,13 @@ async function loadAndDisplayFolders() {
     }
 }
 
-/**
- * Fetches and displays the notes for a specific folder inside a target container.
- * @param {number} folderId The ID of the folder whose notes to load.
- * @param {HTMLElement} targetContainer The container element to render the notes into.
- */
 async function loadAndDisplayNotes(folderId, targetContainer) {
     currentFolderId = folderId;
     targetContainer.innerHTML = `<p style="padding: 10px; color: var(--secondary-text);">Loading notes...</p>`;
     try {
         const response = await fetch(`${API_BASE_URL}/folders/${folderId}/notes`);
         const notes = await response.json();
-        targetContainer.innerHTML = ''; // Clear loading message
+        targetContainer.innerHTML = '';
 
         if (notes.length === 0) {
             targetContainer.innerHTML = `<p style="padding: 10px; color: var(--secondary-text);">This folder is empty.</p>`;
@@ -124,7 +114,7 @@ async function handleCreateFolderClick() {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ folder_name: folderName.trim() })
         });
         if (!response.ok) throw new Error((await response.json()).detail);
-        loadAndDisplayFolders(); // Re-render the entire folder list
+        loadAndDisplayFolders();
     } catch (error) { alert(`Error creating folder: ${error.message}`); }
 }
 
@@ -133,7 +123,7 @@ async function handleDeleteFolderClick(folderId, folderName) {
     try {
         const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, { method: 'DELETE' });
         if (!response.ok) throw new Error("Failed to delete folder");
-        loadAndDisplayFolders(); // Re-render the entire folder list
+        loadAndDisplayFolders();
     } catch (error) { alert(error.message); }
 }
 
@@ -143,14 +133,12 @@ async function handleDeleteNoteClick(noteId, noteTitle, folderId) {
         const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, { method: 'DELETE' });
         if (!response.ok) throw new Error("Failed to delete note");
 
-        // If the deleted note was the one being edited, clear the editor
         if (currentNoteId === noteId) {
             currentNoteId = null;
             document.getElementById('note-editor').innerHTML = 'Select or create a note to begin...';
             document.getElementById('note-title-input').value = '';
         }
         
-        // Refresh the notes list for the parent folder
         const targetContainer = document.getElementById(`notes-for-folder-${folderId}`);
         if(targetContainer) {
             loadAndDisplayNotes(folderId, targetContainer);
@@ -188,9 +176,8 @@ async function saveNote() {
         if (!response.ok) throw new Error((await response.json()).detail);
         
         const savedNote = await response.json();
-        currentNoteId = savedNote.note_id; // Ensure currentNoteId is set after creation
+        currentNoteId = savedNote.note_id;
         
-        // Refresh the notes list in the parent folder to show the new/updated note title
         const targetContainer = document.getElementById(`notes-for-folder-${currentFolderId}`);
         if(targetContainer) {
              loadAndDisplayNotes(currentFolderId, targetContainer);
@@ -214,7 +201,7 @@ async function loadNoteIntoEditor(noteId) {
         titleInput.value = note.title || "Untitled Note";
         editor.innerHTML = note.content || "";
         currentNoteId = note.note_id;
-        currentFolderId = note.folder_id; // Also update the current folder context
+        currentFolderId = note.folder_id;
     } catch (error) {
         titleInput.value = 'Error'; 
         editor.innerHTML = '<p class="error-message">Could not load note.</p>';

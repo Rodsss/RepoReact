@@ -1,0 +1,65 @@
+// SCSS for a custom, minimalist search bar
+
+.custom-search-bar {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0.75rem; // Add some padding around the container
+}
+
+.custom-search-input {
+  // --- Form & Transparency ---
+  background-color: transparent;
+  border: none;
+  border-radius: 0; // Ensure sharp corners, no default rounding
+  
+  // --- The Bottom Line ---
+  border-bottom: 2px solid var(--border-color); // Default line color
+  
+  // --- Font & Text Styling ---
+  color: var(--main-text); // Color of the text the user types
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 8px 35px 8px 5px; // Top, Right, Bottom, Left padding. Right padding makes space for the button.
+  transition: border-color 0.3s ease; // Smooth transition for the focus effect
+
+  // --- Remove default browser outline on focus ---
+  &:focus {
+    outline: none;
+    // --- Line color changes on focus ---
+    border-bottom-color: var(--accent-color);
+  }
+
+  // --- Placeholder "Search Message" Styling ---
+  &::placeholder {
+    color: var(--secondary-text); // The grey color for the placeholder
+    opacity: 1; // Ensure it's fully visible on all browsers
+  }
+}
+
+.custom-search-btn {
+  // --- Position the button inside the input field area ---
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  // --- Transparency ---
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  
+  // --- Icon Styling ---
+  .bi-search {
+    font-size: 1.2rem;
+    // --- Icon Color ---
+    color: var(--secondary-text); // Start with a muted color
+    transition: color 0.3s ease;
+  }
+  
+  // --- Change icon color when hovering over the button ---
+  &:hover .bi-search {
+    color: var(--accent-color);
+  }
+}
