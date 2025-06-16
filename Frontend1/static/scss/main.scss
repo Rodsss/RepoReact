@@ -1,5 +1,8 @@
 // In Frontend1/static/scss/main.scss
 
+// Import variables first so they are available to all other partials
+@use 'variables';
+
 // 1. Import your original layout styles first to form the base.
 @use 'layout';
 

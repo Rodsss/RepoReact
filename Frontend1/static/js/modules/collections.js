@@ -1,171 +1,219 @@
-// State and constants scoped to the Collections module
-let state = null; // Will hold the global appState
-let currentView = 'history';
-let selectedItems = new Set();
+//
+// FILE: Frontend1/static/js/modules/collections.js (State-Driven Refactor)
+//
+let state = null;
+let renderApp = null;
 const API_BASE_URL = '/api/v1';
 
-/**
- * Main initializer for the Collections feature.
- * @param {object} appState The global application state.
- */
-export function initializeCollectionsFeature(appState) {
+// --- State Initializer ---
+function initializeState() {
+    if (!state.collections) {
+        state.collections = {
+            view: 'history', // 'lists', 'history', or 'stack_content'
+            items: [],
+            selectedItems: new Set(),
+            activeStackName: null,
+            isLoading: true
+        };
+    }
+}
+
+// --- Component Functions ---
+
+function StackItemComponent(stack) {
+    const isSelected = state.collections.selectedItems.has(stack.stack_id);
+    return `
+        <li class="collection-item stack-item">
+            <input type="checkbox" class="item-checkbox" data-id="${stack.stack_id}" data-type="stack" ${isSelected ? 'checked' : ''}>
+            <div class="item-content clickable" data-id="${stack.stack_id}">
+                <p><strong>${stack.stack_name}</strong></p>
+            </div>
+        </li>
+    `;
+}
+
+function HistoryItemComponent(item) {
+    const isSelected = state.collections.selectedItems.has(item.flashcard_id);
+    const textToShow = item.is_translation ? `"${item.original_text}" → "${item.front_text}"` : item.front_text;
+    return `
+        <li class="collection-item">
+            <input type="checkbox" class="item-checkbox" data-id="${item.flashcard_id}" data-type="flashcard" ${isSelected ? 'checked' : ''}>
+            <div class="item-content">
+                <p>${textToShow}</p>
+                <small>From: <a href="${item.source_url}" target="_blank" rel="noopener noreferrer">Source</a></small>
+            </div>
+        </li>
+    `;
+}
+
+function StackContentItemComponent(item) {
+    const isSelected = state.collections.selectedItems.has(item.flashcard_id);
+    return `
+        <li class="collection-item">
+            <input type="checkbox" class="item-checkbox" data-id="${item.flashcard_id}" data-type="flashcard" ${isSelected ? 'checked' : ''}>
+            <div class="item-content">
+                <p>${item.front_text}</p>
+            </div>
+        </li>
+    `;
+}
+
+// --- Main Rendering Logic ---
+
+export function renderCollections() {
+    const container = document.getElementById('snippet-list-container');
+    const header = document.querySelector('.dashboard-pane.pane-middle .pane-header');
+    if (!container || !header) return;
+
+    // Render Header
+    header.querySelector('#show-lists-view').classList.toggle('active', state.collections.view === 'lists');
+    header.querySelector('#show-history-view').classList.toggle('active', state.collections.view === 'history');
+    header.querySelector('#create-list-button').style.display = (state.collections.view === 'lists') ? 'inline-block' : 'none';
+    const deleteBtn = header.querySelector('#main-delete-button');
+    deleteBtn.classList.toggle('hidden', state.collections.selectedItems.size === 0);
+    deleteBtn.textContent = `Delete (${state.collections.selectedItems.size})`;
+
+    // Render Content
+    if (state.collections.isLoading) {
+        container.innerHTML = '<p>Loading...</p>';
+        return;
+    }
+
+    let contentHTML = '';
+    if (state.collections.view === 'stack_content') {
+        contentHTML += `<button class="btn-base btn-custom-outline mb-2" data-action="back-to-lists">← Back to all lists</button>`;
+        contentHTML += `<h4>Items in "${state.collections.activeStackName}"</h4>`;
+    }
+
+    if (state.collections.items.length === 0) {
+        contentHTML += '<p>Nothing to show here.</p>';
+    } else {
+        const itemRenderer = {
+            'lists': StackItemComponent,
+            'history': HistoryItemComponent,
+            'stack_content': StackContentItemComponent
+        }[state.collections.view];
+        contentHTML += `<ul class="collection-list">${state.collections.items.map(itemRenderer).join('')}</ul>`;
+    }
+    container.innerHTML = contentHTML;
+}
+
+// --- Event Handling and State Changes ---
+
+export function initializeCollectionsFeature(appState, mainRenderCallback) {
     state = appState;
-    document.getElementById('show-lists-view').addEventListener('click', () => switchView('lists'));
-    document.getElementById('show-history-view').addEventListener('click', () => switchView('history'));
-    document.getElementById('create-list-button').addEventListener('click', handleCreateListClick);
-    document.getElementById('main-delete-button').addEventListener('click', handleDeleteSelectedClick);
-    document.getElementById('select-all-checkbox').addEventListener('click', handleSelectAllClick);
-    renderMiddlePane();
+    renderApp = mainRenderCallback;
+    initializeState();
+    
+    document.querySelector('.dashboard-pane.pane-middle').addEventListener('click', handleCollectionEvents);
+    
+    // Initial data fetch
+    fetchHistory();
+}
+
+async function handleCollectionEvents(event) {
+    const action = event.target.dataset.action;
+    const id = event.target.dataset.id;
+
+    if (event.target.id === 'show-lists-view') switchView('lists');
+    else if (event.target.id === 'show-history-view') switchView('history');
+    else if (event.target.id === 'create-list-button') await handleCreateListClick();
+    else if (event.target.id === 'main-delete-button') await handleDeleteSelectedClick();
+    else if (event.target.id === 'select-all-checkbox') handleSelectAllClick(event.target.checked);
+    else if (event.target.classList.contains('item-checkbox')) handleItemSelection(event.target.checked, parseInt(id, 10));
+    else if (event.target.closest('.item-content.clickable')) handleStackClick(parseInt(event.target.closest('.item-content').dataset.id, 10));
+    else if (action === 'back-to-lists') switchView('lists');
 }
 
 function switchView(view) {
-    currentView = view;
-    document.getElementById('show-lists-view').classList.toggle('active', view === 'lists');
-    document.getElementById('show-history-view').classList.toggle('active', view === 'history');
-    document.getElementById('create-list-button').style.display = (view === 'lists') ? 'inline-block' : 'none';
-    clearSelectionsAndRender();
+    state.collections.view = view;
+    state.collections.selectedItems.clear();
+    if (view === 'lists') fetchStacks();
+    else if (view === 'history') fetchHistory();
 }
 
-function renderMiddlePane() {
-    if (currentView === 'lists') fetchAndDisplayStacks();
-    else if (currentView === 'history') fetchAndDisplayHistory();
-}
-
-function clearSelectionsAndRender() {
-    selectedItems.clear();
-    updateActionButtonsVisibility();
-    updateSelectAllCheckboxState();
-    renderMiddlePane();
-}
-
-async function fetchAndDisplayStacks() {
-    const container = document.getElementById('snippet-list-container');
-    container.innerHTML = '<p>Loading lists...</p>';
+async function fetchStacks() {
+    state.collections.isLoading = true;
+    renderApp();
     try {
         const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`);
-        const stacks = await response.json();
-        container.innerHTML = '';
-        if (stacks.length === 0) { container.innerHTML = '<p>No lists created yet.</p>'; return; }
-        const ul = document.createElement('ul');
-        ul.className = 'collection-list';
-        stacks.forEach(stack => {
-            const li = document.createElement('li');
-            li.className = 'collection-item stack-item';
-            li.innerHTML = `<input type="checkbox" class="item-checkbox" data-id="${stack.stack_id}"><div class="item-content clickable"><p><strong>${stack.stack_name}</strong></p></div>`;
-            li.querySelector('.item-content').addEventListener('click', () => fetchAndDisplayStackContent(stack.stack_id, stack.stack_name));
-            li.querySelector('.item-checkbox').addEventListener('change', (e) => handleItemSelection(e, stack.stack_id));
-            ul.appendChild(li);
-        });
-        container.appendChild(ul);
-    } catch (error) { container.innerHTML = '<p class="error-message">Error loading lists.</p>'; }
+        state.collections.items = await response.json();
+    } catch (e) { console.error(e); state.collections.items = []; }
+    state.collections.isLoading = false;
+    renderApp();
 }
 
-async function fetchAndDisplayHistory() {
-    const container = document.getElementById('snippet-list-container');
-    container.innerHTML = '<p>Loading history...</p>';
+async function fetchHistory() {
+    state.collections.isLoading = true;
+    renderApp();
     try {
         const response = await fetch(`${API_BASE_URL}/users/${state.userId}/collected_items`);
-        const items = await response.json();
-        container.innerHTML = '';
-        if (items.length === 0) { container.innerHTML = '<p>No history yet.</p>'; return; }
-        const ul = document.createElement('ul');
-        ul.className = 'collection-list';
-        items.forEach(item => {
-            const textToShow = item.is_translation ? `"${item.original_text}" → "${item.front_text}"` : item.front_text;
-            const li = document.createElement('li');
-            li.className = 'collection-item';
-            li.innerHTML = `<input type="checkbox" class="item-checkbox" data-id="${item.flashcard_id}"><div class="item-content"><p>${textToShow}</p><small>From: <a href="${item.source_url}" target="_blank">Source</a></small></div>`;
-            li.querySelector('.item-checkbox').addEventListener('change', (e) => handleItemSelection(e, item.flashcard_id));
-            ul.appendChild(li);
-        });
-        container.appendChild(ul);
-    } catch (error) { container.innerHTML = '<p class="error-message">Error loading history.</p>'; }
+        state.collections.items = await response.json();
+    } catch (e) { console.error(e); state.collections.items = []; }
+    state.collections.isLoading = false;
+    renderApp();
 }
 
-async function fetchAndDisplayStackContent(stackId, stackName) {
-    currentView = 'stack_content';
-    selectedItems.clear();
-    updateActionButtonsVisibility();
-    const container = document.getElementById('snippet-list-container');
-    container.innerHTML = `<p>Loading content for <strong>${stackName}</strong>...</p>`;
+async function handleStackClick(stackId) {
+    state.collections.view = 'stack_content';
+    state.collections.isLoading = true;
+    renderApp();
     try {
+        const stack = state.collections.items.find(s => s.stack_id === stackId);
+        state.collections.activeStackName = stack ? stack.stack_name : '';
         const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks/${stackId}/flashcards`);
-        const items = await response.json();
-        const backButton = `<button class="back-button" onclick="document.getElementById('show-lists-view').click()">← Back to all lists</button>`;
-        let listHTML = `<h4>Items in "${stackName}"</h4><ul class="collection-list">`;
-        if (items.length === 0) {
-            listHTML += '<li>This list is empty.</li>';
-        } else {
-            items.forEach(item => {
-                listHTML += `<li class="collection-item"><input type="checkbox" class="item-checkbox" data-id="${item.flashcard_id}"><div class="item-content"><p>${item.front_text}</p></div></li>`;
-            });
-        }
-        listHTML += `</ul>`;
-        container.innerHTML = backButton + listHTML;
-        container.querySelectorAll('.item-checkbox').forEach(cb => cb.addEventListener('change', (e) => handleItemSelection(e, cb.dataset.id)));
-    } catch (error) { container.innerHTML = '<p class="error-message">Error loading list content.</p>'; }
+        state.collections.items = await response.json();
+    } catch (e) { console.error(e); state.collections.items = []; }
+    state.collections.isLoading = false;
+    renderApp();
 }
 
 async function handleCreateListClick() {
     const listName = prompt("Enter a name for your new list:");
     if (!listName || !listName.trim()) return;
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`, {
+        await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ stack_name: listName.trim() })
         });
-        if (!response.ok) throw new Error((await response.json()).detail);
-        alert(`List "${listName}" created!`);
-        if (currentView === 'lists') renderMiddlePane();
+        fetchStacks(); // Refetch the list to update the view
     } catch (error) { alert(`Error: ${error.message}`); }
 }
 
-function handleItemSelection(event, id) {
-    const intId = parseInt(id, 10);
-    if (event.target.checked) selectedItems.add(intId); else selectedItems.delete(intId);
-    updateActionButtonsVisibility();
-    updateSelectAllCheckboxState();
+function handleItemSelection(isChecked, id) {
+    if (isChecked) state.collections.selectedItems.add(id);
+    else state.collections.selectedItems.delete(id);
+    renderApp();
 }
 
-function updateActionButtonsVisibility() {
-    const deleteBtn = document.getElementById('main-delete-button');
-    const hasSelection = selectedItems.size > 0;
-    deleteBtn.classList.toggle('hidden', !hasSelection);
-    if (hasSelection) deleteBtn.textContent = `Delete (${selectedItems.size})`;
-}
-
-function updateSelectAllCheckboxState() {
-    const selectAll = document.getElementById('select-all-checkbox');
-    const allCheckboxes = document.querySelectorAll('#snippet-list-container .item-checkbox');
-    if (allCheckboxes.length === 0) { selectAll.checked = false; selectAll.indeterminate = false; return; }
-    if (selectedItems.size === 0) { selectAll.checked = false; selectAll.indeterminate = false; }
-    else if (selectedItems.size === allCheckboxes.length) { selectAll.checked = true; selectAll.indeterminate = false; }
-    else { selectAll.checked = false; selectAll.indeterminate = true; }
-}
-
-function handleSelectAllClick(event) {
-    const checkboxes = document.querySelectorAll('#snippet-list-container .item-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = event.target.checked;
-        handleItemSelection({ target: checkbox }, checkbox.dataset.id);
-    });
+function handleSelectAllClick(isChecked) {
+    state.collections.selectedItems.clear();
+    if (isChecked) {
+        const type = state.collections.view === 'lists' ? 'stack_id' : 'flashcard_id';
+        state.collections.items.forEach(item => state.collections.selectedItems.add(item[type]));
+    }
+    renderApp();
 }
 
 async function handleDeleteSelectedClick() {
+    const { selectedItems, view } = state.collections;
     if (selectedItems.size === 0) return;
-    const confirmMessage = currentView === 'lists'
+    const confirmMessage = view === 'lists'
         ? `Delete ${selectedItems.size} list(s)? This deletes all flashcards inside.`
         : `Delete ${selectedItems.size} item(s)?`;
     if (!confirm(confirmMessage)) return;
 
+    const endpointType = view === 'lists' ? 'stacks' : 'flashcards';
     const deletePromises = Array.from(selectedItems).map(id => {
-        const endpoint = currentView === 'lists' ? `${API_BASE_URL}/users/${state.userId}/stacks/${id}` : `${API_BASE_URL}/users/${state.userId}/flashcards/${id}`;
-        return fetch(endpoint, { method: 'DELETE' });
+        return fetch(`${API_BASE_URL}/users/${state.userId}/${endpointType}/${id}`, { method: 'DELETE' });
     });
 
     try {
         await Promise.all(deletePromises);
-        if (currentView === 'stack_content') switchView('lists'); else clearSelectionsAndRender();
+        state.collections.selectedItems.clear();
+        if (view === 'lists') fetchStacks();
+        else if (view === 'history') fetchHistory();
+        else switchView('lists');
     } catch (error) { alert('An error occurred during deletion.'); }
 }

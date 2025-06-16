@@ -1,83 +1,92 @@
-// ===================================================================================
-//  IMPORTS
-// ===================================================================================
-import { initializeNotesFeature } from './modules/notes.js';
-import { initializeFlashcardsFeature } from './modules/flashcards.js';
-import { initializeCollectionsFeature } from './modules/collections.js';
-import { initializeMediaSearchFeature } from './modules/media_search.js';
+//
+// FILE: Frontend1/static/js/dashboard_app.js (Fully Refactored & Consolidated)
+//
 
-// ===================================================================================
-//  GLOBAL STATE & CONFIG
-// ===================================================================================
+// --- IMPORTS: Import INITIALIZER and RENDERER from all feature modules ---
+import { initializeNotesFeature, renderNotes } from './modules/notes.js';
+import { initializeFlashcardsFeature, renderFlashcards } from './modules/flashcards.js';
+import { initializeCollectionsFeature, renderCollections } from './modules/collections.js';
+import { initializeMediaSearchFeature, renderMediaSearch } from './modules/media_search.js';
+
+// --- GLOBAL STATE & CONFIG ---
 const API_BASE_URL = '/api/v1';
 
-/**
- * A central object to hold the application's shared state.
- */
 const appState = {
     userId: 'default-user',
-    collections: [],
-    currentNotes: [],
-    mediaSearchResults: []
+    // Each module will create and manage its own sub-state inside this object.
+    // e.g., state.notes = {...}, state.collections = {...}
 };
 
-// ===================================================================================
-//  MAIN INITIALIZATION
-// ===================================================================================
+// --- MAIN RENDER FUNCTION ---
+/**
+ * The single function that redraws the entire UI based on the current appState.
+ * It calls the specific render function from each module.
+ */
+function render() {
+    console.log("App state changed. Re-rendering UI...");
+    renderNotes(appState);
+    renderFlashcards(appState);
+    renderCollections(appState);
+    renderMediaSearch(appState);
+}
+
+// --- MAIN INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    // CRITICAL FIX: Pass the appState object to each module upon initialization
-    initializeNotesFeature(appState);
-    initializeFlashcardsFeature(appState);
-    initializeCollectionsFeature(appState);
-    initializeMediaSearchFeature(appState);
+    // Initialize all feature modules, passing them the state and the main render function
+    initializeNotesFeature(appState, render);
+    initializeFlashcardsFeature(appState, render);
+    initializeCollectionsFeature(appState, render);
+    initializeMediaSearchFeature(appState, render);
 
-    // Initialize event listeners for non-modularized features
-    document.getElementById('translate-button').addEventListener('click', handleOnPageTranslate);
-    document.getElementById('save-to-list-button').addEventListener('click', handleSaveToListClick);
+    // Initialize event listeners for any remaining non-modularized features
+    const translateButton = document.getElementById('translate-button');
+    if (translateButton) {
+        translateButton.addEventListener('click', handleOnPageTranslate);
+    }
+    
+    const saveToListButton = document.getElementById('save-to-list-button');
+    if(saveToListButton) {
+        saveToListButton.addEventListener('click', handleSaveToListClick);
+    }
 
-    // Set up event listeners for right-pane tab switching
+    // Set up event listeners for the main right-pane tab switching
     document.getElementById('show-flashcard-view').addEventListener('click', () => switchRightPaneView('flashcards'));
     document.getElementById('show-notes-view').addEventListener('click', () => switchRightPaneView('notes'));
     document.getElementById('show-media-search-view').addEventListener('click', () => switchRightPaneView('media'));
 
     // Initial Page Setup
     populateTextboxFromUrl();
-    fetchAndPopulateStacksDropdown();
-    switchRightPaneView('flashcards');
+    fetchAndPopulateStacksDropdown(); // This function still manually manipulates the DOM for the translate pane
+    switchRightPaneView('flashcards'); // Set the default view
 });
 
 
-// ===================================================================================
-//  VIEW & PANE MANAGEMENT (Global)
-// ===================================================================================
-/**
- * Manages the visibility of content panes on the right side of the dashboard.
- * @param {'flashcards' | 'notes' | 'media'} viewToShow The view to make visible.
- */
+// === LEGACY & GLOBAL FUNCTIONS ===
+// These functions are still needed for parts of the UI we haven't refactored yet,
+// or for global actions like switching panes.
+
 function switchRightPaneView(viewToShow) {
+    const dashboardContainer = document.querySelector('.dashboard-container');
     const flashcardContainer = document.getElementById('flashcard-view-container');
     const notesContainer = document.getElementById('notes-view-container');
     const mediaContainer = document.getElementById('media-search-view-container');
-
     const flashcardButton = document.getElementById('show-flashcard-view');
     const notesButton = document.getElementById('show-notes-view');
     const mediaButton = document.getElementById('show-media-search-view');
 
-    // Toggle 'active' class on buttons based on the selected view
-    flashcardButton.classList.toggle('active', viewToShow === 'flashcards');
-    notesButton.classList.toggle('active', viewToShow === 'notes');
-    mediaButton.classList.toggle('active', viewToShow === 'media');
+    if (dashboardContainer) {
+        dashboardContainer.classList.toggle('discover-mode-active', viewToShow === 'media');
+    }
 
-    // Toggle 'hidden' class on content containers
-    flashcardContainer.classList.toggle('hidden', viewToShow !== 'flashcards');
-    notesContainer.classList.toggle('hidden', viewToShow !== 'notes');
-    mediaContainer.classList.toggle('hidden', viewToShow !== 'media');
+    if (flashcardButton) flashcardButton.classList.toggle('active', viewToShow === 'flashcards');
+    if (notesButton) notesButton.classList.toggle('active', viewToShow === 'notes');
+    if (mediaButton) mediaButton.classList.toggle('active', viewToShow === 'media');
+
+    if (flashcardContainer) flashcardContainer.classList.toggle('hidden', viewToShow !== 'flashcards');
+    if (notesContainer) notesContainer.classList.toggle('hidden', viewToShow !== 'notes');
+    if (mediaContainer) mediaContainer.classList.toggle('hidden', viewToShow !== 'media');
 }
 
-
-// ===================================================================================
-//  TRANSLATE PANE
-// ===================================================================================
 async function handleOnPageTranslate() {
     const input = document.getElementById('translate-input');
     const output = document.getElementById('translate-output');
@@ -120,22 +129,26 @@ async function handleSaveToListClick() {
 }
 
 function populateTextboxFromUrl() {
-    const text = new URLSearchParams(window.location.search).get('text');
-    if (text) document.getElementById('translate-input').value = text;
+    const params = new URLSearchParams(window.location.search);
+    const text = params.get('text');
+    if (text) {
+        const translateInput = document.getElementById('translate-input');
+        if (translateInput) translateInput.value = text;
+    }
 }
 
-/**
- * Fetches the user's collections/stacks from the API, updates the global state,
- * and populates the dropdown menu in the Translate pane.
- */
 async function fetchAndPopulateStacksDropdown() {
     const dropdown = document.getElementById('stack-select-dropdown');
+    if (!dropdown) return;
     try {
         const response = await fetch(`${API_BASE_URL}/users/${appState.userId}/stacks`);
         const stacks = await response.json();
-        appState.collections = stacks;
+        
+        // This function still manually updates the DOM, but that's okay for now.
+        appState.collections.stacks = stacks; // Also update state
+        
         dropdown.innerHTML = '<option value="" disabled selected>Select a list</option>';
-        appState.collections.forEach(s => {
+        stacks.forEach(s => {
             dropdown.innerHTML += `<option value="${s.stack_id}">${s.stack_name}</option>`;
         });
     } catch (error) {

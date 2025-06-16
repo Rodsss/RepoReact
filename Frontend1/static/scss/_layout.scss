@@ -1,20 +1,8 @@
-/* === FINAL CONSOLIDATED STYLESHEET (Theme + Layout) === */
+/* === FINAL CONSOLIDATED STYLESHEET: LAYOUT & COMPONENTS === */
 
-/* --- 1. Variables & Base Theme --- */
-:root {
-    --primary-bg: #1a1a2e;
-    --pane-bg: #16213e;
-    --sidebar-bg: #0f192a;
-    --sidebar-text: #e0e0e0;
-    --sidebar-active-bg: #e94560;
-    --main-text: #e0e0e0;
-    --secondary-text: #a8a8a8;
-    --border-color: #4a4a58;
-    --accent-color: Sass
-    --success-color: #262a9c;
-    --danger-color: #c0392b;
-}
+/* Note: The :root block with variables should now be in _variables.scss */
 
+/* --- Base Styles --- */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
@@ -29,11 +17,9 @@ h1, h2, h3, h4 { color: #ffffff; font-weight: 300; }
 a { color: var(--accent-color); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* --- 2. Main Layout (Sidebar + Main Content) --- */
+/* --- Main Layout --- */
 .sidebar {
-    position: fixed; 
-    top: 0;          
-    left: 0;         
+    position: fixed; top: 0; left: 0;
     width: 220px;
     height: 100vh;
     background: var(--sidebar-bg);
@@ -43,26 +29,46 @@ a:hover { text-decoration: underline; }
     transition: width 0.3s ease-in-out;
     z-index: 1000;
 }
-
 .main-content {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    position: absolute; top: 0; right: 0; bottom: 0;
     left: 220px;
     height: 100vh;
     transition: left 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
 }
-
 .sidebar.collapsed { width: 60px; }
-
-.main-content.collapsed {
-    left: 60px;
+.main-content.collapsed { left: 60px; }
+.content-wrapper { padding: 1rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+.workspace-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+}
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 350px 0.8fr 2.2fr;
+    gap: 1rem;
+    flex-grow: 1;
+    overflow: hidden;
+    transition: grid-template-columns 0.4s ease;
+}
+.dashboard-pane {
+    background: var(--pane-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.scrollable-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
-/* --- 3. Sidebar Content --- */
+/* --- Sidebar Content --- */
 .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
 .sidebar .nav-link {
     display: flex;
@@ -91,46 +97,78 @@ a:hover { text-decoration: underline; }
 }
 .sidebar.collapsed #sidebar-toggle { transform: rotate(180deg); }
 
-/* --- 4. Workspace & Main Dashboard Panes --- */
-.content-wrapper { padding: 1rem; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
-.workspace-container {
+
+/* === Generic Component Styles === */
+.pane-header {
     display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    min-height: 0;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 10px;
 }
-
-.dashboard-container {
-    display: grid;
-    grid-template-columns: 350px 1fr 2fr;
-    gap: 1rem;
-    flex-grow: 1;
-    overflow: hidden;
-    transition: grid-template-columns 0.4s ease;
-}
-
-.dashboard-pane {
-    background: var(--pane-bg);
-    border-radius: 8px;
-    padding: 1rem;
+.collection-item {
     display: flex;
-    flex-direction: column;
-    overflow-y: auto;
+    align-items: left;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
-.scrollable-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 10px;
+.collection-item .item-content.clickable:hover { color: var(--accent-color); cursor: pointer; }
+
+
+/*
+========================================
+UNIFIED BUTTON STYLES (Final Version)
+========================================
+*/
+.btn-base {
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.btn-custom-outline {
+    background: transparent;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+.btn-custom-outline:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+.btn-custom-filled {
+    background-color: #4a4a58;
+    color: white;
+    border-color: #4a4a58;
+}
+.btn-custom-filled:hover {
+    filter: brightness(1.2);
+}
+.btn-custom-danger {
+    background-color: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+}
+.btn-custom-danger:hover {
+    filter: brightness(1.2);
 }
 
-/* === 5. Right Pane Feature Navigation (Flashcards & Notes Tabs) === */
+
+/* === Right Pane Feature Navigation === */
 .pane-main-nav {
     display: flex;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 1rem;
     flex-shrink: 0;
 }
-
 .pane-nav-button {
     flex-grow: 1;
     background-color: transparent;
@@ -142,26 +180,14 @@ a:hover { text-decoration: underline; }
     transition: all 0.2s ease-in-out;
     font-size: 1rem;
 }
-
-.pane-nav-button:hover {
-    color: var(--main-text);
-}
-
+.pane-nav-button:hover { color: var(--main-text); }
 .pane-nav-button.active {
     color: var(--accent-color);
     border-bottom-color: var(--accent-color);
 }
 
-.pane-view-content {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    min-height: 0;
-}
 
-/* === 6. Notes Feature Styles === */
-
-/* --- Notes Main Layout --- */
+/* === Notes Feature Styles === */
 .notes-workspace {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -169,7 +195,6 @@ a:hover { text-decoration: underline; }
     flex-grow: 1;
     overflow: hidden;
 }
-
 .notes-sidebar, .notes-main-content {
     display: flex;
     flex-direction: column;
@@ -177,7 +202,6 @@ a:hover { text-decoration: underline; }
     border-radius: 5px;
     overflow: hidden;
 }
-
 .notes-sidebar-header {
     display: flex;
     justify-content: space-between;
@@ -186,15 +210,12 @@ a:hover { text-decoration: underline; }
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
-
-/* --- Notes Action Buttons --- */
 .notes-actions-section {
     display: flex;
     gap: 10px;
     padding: 10px 15px;
     border-bottom: 1px solid var(--border-color);
 }
-
 .action-button {
     display: flex;
     align-items: center;
@@ -210,23 +231,18 @@ a:hover { text-decoration: underline; }
     text-align: center;
     transition: all 0.2s ease-in-out;
 }
-
 .action-button:hover {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
     color: #fff;
 }
-
 .action-button .icon {
     margin-right: 8px;
     font-size: 1.1em;
 }
-
-/* --- Accordion Folder Styles --- */
 .folder-item {
     border-bottom: 1px solid var(--border-color);
 }
-
 .folder-header {
     display: flex;
     justify-content: space-between;
@@ -235,30 +251,24 @@ a:hover { text-decoration: underline; }
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
 }
-
 .folder-header:hover {
     background-color: #2c3a58;
 }
-
 .folder-header.active {
     background-color: var(--accent-color);
     color: white;
 }
-
 .folder-name {
     font-weight: bold;
     flex-grow: 1;
 }
-
 .folder-icon {
     margin-right: 10px;
     transition: transform 0.2s ease-in-out;
 }
-
 .folder-header.expanded .folder-icon {
     transform: rotate(90deg);
 }
-
 .notes-list-wrapper {
     padding-left: 20px;
     background-color: #1a243b;
@@ -266,13 +276,10 @@ a:hover { text-decoration: underline; }
     overflow: hidden;
     transition: max-height 0.3s ease-out;
 }
-
 .notes-list-wrapper.expanded {
     max-height: 500px;
     transition: max-height 0.5s ease-in;
 }
-
-/* --- Note Editor Styles --- */
 .notes-toolbar {
     display: flex;
     align-items: center;
@@ -282,7 +289,6 @@ a:hover { text-decoration: underline; }
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
-
 .notes-tool-button, .notes-tool-item {
     background-color: var(--pane-bg);
     border: 1px solid var(--border-color);
@@ -291,34 +297,24 @@ a:hover { text-decoration: underline; }
     padding: 5px 10px;
     cursor: pointer;
 }
-
 .notes-tool-button:hover {
     border-color: var(--accent-color);
 }
-
 #notes-save-btn {
-    background-color: var(--success-color); /* Corrected */
-    color: white;
-    border-color: var(--success-color); /* Corrected */
     font-weight: bold;
 }
-
 #notes-save-btn:hover {
     filter: brightness(1.15);
 }
-
 #notes-save-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     background-color: var(--secondary-text);
-    
 }
-
 #notes-save-btn .icon {
     margin-right: 6px;
     font-weight: bold;
 }
-
 #note-context-header {
     padding: 8px 15px;
     background-color: var(--sidebar-bg);
@@ -326,12 +322,10 @@ a:hover { text-decoration: underline; }
     font-size: 0.9rem;
     border-bottom: 1px solid var(--border-color);
 }
-
 #note-context-header span {
     font-weight: bold;
-    color:#007bff
+    color: #007bff;
 }
-
 #note-editor {
     padding: 1rem;
     font-size: 16px;
@@ -339,16 +333,13 @@ a:hover { text-decoration: underline; }
     flex-grow: 1;
     overflow-y: auto;
 }
-
 #note-editor:focus {
     outline: none;
 }
-
 #note-title-input-container { 
     padding: 10px 15px; 
     border-bottom: 1px solid #4a4e54; 
 }
-
 #note-title-input { 
     width: 100%; 
     font-size: 1.4em; 
@@ -358,56 +349,9 @@ a:hover { text-decoration: underline; }
     color: #fff; 
     padding: 5px 0; 
 }
-
 #note-title-input:focus { 
     outline: none; 
 }
-
-
-/* === 7. Generic Component Styles === */
-.pane-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 10px;
-}
-
-/*notes folders list*/
-.collection-item {
-    display: flex;
-    align-items: left;
-    gap: 10px;
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-.collection-item .item-content.clickable:hover { color: var(--accent-color); cursor: pointer; }
-
-/* General button styles, can be overridden by specific IDs */
-button, .tool-button {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-button:hover, .tool-button:hover {
-    filter: brightness(1.1);
-}
-button.secondary-action {
-    background-color: #4a4a58;
-}
-button.danger-button {
-    background-color: var(--danger-color);
-}
-.back-button {
-    margin-bottom: 1rem;
-}
-
-/* Styles for individual note items in the accordion list */
 .notes-list-item { 
     display: flex; 
     justify-content: space-between; 
@@ -429,7 +373,7 @@ button.danger-button {
     background-color: #3a3f44; 
 }
 .notes-list-item a.active { 
-    background-color: #007bff; 
+    background-color: var(--accent-color); 
     color: white; 
     border-radius: 4px; 
 }
@@ -447,12 +391,12 @@ button.danger-button {
     visibility: visible; 
 }
 .delete-item-btn:hover { 
-    background-color: #c82333; 
+    background-color: var(--danger-color); 
     color: white; 
 }
 
 
-/* === 8. Flashcard Feature Specific Styles === */
+/* === Flashcard Feature Styles === */
 #flashcard-container { display: flex; flex-direction: column; align-items: center; padding-top: 2rem; }
 .flashcard { background-color: transparent; width: 90%; max-width: 400px; height: 250px; perspective: 1000px; }
 .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); border-radius: 10px; }
@@ -463,7 +407,6 @@ button.danger-button {
 .flashcard-controls { margin-top: 1.5rem; display: flex; gap: 1rem; }
 .flashcard-progress { margin-top: 1rem; color: var(--secondary-text); }
 .flashcard-placeholder { text-align: center; color: var(--secondary-text); }
-
 #deck-selector-menu {
     position: sticky;
     top: 0;
@@ -474,7 +417,6 @@ button.danger-button {
     margin: -1rem -1rem 1rem -1rem;
     padding: 10px 15px;
 }
-
 .action-dropdown {
     position: absolute;
     top: 100%;
@@ -488,7 +430,6 @@ button.danger-button {
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
-
 .action-dropdown a {
     display: block;
     padding: 8px 12px;
@@ -496,11 +437,50 @@ button.danger-button {
     text-decoration: none;
     border-bottom: 1px solid #4a4e54;
 }
-
 .action-dropdown a:hover {
     background-color: #4a4e54;
 }
-
 .action-dropdown a:last-child {
     border-bottom: none;
+}
+
+
+/* === DISCOVER FEATURE STYLES === */
+#fake-player-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+#fake-player-screen, #fake-player-controls {
+    flex-shrink: 0;
+}
+.caption-wrapper {
+    flex-grow: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+#caption-box {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+#fake-player-screen {
+    height: 360px;
+    background-color: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    border-radius: 8px;
+}
+#caption-box p {
+    transition: background-color 0.2s ease-in-out;
+    padding: 4px;
+    border-radius: 4px;
+}
+#caption-box p.active-caption {
+    background-color: var(--accent-color);
+    color: #fff;
 }

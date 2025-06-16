@@ -1,0 +1,25 @@
+{
+  "name": "putorepo",
+  "version": "1.0.0",
+  "description": "hello putorepo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sass": "sass Frontend1/static/scss/main.scss Frontend1/static/css/main_style.css --watch"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rodsss/putorepo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rodsss/putorepo/issues"
+  },
+  "homepage": "https://github.com/Rodsss/putorepo#readme",
+  "devDependencies": {
+    "sass": "^1.89.2"
+  }
+}

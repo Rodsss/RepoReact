@@ -1,4 +1,3 @@
-/* === FINAL CONSOLIDATED STYLESHEET (Theme + Layout) === */
 /* --- 1. Variables & Base Theme --- */
 :root {
   --primary-bg: #1a1a2e;
@@ -9,11 +8,14 @@
   --main-text: #e0e0e0;
   --secondary-text: #a8a8a8;
   --border-color: #4a4a58;
-  --accent-color: Sass
-  --success-color: #262a9c;
+  --accent-color: #e94560;
+  --success-color: var(--accent-color); /* Now "success" uses your theme color */
   --danger-color: #c0392b;
 }
 
+/* === FINAL CONSOLIDATED STYLESHEET: LAYOUT & COMPONENTS === */
+/* Note: The :root block with variables should now be in _variables.scss */
+/* --- Base Styles --- */
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   margin: 0;
@@ -41,7 +43,7 @@ a:hover {
   text-decoration: underline;
 }
 
-/* --- 2. Main Layout (Sidebar + Main Content) --- */
+/* --- Main Layout --- */
 .sidebar {
   position: fixed;
   top: 0;
@@ -76,7 +78,46 @@ a:hover {
   left: 60px;
 }
 
-/* --- 3. Sidebar Content --- */
+.content-wrapper {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 350px 0.8fr 2.2fr;
+  gap: 1rem;
+  flex-grow: 1;
+  overflow: hidden;
+  transition: grid-template-columns 0.4s ease;
+}
+
+.dashboard-pane {
+  background: var(--pane-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.scrollable-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* --- Sidebar Content --- */
 .sidebar nav ul {
   list-style: none;
   padding: 0;
@@ -129,47 +170,80 @@ a:hover {
   transform: rotate(180deg);
 }
 
-/* --- 4. Workspace & Main Dashboard Panes --- */
-.content-wrapper {
-  padding: 1rem;
+/* === Generic Component Styles === */
+.pane-header {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
 }
 
-.workspace-container {
+.collection-item {
   display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  min-height: 0;
+  align-items: left;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.dashboard-container {
-  display: grid;
-  grid-template-columns: 350px 1fr 2fr;
-  gap: 1rem;
-  flex-grow: 1;
-  overflow: hidden;
-  transition: grid-template-columns 0.4s ease;
+.collection-item .item-content.clickable:hover {
+  color: var(--accent-color);
+  cursor: pointer;
 }
 
-.dashboard-pane {
-  background: var(--pane-bg);
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
+/*
+========================================
+UNIFIED BUTTON STYLES (Final Version)
+========================================
+*/
+.btn-base {
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.scrollable-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding-right: 10px;
+.btn-custom-outline {
+  background: transparent;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
-/* === 5. Right Pane Feature Navigation (Flashcards & Notes Tabs) === */
+.btn-custom-outline:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.btn-custom-filled {
+  background-color: #4a4a58;
+  color: white;
+  border-color: #4a4a58;
+}
+
+.btn-custom-filled:hover {
+  filter: brightness(1.2);
+}
+
+.btn-custom-danger {
+  background-color: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.btn-custom-danger:hover {
+  filter: brightness(1.2);
+}
+
+/* === Right Pane Feature Navigation === */
 .pane-main-nav {
   display: flex;
   border-bottom: 1px solid var(--border-color);
@@ -198,15 +272,7 @@ a:hover {
   border-bottom-color: var(--accent-color);
 }
 
-.pane-view-content {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  min-height: 0;
-}
-
-/* === 6. Notes Feature Styles === */
-/* --- Notes Main Layout --- */
+/* === Notes Feature Styles === */
 .notes-workspace {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -232,7 +298,6 @@ a:hover {
   flex-shrink: 0;
 }
 
-/* --- Notes Action Buttons --- */
 .notes-actions-section {
   display: flex;
   gap: 10px;
@@ -267,7 +332,6 @@ a:hover {
   font-size: 1.1em;
 }
 
-/* --- Accordion Folder Styles --- */
 .folder-item {
   border-bottom: 1px solid var(--border-color);
 }
@@ -317,7 +381,6 @@ a:hover {
   transition: max-height 0.5s ease-in;
 }
 
-/* --- Note Editor Styles --- */
 .notes-toolbar {
   display: flex;
   align-items: center;
@@ -342,9 +405,6 @@ a:hover {
 }
 
 #notes-save-btn {
-  background-color: var(--success-color); /* Corrected */
-  color: white;
-  border-color: var(--success-color); /* Corrected */
   font-weight: bold;
 }
 
@@ -407,58 +467,6 @@ a:hover {
   outline: none;
 }
 
-/* === 7. Generic Component Styles === */
-.pane-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 10px;
-}
-
-/*notes folders list*/
-.collection-item {
-  display: flex;
-  align-items: left;
-  gap: 10px;
-  padding: 10px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.collection-item .item-content.clickable:hover {
-  color: var(--accent-color);
-  cursor: pointer;
-}
-
-/* General button styles, can be overridden by specific IDs */
-button, .tool-button {
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:hover, .tool-button:hover {
-  filter: brightness(1.1);
-}
-
-button.secondary-action {
-  background-color: #4a4a58;
-}
-
-button.danger-button {
-  background-color: var(--danger-color);
-}
-
-.back-button {
-  margin-bottom: 1rem;
-}
-
-/* Styles for individual note items in the accordion list */
 .notes-list-item {
   display: flex;
   justify-content: space-between;
@@ -483,7 +491,7 @@ button.danger-button {
 }
 
 .notes-list-item a.active {
-  background-color: #007bff;
+  background-color: var(--accent-color);
   color: white;
   border-radius: 4px;
 }
@@ -504,11 +512,11 @@ button.danger-button {
 }
 
 .delete-item-btn:hover {
-  background-color: #c82333;
+  background-color: var(--danger-color);
   color: white;
 }
 
-/* === 8. Flashcard Feature Specific Styles === */
+/* === Flashcard Feature Styles === */
 #flashcard-container {
   display: flex;
   flex-direction: column;
@@ -623,6 +631,52 @@ button.danger-button {
   border-bottom: none;
 }
 
+/* === DISCOVER FEATURE STYLES === */
+#fake-player-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#fake-player-screen, #fake-player-controls {
+  flex-shrink: 0;
+}
+
+.caption-wrapper {
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#caption-box {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+#fake-player-screen {
+  height: 360px;
+  background-color: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  border-radius: 8px;
+}
+
+#caption-box p {
+  transition: background-color 0.2s ease-in-out;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+#caption-box p.active-caption {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
 .custom-search-bar {
   display: flex;
   align-items: center;
@@ -670,28 +724,3 @@ button.danger-button {
 }
 
 /*# sourceMappingURL=main_style.css.map */
-
-/* Styles for the new fake player */
-#fake-player-screen {
-  height: 360px;
-  background-color: #000;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
-  border-radius: 8px;
-}
-
-#caption-box p {
-  transition: background-color 0.2s ease-in-out;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-/* This class will be added by JS to highlight the current caption */
-#caption-box p.active-caption {
-  background-color: var(--accent-color);
-  color: #fff;
-}

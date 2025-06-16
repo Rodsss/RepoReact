@@ -1,100 +1,145 @@
 //
-// FILE: Frontend1/static/js/modules/media_search.js (Final Corrected Version)
+// FILE: Frontend1/static/js/modules/media_search.js (State-Driven Refactor)
 //
 let state = null;
+let renderApp = null; // A reference to the main render function
+
 const API_BASE_URL = '/api/v1';
 
-let playerInterval = null;
-let currentTranscript = [];
-let playbackTime = 0;
+// --- Reusable Component Functions ---
 
-export function initializeMediaSearchFeature(appState) {
+/**
+ * Component to display a status message (e.g., "Searching..." or "No results").
+ * @param {string} message - The message to display.
+ * @returns {string} - The HTML string for the component.
+ */
+function StatusMessageComponent(message) {
+    return `<p class="p-3">${message}</p>`;
+}
+
+/**
+ * Component for the fake player, including its controls and caption box.
+ * @param {object} videoData - The data for the video to be displayed.
+ * @returns {string} - The HTML string for the component.
+ */
+function FakePlayerComponent(videoData) {
+    // Note: The IDs are now gone from the buttons, we'll add listeners differently.
+    return `
+        <div id="fake-player-container" class="p-3">
+            <div id="fake-player-screen" class="mb-2">
+                <span id="player-status-text">Stopped</span>
+            </div>
+            <div id="fake-player-controls" class="mb-3">
+                <button class="btn-base btn-custom-outline" data-action="play">
+                    <i class="bi bi-play-fill"></i><span>Play</span>
+                </button>
+                <button class="btn-base btn-custom-outline" data-action="stop">
+                    <i class="bi bi-stop-fill"></i><span>Stop</span>
+                </button>
+                <button class="btn-base btn-custom-outline" data-action="replay">
+                    <i class="bi bi-arrow-counterclockwise"></i><span>Replay</span>
+                </button>
+            </div>
+            <div class="caption-wrapper">
+                <label class="form-label">Captions</label>
+                <div id="caption-box" class="p-3 border rounded" style="height: 100%; font-size: 16px;">
+                    ${(videoData.transcript || []).map(line => `<p data-start="${line.start}">${line.text}</p>`).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+
+// --- Main Rendering Logic for this Module ---
+
+/**
+ * This function is exported to be called by the main app's render cycle.
+ * It decides what to render inside the #media-search-results container.
+ */
+export function renderMediaSearch() {
+    const container = document.getElementById('media-search-results');
+    if (!container) return;
+
+    if (state.searchStatus === 'loading') {
+        container.innerHTML = StatusMessageComponent('Searching...');
+    } else if (state.searchStatus === 'success' && state.mediaSearchResults.length > 0) {
+        container.innerHTML = FakePlayerComponent(state.mediaSearchResults[0]);
+        // After rendering the player, we must attach listeners to its new buttons.
+        attachPlayerEventListeners();
+    } else {
+        container.innerHTML = StatusMessageComponent('No results found.');
+    }
+}
+
+
+// --- Event Handling and State Changes ---
+
+/**
+ * Initializes the media search feature.
+ * @param {object} appState - The global application state object.
+ * @param {function} mainRenderCallback - A reference to the main app's render function.
+ */
+export function initializeMediaSearchFeature(appState, mainRenderCallback) {
     state = appState;
+    renderApp = mainRenderCallback; // Store the callback
+    state.searchStatus = 'idle'; // Initial status
+
     document.getElementById('media-search-button').addEventListener('click', handleMediaSearch);
 }
 
 async function handleMediaSearch() {
-    const searchInput = document.getElementById('media-search-input');
-    const query = searchInput.value.trim();
+    const query = document.getElementById('media-search-input').value.trim();
+    if (!query) return;
+
+    // 1. Update state to "loading" and re-render to show the message
+    state.searchStatus = 'loading';
+    renderApp();
     
-    // Use the new, safe message container
-    const statusMessage = document.getElementById('search-status-message');
-    
-    statusMessage.innerHTML = '<p class="p-3">Searching...</p>';
+    // Stop any previous playback simulation
     stopPlayback();
-    document.getElementById('fake-player-container').classList.add('hidden'); // Hide old results
 
     try {
         const response = await fetch(`${API_BASE_URL}/media-search?query=${encodeURIComponent(query)}`);
         const results = await response.json();
         
-        statusMessage.innerHTML = ''; // Clear "Searching..." message
+        // 2. Update state with results and call render again
+        state.mediaSearchResults = results;
+        state.searchStatus = 'success';
+        renderApp();
 
-        if (results && results.length > 0) {
-            displayFakePlayer(results[0]);
-        } else {
-            statusMessage.innerHTML = '<p class="p-3">No results found.</p>';
-        }
     } catch (error) {
         console.error('Failed to fetch media search results:', error);
-        statusMessage.innerHTML = '<p class="p-3 text-danger">Sorry, an error occurred.</p>';
+        state.searchStatus = 'error';
+        renderApp();
     }
 }
 
-function displayFakePlayer(videoData) {
-    const playerContainer = document.getElementById('fake-player-container');
-    if (!playerContainer) {
-        console.error("Critical Error: The #fake-player-container HTML element could not be found.");
-        return; 
-    }
-    
-    playerContainer.classList.remove('hidden');
-    currentTranscript = videoData.transcript || [];
-    
-    populateCaptions(currentTranscript);
-    setupFakePlayerControls();
-    updatePlayerStatusText('Stopped');
-}
+// --- Fake Player Logic (needs to be attached after rendering) ---
 
-function populateCaptions(transcript) {
-    const captionBox = document.getElementById('caption-box');
-    captionBox.innerHTML = transcript.map(line => 
-        `<p data-start="${line.start}">${line.text}</p>`
-    ).join('');
-}
+let playerInterval = null;
+let playbackTime = 0;
 
-function setupFakePlayerControls() {
-    document.getElementById('play-btn').onclick = startPlayback;
-    document.getElementById('stop-btn').onclick = stopPlayback;
-    document.getElementById('replay-btn').onclick = replayPlayback;
+function attachPlayerEventListeners() {
+    document.querySelector('[data-action="play"]').addEventListener('click', startPlayback);
+    document.querySelector('[data-action="stop"]').addEventListener('click', stopPlayback);
+    document.querySelector('[data-action="replay"]').addEventListener('click', replayPlayback);
 }
 
 function startPlayback() {
     if (playerInterval) return;
-
     updatePlayerStatusText('Playing...');
-    
     playerInterval = setInterval(() => {
         playbackTime += 1;
         updatePlayerStatusText(`Playing... (${playbackTime}s)`);
         highlightCurrentCaption();
-
-        const lastCaptionTime = currentTranscript.length > 0 ? currentTranscript[currentTranscript.length - 1].start : 0;
-        if (playbackTime > lastCaptionTime + 3) {
-            stopPlayback();
-            updatePlayerStatusText('Finished');
-        }
     }, 1000);
 }
 
 function stopPlayback() {
     clearInterval(playerInterval);
     playerInterval = null;
-    if (playbackTime > 0) {
-        updatePlayerStatusText(`Paused (${playbackTime}s)`);
-    } else {
-        updatePlayerStatusText('Stopped');
-    }
+    updatePlayerStatusText(playbackTime > 0 ? `Paused (${playbackTime}s)` : 'Stopped');
 }
 
 function replayPlayback() {
@@ -107,15 +152,11 @@ function replayPlayback() {
 function highlightCurrentCaption() {
     let activeLine = null;
     const captionLines = document.querySelectorAll('#caption-box p');
-    
     captionLines.forEach(line => {
         const startTime = parseFloat(line.dataset.start);
-        if (playbackTime >= startTime) {
-            activeLine = line;
-        }
+        if (playbackTime >= startTime) activeLine = line;
         line.classList.remove('active-caption');
     });
-
     if (activeLine) {
         activeLine.classList.add('active-caption');
         activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
