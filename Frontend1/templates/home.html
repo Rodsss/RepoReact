@@ -3,58 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1Project Dashboard</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/main_style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <div class="app-container">
         <nav class="sidebar">
             <ul class="sidebar-nav">
                 <li>
-                    <a href="#" class="nav-button active" data-view="languages" title="Languages">
-                        <span class="nav-icon">&#127760;</span> <span class="nav-text">Languages</span>
-                    </a>
+                    <button class="menu-button" data-view="settings" title="Settings">
+                        <span class="nav-icon">&#9881;</span>
+                    </button>
                 </li>
                 <li>
-                    <a href="#" class="nav-button" data-view="desk" title="Desk">
-                        <span class="nav-icon">&#128188;</span> <span class="nav-text">Desk</span>
-                    </a>
+                    <button class="menu-button active" data-view="translate" title="Translate">
+                        <span class="nav-icon">&#127760;</span>
+                    </button>
                 </li>
                 <li>
-                    <a href="#" class="nav-button" data-view="navigate" title="Navigate">
-                        <span class="nav-icon">&#128279;</span> <span class="nav-text">Navigate</span>
-                    </a>
+                    <button class="menu-button" data-view="desk" title="Desk">
+                        <span class="nav-icon">&#128188;</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="menu-button" data-view="navigate" title="Navigate">
+                        <span class="nav-icon">&#128279;</span>
+                    </button>
                 </li>
             </ul>
         </nav>
 
         <main class="main-content">
-            <div id="languages-view" class="view active">
-                <div class="pane pane-one">
-                    <h3>Pane 1</h3>
+            <div class="pane pane-one">
+                
+                <div class="translator-container">
+                    <div class="split-textbox">
+                        <div class="textbox-half" id="source-text" contenteditable="true" data-placeholder="Text from extension..."></div>
+                        <div class="textbox-half" id="translated-text" contenteditable="true" data-placeholder="Translation..."></div>
                     </div>
-                <div class="pane pane-two">
-                    <h3>Pane 2</h3>
-                    </div>
-                <div class="pane pane-three">
-                    <h3>Pane 3</h3>
-                    </div>
-            </div>
+                    <button class="action-button icon-button" title="Save or Bookmark">
+                        &#9733; </button>
+                </div>
 
-            <div id="desk-view" class="view" style="display: none;">
-                <h1>Desk Dashboard</h1>
-            </div>
+                <div class="details-section">
+                    <div class="collapsible-menu">
+                        <h4 class="collapsible-header">Definition</h4>
+                        <div class="collapsible-content">
+                            <p>Detailed definition will appear here...</p>
+                        </div>
+                    </div>
+                    <div class="collapsible-menu">
+                        <h4 class="collapsible-header">Uses/Context</h4>
+                        <div class="collapsible-content">
+                            <p>Examples of the word used in different contexts will appear here...</p>
+                        </div>
+                    </div>
+                    <div class="collapsible-menu">
+                        <h4 class="collapsible-header">Read</h4>
+                        <div class="collapsible-content">
+                            <p>Full text source or reading material will appear here...</p>
+                        </div>
+                    </div>
+                </div>
 
-            <div id="navigate-view" class="view" style="display: none;">
-                <h1>Navigate Dashboard</h1>
             </div>
+            <div class="pane pane-two">
+                </div>
+            <div class="pane pane-three">
+                </div>
         </main>
     </div>
-
     <script type="module" src="{{ url_for('static', path='js/dashboard_app.js') }}"></script>
 </body>
 </html>

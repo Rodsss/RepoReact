@@ -47,5 +47,24 @@ def test_client(db_session):
     
     del app.dependency_overrides[get_db]
 
-# We no longer need the separate 'cleanup' fixture as cleanup is handled
-# by the db_session fixture after each test.
+@pytest.fixture(scope="function")
+def authenticated_client(test_client):
+    """
+    Creates a user, logs them in, and yields a TestClient instance
+    with the authentication token already set in the headers.
+    """
+    # Create a user
+    user_data = {"email": "testuser@example.com", "password": "testpassword"}
+    test_client.post("/users/", json=user_data)
+
+    # Log the user in to get a token
+    login_response = test_client.post("/token", data={
+        "username": user_data["email"],
+        "password": user_data["password"]
+    })
+    token = login_response.json()["access_token"]
+
+    # Set the authentication header for the client
+    test_client.headers["Authorization"] = f"Bearer {token}"
+
+    yield test_client

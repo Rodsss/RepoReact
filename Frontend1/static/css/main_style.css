@@ -3,7 +3,6 @@
     --bg-dark-blue: #081730;
     --accent-pink: #e94560;
     --font-color-light: #ffffff;
-    --font-color-dark: #cccccc;
     --border-color: #2a3447;
 }
 
@@ -23,7 +22,7 @@ body {
     width: 100vw;
 }
 
-/* --- Main App Layout --- */
+/* --- Main App Layout (Using Flexbox for smoother toggle) --- */
 .app-container {
     display: flex;
     height: 100%;
@@ -31,14 +30,13 @@ body {
 
 /* --- Collapsible Sidebar --- */
 .sidebar {
+    width: 65px; /* Collapsed width */
     background-color: var(--bg-dark-blue);
     border-right: 1px solid var(--border-color);
-    width: 60px; /* Collapsed width */
-    transition: width 0.3s ease;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
     padding-top: 20px;
+    transition: width 0.3s ease-in-out; /* Smoother transition on width */
+    overflow-x: hidden; /* Hide overflowing text */
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
 .sidebar:hover {
@@ -49,57 +47,48 @@ body {
     list-style: none;
 }
 
-.nav-button {
+.menu-button {
     display: flex;
     align-items: center;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--font-color-light);
+    font-size: 1.5em;
+    width: 200px; /* Set fixed width to prevent text wrapping */
     height: 50px;
-    padding: 0 18px;
-    text-decoration: none;
-    color: var(--font-color-dark);
-    white-space: nowrap;
-    border-bottom: 1px solid transparent; /* Placeholder for menu button style */
+    padding: 0 20px;
+    cursor: pointer;
     transition: color 0.2s, border-color 0.2s;
 }
 
-.nav-button:hover {
-    color: var(--accent-pink); /* Button font flicks to pink on hover */
+.menu-button:hover {
+    color: var(--accent-pink);
 }
 
-/* Menu Button Style */
-.nav-button.active {
-    color: var(--font-color-light);
-    font-weight: 500;
+.menu-button.active {
     border-bottom: 1px solid var(--accent-pink);
 }
 
 .nav-icon {
-    font-size: 1.5em;
+    font-size: 1.2em;
     min-width: 24px;
     text-align: center;
 }
 
 .nav-text {
     margin-left: 20px;
-    font-size: 1em;
+    font-size: 0.8em;
 }
 
 /* --- Main Content Area --- */
 .main-content {
-    flex-grow: 1;
-    overflow: hidden;
-}
-
-.view {
-    width: 100%;
-    height: 100%;
-}
-
-.view.active {
+    flex-grow: 1; /* Allows content to fill remaining space */
     display: grid;
-    /* Three-column grid for the panes */
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1px;
-    background-color: var(--border-color); /* This color will form the grid lines */
+    background-color: var(--border-color);
+    overflow: hidden;
 }
 
 .pane {
@@ -108,19 +97,87 @@ body {
     overflow-y: auto;
 }
 
-/* --- General Action Button Style --- */
-.action-button {
-    background-color: transparent;
-    border: 1px solid var(--accent-pink); /* Outline is pink */
-    color: var(--font-color-light); /* Font is white */
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: color 0.2s, background-color 0.2s;
+/* --- CORRECTED Styles for Pane One Components --- */
+
+.translator-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 30px;
 }
 
-.action-button:hover {
-    color: var(--accent-pink); /* Font flicks to pink on hover */
-    background-color: rgba(233, 69, 96, 0.1); /* Optional: subtle background on hover */
+/* Changed from a full outline to a single top line */
+.split-textbox {
+    flex-grow: 1;
+    border-top: 1px solid var(--accent-pink); /* Pink top line */
+    background: transparent;
+    font-size: 1.1em;
+}
+
+.textbox-half {
+    padding: 15px;
+    min-height: 60px;
+    outline: none;
+    color: var(--font-color-light);
+}
+
+/* The divider line between the two boxes */
+#source-text {
+    border-bottom: 1px solid var(--border-color); /* Subtle divider */
+}
+
+[contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: #6a7183;
+    pointer-events: none;
+    display: block;
+}
+
+.icon-button {
+    background: transparent;
+    border: 1px solid var(--accent-pink);
+    color: var(--font-color-light);
+    padding: 8px 10px;
+    font-size: 1.3em;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    color: var(--accent-pink);
+    background-color: rgba(233, 69, 96, 0.1);
+}
+
+.collapsible-menu {
+    background: transparent;
+}
+
+.collapsible-header {
+    border-top: 1px solid var(--accent-pink);
+    color: var(--font-color-light);
+    width: 100%;
+    padding: 12px 10px;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.collapsible-content {
+    /* Hidden by default */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out, padding 0.3s ease-out;
+
+    /* Your existing styles are good */
+    padding: 0 15px; /* Set padding to 0 when collapsed */
+    background-color: rgba(233, 69, 96, 0.05);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+/* When the .collapsible-menu has the .active class, the content expands */
+.collapsible-menu.active .collapsible-content {
+    max-height: 500px; /* Animate to this height */
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color); /* Add a bottom border when open */
 }
