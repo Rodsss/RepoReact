@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 import os
+from Backend1.api.routers import collections, auth, notes, history # ... etc.
 
 # Import all routers from their new locations
 from Backend1.api.routers import collections, auth, notes, flashcards, media_search, translation
@@ -53,6 +54,7 @@ app.include_router(notes.router)
 app.include_router(flashcards.router)
 app.include_router(media_search.router)
 app.include_router(translation.router)
+app.include_router(history.router)
 
 # --- HTML Page-Serving Endpoint ---
 @app.get("/", response_class=HTMLResponse)

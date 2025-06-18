@@ -123,3 +123,15 @@ class TranslationLogResponse(BaseModel):
     message: str
     logId: Optional[int] = None
     model_config = model_config
+
+
+class GenericSuccessResponse(BaseModel):
+    success: bool
+    message: str
+
+# Add this class to your schemas.py file
+
+class TextItemCreate(BaseModel):
+    text: str
+    source_url: Optional[str] = None
+    page_title: Optional[str] = None

@@ -1,85 +1,40 @@
-// This function sets up the draggable resizers between panes.
-function initializeResizablePanes() {
-    const mainContent = document.querySelector('.main-content');
-    if (!mainContent) return;
+// This runs once the entire HTML page has been loaded and is ready.
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Dashboard UI Initializing...");
 
-    const resizers = mainContent.querySelectorAll('.resizer');
+    // --- 1. LOGIC FOR MAIN SIDEBAR NAVIGATION ---
+    const viewContainer = document.querySelector('.main-content');
+    const navButtons = document.querySelectorAll('.menu-button[data-view]');
 
-    resizers.forEach(resizer => {
-        let x = 0;
-        let leftPane, rightPane, leftPaneWidth, rightPaneWidth;
+    function switchView(viewToShow) {
+        // Hide all main view containers
+        if (viewContainer) {
+            viewContainer.querySelectorAll('.view').forEach(view => {
+                view.style.display = 'none';
+            });
+        }
 
-        resizer.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            x = e.clientX;
-            leftPane = this.previousElementSibling;
-            rightPane = this.nextElementSibling;
-            leftPaneWidth = leftPane.getBoundingClientRect().width;
-            rightPaneWidth = rightPane.getBoundingClientRect().width;
-
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
+        // Deactivate all sidebar buttons
+        navButtons.forEach(button => {
+            button.classList.remove('active');
         });
 
-        function handleMouseMove(e) {
-            const dx = e.clientX - x;
-            const totalWidth = leftPaneWidth + rightPaneWidth;
-            
-            let newLeftWidth = leftPaneWidth + dx;
-            let newRightWidth = rightPaneWidth - dx;
-
-            // Prevent panes from getting too small
-            if (newLeftWidth < 100 || newRightWidth < 100) {
-                return;
-            }
-
-            // Update the grid layout by changing the fractional units
-            const newGridTemplate = `${newLeftWidth}px 5px ${newRightWidth}px 5px ${mainContent.lastElementChild.getBoundingClientRect().width}px`;
-            
-            // For a simpler approach that works well with 3 panes:
-            leftPane.style.width = `${newLeftWidth}px`;
-            rightPane.style.width = `${newRightWidth}px`;
-            
-            // A more robust solution would convert these pixel values back to fractional units (fr)
-            // to update the grid-template-columns of the parent.
+        // Show the selected view
+        const newView = document.getElementById(`${viewToShow}-view`);
+        if (newView) {
+            // The 'translate' view uses a grid, others can use block
+            newView.style.display = (viewToShow === 'translate') ? 'grid' : 'block';
         }
 
-        function handleMouseUp() {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        }
-    });
-}
-
-// This function handles switching the main views (Languages, Desk, etc.)
-function switchView(viewToShow) {
-    document.querySelectorAll('.view').forEach(view => {
-        view.style.display = 'none';
-    });
-    document.querySelectorAll('.menu-button').forEach(button => {
-        button.classList.remove('active');
-    });
-
-    const newView = document.getElementById(`${viewToShow}-view`);
-    if (newView) {
-        newView.style.display = 'block';
-        if (viewToShow === 'languages') { // The languages view is a grid
-             newView.style.display = 'grid';
+        // Activate the selected sidebar button
+        const newButton = document.querySelector(`.menu-button[data-view="${viewToShow}"]`);
+        if (newButton) {
+            newButton.classList.add('active');
         }
     }
 
-    const newButton = document.querySelector(`.menu-button[data-view="${viewToShow}"]`);
-    if (newButton) {
-        newButton.classList.add('active');
-    }
-}
-
-// This is the main function that runs AFTER a user logs in.
-function initializeApp() {
-    console.log("User is logged in. Initializing main application.");
-
-    // --- Setup for Main Navigation ---
-    document.querySelectorAll('.menu-button[data-view]').forEach(button => {
+    // Attach click listeners to all main navigation buttons
+    navButtons.forEach(button => {
         button.addEventListener('click', (event) => {
             event.preventDefault();
             const view = button.dataset.view;
@@ -87,10 +42,10 @@ function initializeApp() {
         });
     });
 
-    // --- Setup for Collapsible Menus ---
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.addEventListener('click', (event) => {
+    // --- 2. LOGIC FOR COLLAPSIBLE MENUS (in Pane 1) ---
+    const paneOne = document.querySelector('.pane-one');
+    if (paneOne) {
+        paneOne.addEventListener('click', (event) => {
             const header = event.target.closest('.collapsible-header');
             if (header) {
                 header.parentElement.classList.toggle('active');
@@ -98,24 +53,38 @@ function initializeApp() {
         });
     }
 
-    // --- Setup for Resizable Panes ---
-    // Note: The resizable pane logic is complex. This is a simplified example.
-    // For a production app, you might use a lightweight library for this.
-    // initializeResizablePanes(); // Currently disabled for simplicity, can be enabled for testing.
+    // --- 3. LOGIC FOR "ADD NEW LIST" BOX (in Pane 2) ---
+    const paneTwo = document.querySelector('.pane-two');
+    if (paneTwo) {
+        // Listen for clicks within the second pane
+        paneTwo.addEventListener('click', (event) => {
+            // Show/hide the input box when the '+' button is clicked
+            if (event.target.closest('.action-button[title="Create new list"]')) {
+                const container = document.getElementById('new-list-container');
+                container.classList.toggle('visible');
+                // Automatically focus the input field when it appears
+                if (container.classList.contains('visible')) {
+                    document.getElementById('new-list-input').focus();
+                }
+            }
+        });
 
+        // Add a listener to the input box to save on "Enter"
+        const newListInput = document.getElementById('new-list-input');
+        if (newListInput) {
+            newListInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && newListInput.value.trim() !== '') {
+                    event.preventDefault();
+                    // This is where you would call your API in a real app
+                    console.log(`New list created (mock): ${newListInput.value.trim()}`);
+                    newListInput.value = ''; // Clear input
+                    document.getElementById('new-list-container').classList.remove('visible'); // Hide box
+                }
+            });
+        }
+    }
 
-    // --- Set Default View ---
+    // --- Set the default view when the app loads ---
     switchView('translate');
-}
 
-
-// --- PAGE LOAD ENTRYPOINT ---
-// We are assuming the user is "logged in" for this design phase.
-// In a real app, you would uncomment the auth lines.
-document.addEventListener('DOMContentLoaded', () => {
-    // import { initializeAuth } from './modules/auth.js';
-    // initializeAuth(initializeApp);
-    
-    // For design purposes, we'll just run initializeApp directly.
-    initializeApp();
 });
