@@ -127,26 +127,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             
         return true; // Indicates an asynchronous response.
     
-    // --- HANDLER FOR THE "COLLECT SNIPPET" ACTION ---
+    // --- HANDLER FOR THE "COLLECT SNIPPET" ACTION (Corrected) ---
     } else if (request.type === "COLLECT_SNIPPET") {
         const { selectedText, sourceUrl, pageTitle } = request.data || {};
         if (!selectedText) {
             sendResponse({ success: false, message: "No text provided." });
-            return false;
+            return false; // Return early if no text
         }
-        collectSnippetToOurApi(selectedText, sourceUrl, pageTitle)
-            .then(result => sendResponse(result));
 
-        return true; // Indicates an asynchronous response.
-    
-    // --- HANDLER FOR THE "DIVE" ACTION ---
-    } else if (request.type === "DIVE_ACTION") {
-        const { selectedText } = request.data || {};
-        const diveUrl = `http://www.ourwebsite.com/review?term=${encodeURIComponent(selectedText)}`;
-        chrome.tabs.create({ url: diveUrl });
-        // You might also want to log this action or send a response.
-        sendResponse({ success: true, message: "Dive tab opened."});
+        const webAppUrl = "http://127.0.0.1:8000/";
+        collectSnippetToOurApi(selectedText, sourceUrl, pageTitle);
+
+        chrome.tabs.query({ url: `${webAppUrl}*` }, (tabs) => {
+            if (tabs.length > 0) {
+                const appTab = tabs[0];
+                chrome.tabs.sendMessage(appTab.id, { type: "NEW_TEXT_COLLECTED", text: selectedText });
+                chrome.tabs.update(appTab.id, { active: true });
+                chrome.windows.update(appTab.windowId, { focused: true });
+                sendResponse({ success: true, message: "Snippet sent to app." });
+            } else {
+                const urlWithText = `${webAppUrl}?text=${encodeURIComponent(selectedText)}`;
+                chrome.tabs.create({ url: urlWithText });
+                sendResponse({ success: true, message: "App opened with snippet." });
+            }
+        });
+
+        // **THIS IS THE CRITICAL FIX:** Return true to indicate that you will
+        // respond asynchronously from within the chrome.tabs.query callback.
         return true;
     }
-    // Add other message handlers like "VISIT_OUR_SITE" here if needed.
 });

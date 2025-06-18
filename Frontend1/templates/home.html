@@ -1,164 +1,60 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Project Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/main_style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-{% block title %}Dashboard - 1Project{% endblock %}
+    <div class="app-container">
+        <nav class="sidebar">
+            <ul class="sidebar-nav">
+                <li>
+                    <a href="#" class="nav-button active" data-view="languages" title="Languages">
+                        <span class="nav-icon">&#127760;</span> <span class="nav-text">Languages</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-button" data-view="desk" title="Desk">
+                        <span class="nav-icon">&#128188;</span> <span class="nav-text">Desk</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-button" data-view="navigate" title="Navigate">
+                        <span class="nav-icon">&#128279;</span> <span class="nav-text">Navigate</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-{% block head_styles %}
-<style>
-    /* Add all necessary component styles here */
-    .notes-list-item { display: flex; justify-content: space-between; align-items: center; border-radius: 4px; margin-bottom: 2px; }
-    .notes-list-item a { padding: 8px 10px; text-decoration: none; color: var(--main-text); display: block; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .notes-list-item:hover { background-color: #3a3f44; }
-    .notes-list-item a.active { background-color: var(--accent-color); color: white; border-radius: 4px; }
-    .delete-item-btn { background: none; border: none; cursor: pointer; color: var(--secondary-text); padding: 8px; border-radius: 4px; font-size: 0.9em; visibility: hidden; }
-    .notes-list-item:hover .delete-item-btn { visibility: visible; }
-    .delete-item-btn:hover { background-color: var(--danger-color); color: white; }
-    #note-title-input-container { padding: 10px 15px; border-bottom: 1px solid #4a4e54; }
-    #note-title-input { width: 100%; font-size: 1.4em; font-weight: bold; background-color: transparent; border: none; color: #fff; padding: 5px 0; }
-    #note-title-input:focus { outline: none; }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="workspace-container">
-    <div class="dashboard-container">
-        
-        <div class="dashboard-pane pane-left">
-            <div class="pane-section manual-translate-area">
-                <h3>Translate</h3>
-                <div class="form-group">
-                    <label for="translate-input">Enter Text:</label>
-                    <textarea id="translate-input" name="translate-input" rows="4"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="translate-output">Result:</label>
-                    <textarea id="translate-output" name="translate-output" rows="4" readonly></textarea>
-                </div>
-                <div class="button-group">
-                    <button id="translate-button" class="btn-base btn-custom-outline">Translate</button>
-                    <div id="save-to-list-action" class="action-group">
-                        <select id="stack-select-dropdown" name="stack-select" required>
-                            <option value="" disabled selected>Select a list</option>
-                        </select>
-                        <button id="save-to-list-button" class="btn-base btn-custom-filled">Save to List</button>
+        <main class="main-content">
+            <div id="languages-view" class="view active">
+                <div class="pane pane-one">
+                    <h3>Pane 1</h3>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-pane pane-middle">
-            <div class="pane-header">
-                <div class="view-switcher">
-                    <button id="show-lists-view" class="btn-base">Lists</button>
-                    <button id="show-history-view" class="btn-base active">History</button>
-                </div>
-                <div class="select-all-container">
-                    <input type="checkbox" id="select-all-checkbox" title="Select All">
-                    <label for="select-all-checkbox">Select All</label>
-                </div>
-                <div class="header-actions">
-                    <button id="main-delete-button" class="btn-base btn-custom-danger hidden">Delete</button>
-                    <button id="create-list-button" class="btn-base btn-custom-filled">Create List</button>
-                </div>
-            </div>
-            <div id="snippet-list-container" class="scrollable-content"></div>
-        </div>
-
-        <div class="dashboard-pane pane-right">
-            <div class="pane-main-nav">
-                <button id="show-flashcard-view" class="pane-nav-button active">Flashcards</button>
-                <button id="show-notes-view" class="pane-nav-button">Notes</button>
-                <button id="show-media-search-view" class="pane-nav-button">Discover</button> 
-            </div>
-        
-            <div id="flashcard-view-container" class="pane-view-content">
-                 <div id="deck-selector-menu">
-                    <button id="deck-menu-button" class="btn-base btn-custom-filled">Select a Deck to Study ▼</button>
-                    <div id="deck-menu-dropdown" class="action-dropdown hidden"></div>
-                </div>
-                <div id="flashcard-container" class="scrollable-content">
-                    <div class="flashcard-placeholder"><p>Select a deck to begin.</p></div>
-                </div>
-            </div>
-        
-            <div id="notes-view-container" class="pane-view-content hidden">
-                <div class="notes-workspace">
-                    <div class="notes-sidebar">
-                        <div class="notes-sidebar-header">
-                            <h4>Folders</h4>
-                            <div>
-                                <button id="create-new-note-btn" title="Create New Note" class="notes-tool-button">+</button>
-                                <button id="create-folder-btn" title="Create New Folder" class="notes-tool-button">+</button>
-                            </div>
-                        </div>
-                        <div id="notes-folder-list" class="scrollable-content"></div>
+                <div class="pane pane-two">
+                    <h3>Pane 2</h3>
                     </div>
-                    <div class="notes-main-content">
-                        <div id="note-title-input-container">
-                            <input type="text" id="note-title-input" placeholder="Note Title...">
-                        </div>
-                        <div class="notes-toolbar">
-                            <select id="notes-font-select" class="notes-tool-item">
-                                <option value="Arial">Arial</option>
-                                <option value="Georgia">Georgia</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                                <option value="Verdana">Verdana</option>
-                            </select>
-                            <button id="notes-bold-btn" class="notes-tool-button"><b>B</b></button>
-                            <button id="notes-italic-btn" class="notes-tool-button"><i>I</i></button>
-                            <button id="notes-underline-btn" class="notes-tool-button"><u>U</u></button>
-                            <button id="notes-save-btn" class="btn-base btn-custom-filled" style="margin-left: auto;">Save Note</button>
-                        </div>
-                        <div id="note-editor" class="scrollable-content" contenteditable="true"></div>
+                <div class="pane pane-three">
+                    <h3>Pane 3</h3>
                     </div>
-                </div>
             </div>
 
-            <div id="media-search-view-container" class="pane-view-content hidden">
-                <div class="feature-container">
-                    <h3 class="p-3">Discover Videos & Podcasts</h3>
-                    <div class="custom-search-bar">
-                        <input type="text" id="media-search-input" name="media-search" class="custom-search-input" placeholder="Search for a topic...">
-                        <button class="custom-search-btn" type="button" id="media-search-button">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                    <div id="media-search-results" class="results-list">
-                        <div id="search-status-message"></div>
-                        <div id="fake-player-container" class="hidden p-3">
-                            <div id="fake-player-screen" class="mb-2">
-                                <span id="player-status-text">Stopped</span>
-                            </div>
-                            <div id="fake-player-controls" class="mb-3">
-                                <button id="play-btn" class="btn-base btn-custom-outline">
-                                    <i class="bi bi-play-fill"></i>
-                                    <span>Play</span>
-                                </button>
-                                <button id="stop-btn" class="btn-base btn-custom-outline">
-                                    <i class="bi bi-stop-fill"></i>
-                                    <span>Stop</span>
-                                </button>
-                                <button id="replay-btn" class="btn-base btn-custom-outline">
-                                    <i class="bi bi-arrow-counterclockwise"></i>
-                                    <span>Replay</span>
-                                </button>
-                            </div>
-                            <div class="caption-wrapper">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label class="form-label">Captions</label>
-                                </div>
-                                <div id="caption-box" class="p-3 border rounded" style="height: 100%; font-size: 16px;">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div id="desk-view" class="view" style="display: none;">
+                <h1>Desk Dashboard</h1>
             </div>
-        </div> 
+
+            <div id="navigate-view" class="view" style="display: none;">
+                <h1>Navigate Dashboard</h1>
+            </div>
+        </main>
     </div>
-</div>
-{% endblock %}
 
-{% block body_scripts %}
-    {{ super() }} 
-    <script type="module" src="/static/js/dashboard_app.js"></script>   
-{% endblock %}
+    <script type="module" src="{{ url_for('static', path='js/dashboard_app.js') }}"></script>
+</body>
+</html>

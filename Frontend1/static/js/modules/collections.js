@@ -1,5 +1,5 @@
 //
-// FILE: Frontend1/static/js/modules/collections.js (State-Driven Refactor)
+// FILE: Frontend1/static/js/modules/collections.js (Consolidated and Final)
 //
 let state = null;
 let renderApp = null;
@@ -12,13 +12,14 @@ function initializeState() {
             view: 'history', // 'lists', 'history', or 'stack_content'
             items: [],
             selectedItems: new Set(),
+            activeStackId: null,
             activeStackName: null,
             isLoading: true
         };
     }
 }
 
-// --- Component Functions ---
+// --- Component Rendering Functions ---
 
 function StackItemComponent(stack) {
     const isSelected = state.collections.selectedItems.has(stack.stack_id);
@@ -81,10 +82,21 @@ export function renderCollections() {
 
     let contentHTML = '';
     if (state.collections.view === 'stack_content') {
-        contentHTML += `<button class="btn-base btn-custom-outline mb-2" data-action="back-to-lists">← Back to all lists</button>`;
-        contentHTML += `<h4>Items in "${state.collections.activeStackName}"</h4>`;
+        contentHTML += `<div class="stack-content-header"><button class="btn-base btn-custom-outline mb-2" data-action="back-to-lists">← Back</button><h4>${state.collections.activeStackName}</h4></div>`;
+        
+        let createDeckButton = document.getElementById('create-deck-from-list-button');
+        if (!createDeckButton) {
+            createDeckButton = document.createElement('button');
+            createDeckButton.id = 'create-deck-from-list-button';
+            createDeckButton.className = 'button full-width mt-2';
+            createDeckButton.textContent = 'Create Deck from This List';
+            container.insertAdjacentElement('afterend', createDeckButton);
+        }
+    } else {
+         const createDeckButton = document.getElementById('create-deck-from-list-button');
+         if (createDeckButton) createDeckButton.remove();
     }
-
+    
     if (state.collections.items.length === 0) {
         contentHTML += '<p>Nothing to show here.</p>';
     } else {
@@ -106,66 +118,63 @@ export function initializeCollectionsFeature(appState, mainRenderCallback) {
     initializeState();
     
     document.querySelector('.dashboard-pane.pane-middle').addEventListener('click', handleCollectionEvents);
+    document.body.addEventListener('click', handleCollectionEvents); // For button outside main container
     
-    // Initial data fetch
     fetchHistory();
 }
 
 async function handleCollectionEvents(event) {
-    const action = event.target.dataset.action;
-    const id = event.target.dataset.id;
+    const target = event.target;
+    const action = target.dataset.action;
+    const id = target.dataset.id;
+    
+    const viewButtons = {
+        'show-lists-view': 'lists',
+        'show-history-view': 'history'
+    };
 
-    if (event.target.id === 'show-lists-view') switchView('lists');
-    else if (event.target.id === 'show-history-view') switchView('history');
-    else if (event.target.id === 'create-list-button') await handleCreateListClick();
-    else if (event.target.id === 'main-delete-button') await handleDeleteSelectedClick();
-    else if (event.target.id === 'select-all-checkbox') handleSelectAllClick(event.target.checked);
-    else if (event.target.classList.contains('item-checkbox')) handleItemSelection(event.target.checked, parseInt(id, 10));
-    else if (event.target.closest('.item-content.clickable')) handleStackClick(parseInt(event.target.closest('.item-content').dataset.id, 10));
+    if (viewButtons[target.id]) switchView(viewButtons[target.id]);
+    else if (target.id === 'create-list-button') await handleCreateListClick();
+    else if (target.id === 'main-delete-button') await handleDeleteSelectedClick();
+    else if (target.id === 'select-all-checkbox') handleSelectAllClick(target.checked);
+    else if (target.id === 'create-deck-from-list-button') await handleCreateDeckClick();
+    else if (target.classList.contains('item-checkbox')) handleItemSelection(target.checked, parseInt(id, 10));
+    else if (target.closest('.item-content.clickable')) handleStackClick(parseInt(target.closest('.item-content').dataset.id, 10));
     else if (action === 'back-to-lists') switchView('lists');
 }
 
 function switchView(view) {
     state.collections.view = view;
     state.collections.selectedItems.clear();
+    state.collections.activeStackId = null;
+    state.collections.activeStackName = null;
     if (view === 'lists') fetchStacks();
     else if (view === 'history') fetchHistory();
 }
 
-async function fetchStacks() {
+async function fetchGeneric(url, property) {
     state.collections.isLoading = true;
     renderApp();
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`);
-        state.collections.items = await response.json();
-    } catch (e) { console.error(e); state.collections.items = []; }
+        const response = await fetch(url);
+        state.collections[property] = await response.json();
+    } catch (e) {
+        console.error(e);
+        state.collections[property] = [];
+    }
     state.collections.isLoading = false;
     renderApp();
 }
 
-async function fetchHistory() {
-    state.collections.isLoading = true;
-    renderApp();
-    try {
-        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/collected_items`);
-        state.collections.items = await response.json();
-    } catch (e) { console.error(e); state.collections.items = []; }
-    state.collections.isLoading = false;
-    renderApp();
-}
+const fetchStacks = () => fetchGeneric(`${API_BASE_URL}/users/${state.userId}/stacks`, 'items');
+const fetchHistory = () => fetchGeneric(`${API_BASE_URL}/users/${state.userId}/collected_items`, 'items');
 
 async function handleStackClick(stackId) {
+    const stack = state.collections.items.find(s => s.stack_id === stackId);
+    state.collections.activeStackId = stackId;
+    state.collections.activeStackName = stack ? stack.stack_name : '';
     state.collections.view = 'stack_content';
-    state.collections.isLoading = true;
-    renderApp();
-    try {
-        const stack = state.collections.items.find(s => s.stack_id === stackId);
-        state.collections.activeStackName = stack ? stack.stack_name : '';
-        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks/${stackId}/flashcards`);
-        state.collections.items = await response.json();
-    } catch (e) { console.error(e); state.collections.items = []; }
-    state.collections.isLoading = false;
-    renderApp();
+    await fetchGeneric(`${API_BASE_URL}/users/${state.userId}/stacks/${stackId}/flashcards`, 'items');
 }
 
 async function handleCreateListClick() {
@@ -177,7 +186,7 @@ async function handleCreateListClick() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ stack_name: listName.trim() })
         });
-        fetchStacks(); // Refetch the list to update the view
+        fetchStacks();
     } catch (error) { alert(`Error: ${error.message}`); }
 }
 
@@ -205,15 +214,42 @@ async function handleDeleteSelectedClick() {
     if (!confirm(confirmMessage)) return;
 
     const endpointType = view === 'lists' ? 'stacks' : 'flashcards';
-    const deletePromises = Array.from(selectedItems).map(id => {
-        return fetch(`${API_BASE_URL}/users/${state.userId}/${endpointType}/${id}`, { method: 'DELETE' });
-    });
+    const deletePromises = Array.from(selectedItems).map(id => 
+        fetch(`${API_BASE_URL}/users/${state.userId}/${endpointType}/${id}`, { method: 'DELETE' })
+    );
 
     try {
         await Promise.all(deletePromises);
         state.collections.selectedItems.clear();
-        if (view === 'lists') fetchStacks();
+        if (view === 'lists' || view === 'stack_content') fetchStacks();
         else if (view === 'history') fetchHistory();
-        else switchView('lists');
     } catch (error) { alert('An error occurred during deletion.'); }
+}
+
+async function handleCreateDeckClick() {
+    const deckName = prompt("Please enter a name for the new flashcard deck:", state.collections.activeStackName || "New Deck");
+    if (!deckName) return;
+
+    const itemsForDeck = state.collections.items.map(item => ({ text: item.front_text }));
+    if (itemsForDeck.length === 0) return alert("There are no items in this list to create a deck from.");
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/flashcard-decks-from-items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deck_name: deckName, items: itemsForDeck })
+        });
+        if (!response.ok) throw new Error("Failed to create deck.");
+
+        const newDeck = await response.json();
+        if (!state.flashcards) state.flashcards = {};
+        if (!state.flashcards.decks) state.flashcards.decks = [];
+        state.flashcards.decks.push(newDeck);
+        
+        renderApp();
+        alert(`Successfully created deck "${deckName}"!`);
+    } catch (error) {
+        console.error("Error creating deck:", error);
+        alert("Could not create deck.");
+    }
 }
