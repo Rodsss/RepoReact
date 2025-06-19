@@ -1,9 +1,10 @@
 //
-// FILE: Frontend1/static/js/modules/flashcards.js (State-Driven Refactor)
+// FILE: Frontend1/static/js/modules/flashcards.js (Final Consolidated Version)
 //
+import { fetchWithAuth } from '../services/apiService.js'; // <-- ADDED for centralized API calls
+
 let state = null;
 let renderApp = null;
-const API_BASE_URL = '/api/v1';
 
 // --- State Initializer ---
 function initializeState() {
@@ -72,12 +73,10 @@ export function renderFlashcards() {
     const container = document.getElementById('flashcard-container');
     if (!dropdown || !container) return;
 
-    // Render Deck Selector
     dropdown.innerHTML = state.flashcards.decks.length > 0
         ? state.flashcards.decks.map(DeckLinkComponent).join('')
         : '<p style="padding: 8px 12px;">No decks found.</p>';
 
-    // Render Main Content
     if (state.flashcards.isLoading) {
         container.innerHTML = PlaceholderComponent(`Loading deck: ${state.flashcards.activeDeckName}...`);
     } else if (state.flashcards.sessionComplete) {
@@ -128,8 +127,8 @@ async function handleFlashcardEvents(event) {
 
 async function fetchDecks() {
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks`);
-        state.flashcards.decks = await response.json();
+        const decks = await fetchWithAuth(`/users/${state.userId}/stacks`);
+        state.flashcards.decks = decks;
         renderApp();
     } catch (e) { console.error("Failed to fetch decks:", e); }
 }
@@ -140,8 +139,7 @@ async function startDeckStudySession(deckId, deckName) {
     state.flashcards.isLoading = true;
     renderApp();
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${state.userId}/stacks/${deckId}/flashcards`);
-        const cards = await response.json();
+        const cards = await fetchWithAuth(`/users/${state.userId}/stacks/${deckId}/flashcards`);
         state.flashcards.cards = cards.sort(() => Math.random() - 0.5);
         state.flashcards.currentCardIndex = 0;
         state.flashcards.isFlipped = false;

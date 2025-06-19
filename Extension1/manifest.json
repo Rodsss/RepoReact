@@ -1,48 +1,34 @@
 {
   "manifest_version": 3,
-  "name": "project1",
-  "version": "0.2.5",
-  "description": "Provides quick actions via an in-page menu on double-clicked text.",
+  "name": "Project 1",
+  "version": "1.0",
+  "description": "A browser extension for Project 1.",
   "permissions": [
     "activeTab",
     "storage",
-    "windows",
-    "tabs"
-  ],
-  "host_permissions": [
-    "http://127.0.0.1:8000/*",
-    "http://www.ourwebsite.com/*"
+    "scripting"
   ],
   "background": {
-    "service_worker": "scripts/background.js"
+    "service_worker": "scripts/background.js",
+    "type": "module" 
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": [
-        "scripts/utils/domPositioning.js",
-        "scripts/utils/uiBuilder.js",
-        "scripts/content.js"
-      ],
+      "js": ["scripts/content.js"],
       "css": ["css/content.css"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "images/icon-16.png"
-      ],
+      "resources": ["images/icon-16.png"],
       "matches": ["<all_urls>"]
     }
   ],
-  "options_page": "html/options.html",
-  "options_ui": {
-    "page": "html/options.html",
-    "open_in_tab": true
-  },
-  "icons": {
-    "16": "images/icon-16.png",
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
+  "action": {
+    "default_popup": "html/options.html",
+    "default_icon": {
+      "16": "images/icon-16.png"
+    }
   }
 }

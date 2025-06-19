@@ -1,29 +1,18 @@
 //
-// FILE: Frontend1/static/js/modules/media_search.js (State-Driven Refactor)
+// FILE: Frontend1/static/js/modules/media_search.js (Final Consolidated Version)
 //
-let state = null;
-let renderApp = null; // A reference to the main render function
+import { fetchWithAuth } from '../services/apiService.js'; // <-- ADDED for centralized API calls
 
-const API_BASE_URL = '/api/v1';
+let state = null;
+let renderApp = null; 
 
 // --- Reusable Component Functions ---
 
-/**
- * Component to display a status message (e.g., "Searching..." or "No results").
- * @param {string} message - The message to display.
- * @returns {string} - The HTML string for the component.
- */
 function StatusMessageComponent(message) {
     return `<p class="p-3">${message}</p>`;
 }
 
-/**
- * Component for the fake player, including its controls and caption box.
- * @param {object} videoData - The data for the video to be displayed.
- * @returns {string} - The HTML string for the component.
- */
 function FakePlayerComponent(videoData) {
-    // Note: The IDs are now gone from the buttons, we'll add listeners differently.
     return `
         <div id="fake-player-container" class="p-3">
             <div id="fake-player-screen" class="mb-2">
@@ -53,10 +42,6 @@ function FakePlayerComponent(videoData) {
 
 // --- Main Rendering Logic for this Module ---
 
-/**
- * This function is exported to be called by the main app's render cycle.
- * It decides what to render inside the #media-search-results container.
- */
 export function renderMediaSearch() {
     const container = document.getElementById('media-search-results');
     if (!container) return;
@@ -65,7 +50,6 @@ export function renderMediaSearch() {
         container.innerHTML = StatusMessageComponent('Searching...');
     } else if (state.searchStatus === 'success' && state.mediaSearchResults.length > 0) {
         container.innerHTML = FakePlayerComponent(state.mediaSearchResults[0]);
-        // After rendering the player, we must attach listeners to its new buttons.
         attachPlayerEventListeners();
     } else {
         container.innerHTML = StatusMessageComponent('No results found.');
@@ -75,15 +59,10 @@ export function renderMediaSearch() {
 
 // --- Event Handling and State Changes ---
 
-/**
- * Initializes the media search feature.
- * @param {object} appState - The global application state object.
- * @param {function} mainRenderCallback - A reference to the main app's render function.
- */
 export function initializeMediaSearchFeature(appState, mainRenderCallback) {
     state = appState;
-    renderApp = mainRenderCallback; // Store the callback
-    state.searchStatus = 'idle'; // Initial status
+    renderApp = mainRenderCallback; 
+    state.searchStatus = 'idle'; 
 
     document.getElementById('media-search-button').addEventListener('click', handleMediaSearch);
 }
@@ -92,18 +71,14 @@ async function handleMediaSearch() {
     const query = document.getElementById('media-search-input').value.trim();
     if (!query) return;
 
-    // 1. Update state to "loading" and re-render to show the message
     state.searchStatus = 'loading';
     renderApp();
     
-    // Stop any previous playback simulation
     stopPlayback();
 
     try {
-        const response = await fetch(`${API_BASE_URL}/media-search?query=${encodeURIComponent(query)}`);
-        const results = await response.json();
+        const results = await fetchWithAuth(`/media-search?query=${encodeURIComponent(query)}`);
         
-        // 2. Update state with results and call render again
         state.mediaSearchResults = results;
         state.searchStatus = 'success';
         renderApp();
@@ -115,15 +90,15 @@ async function handleMediaSearch() {
     }
 }
 
-// --- Fake Player Logic (needs to be attached after rendering) ---
+// --- Fake Player Logic ---
 
 let playerInterval = null;
 let playbackTime = 0;
 
 function attachPlayerEventListeners() {
-    document.querySelector('[data-action="play"]').addEventListener('click', startPlayback);
-    document.querySelector('[data-action="stop"]').addEventListener('click', stopPlayback);
-    document.querySelector('[data-action="replay"]').addEventListener('click', replayPlayback);
+    document.querySelector('[data-action="play"]')?.addEventListener('click', startPlayback);
+    document.querySelector('[data-action="stop"]')?.addEventListener('click', stopPlayback);
+    document.querySelector('[data-action="replay"]')?.addEventListener('click', replayPlayback);
 }
 
 function startPlayback() {
