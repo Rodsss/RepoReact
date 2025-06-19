@@ -1,157 +1,90 @@
-//
-// FILE: Frontend1/static/js/dashboard_app.js (Fully Refactored & Consolidated)
-//
-
-// --- IMPORTS: Import INITIALIZER and RENDERER from all feature modules ---
-import { initializeNotesFeature, renderNotes } from './modules/notes.js';
-import { initializeFlashcardsFeature, renderFlashcards } from './modules/flashcards.js';
-import { initializeCollectionsFeature, renderCollections } from './modules/collections.js';
-import { initializeMediaSearchFeature, renderMediaSearch } from './modules/media_search.js';
-
-// --- GLOBAL STATE & CONFIG ---
-const API_BASE_URL = '/api/v1';
-
-const appState = {
-    userId: 'default-user',
-    // Each module will create and manage its own sub-state inside this object.
-    // e.g., state.notes = {...}, state.collections = {...}
-};
-
-// --- MAIN RENDER FUNCTION ---
-/**
- * The single function that redraws the entire UI based on the current appState.
- * It calls the specific render function from each module.
- */
-function render() {
-    console.log("App state changed. Re-rendering UI...");
-    renderNotes(appState);
-    renderFlashcards(appState);
-    renderCollections(appState);
-    renderMediaSearch(appState);
-}
-
-// --- MAIN INITIALIZATION ---
+// This runs once the entire HTML page has been loaded and is ready.
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize all feature modules, passing them the state and the main render function
-    initializeNotesFeature(appState, render);
-    initializeFlashcardsFeature(appState, render);
-    initializeCollectionsFeature(appState, render);
-    initializeMediaSearchFeature(appState, render);
+    console.log("Dashboard UI Initializing...");
 
-    // Initialize event listeners for any remaining non-modularized features
-    const translateButton = document.getElementById('translate-button');
-    if (translateButton) {
-        translateButton.addEventListener('click', handleOnPageTranslate);
+    // --- 1. LOGIC FOR MAIN SIDEBAR NAVIGATION ---
+    const viewContainer = document.querySelector('.main-content');
+    const navButtons = document.querySelectorAll('.menu-button[data-view]');
+
+    function switchView(viewToShow) {
+        // Hide all main view containers
+        if (viewContainer) {
+            viewContainer.querySelectorAll('.view').forEach(view => {
+                view.style.display = 'none';
+            });
+        }
+
+        // Deactivate all sidebar buttons
+        navButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Show the selected view
+        const newView = document.getElementById(`${viewToShow}-view`);
+        if (newView) {
+            // The 'translate' view uses a grid, others can use block
+            newView.style.display = (viewToShow === 'translate') ? 'grid' : 'block';
+        }
+
+        // Activate the selected sidebar button
+        const newButton = document.querySelector(`.menu-button[data-view="${viewToShow}"]`);
+        if (newButton) {
+            newButton.classList.add('active');
+        }
     }
-    
-    const saveToListButton = document.getElementById('save-to-list-button');
-    if(saveToListButton) {
-        saveToListButton.addEventListener('click', handleSaveToListClick);
+
+    // Attach click listeners to all main navigation buttons
+    navButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            const view = button.dataset.view;
+            switchView(view);
+        });
+    });
+
+    // --- 2. LOGIC FOR COLLAPSIBLE MENUS (in Pane 1) ---
+    const paneOne = document.querySelector('.pane-one');
+    if (paneOne) {
+        paneOne.addEventListener('click', (event) => {
+            const header = event.target.closest('.collapsible-header');
+            if (header) {
+                header.parentElement.classList.toggle('active');
+            }
+        });
     }
 
-    // Set up event listeners for the main right-pane tab switching
-    document.getElementById('show-flashcard-view').addEventListener('click', () => switchRightPaneView('flashcards'));
-    document.getElementById('show-notes-view').addEventListener('click', () => switchRightPaneView('notes'));
-    document.getElementById('show-media-search-view').addEventListener('click', () => switchRightPaneView('media'));
+    // --- 3. LOGIC FOR "ADD NEW LIST" BOX (in Pane 2) ---
+    const paneTwo = document.querySelector('.pane-two');
+    if (paneTwo) {
+        // Listen for clicks within the second pane
+        paneTwo.addEventListener('click', (event) => {
+            // Show/hide the input box when the '+' button is clicked
+            if (event.target.closest('.action-button[title="Create new list"]')) {
+                const container = document.getElementById('new-list-container');
+                container.classList.toggle('visible');
+                // Automatically focus the input field when it appears
+                if (container.classList.contains('visible')) {
+                    document.getElementById('new-list-input').focus();
+                }
+            }
+        });
 
-    // Initial Page Setup
-    populateTextboxFromUrl();
-    fetchAndPopulateStacksDropdown(); // This function still manually manipulates the DOM for the translate pane
-    switchRightPaneView('flashcards'); // Set the default view
+        // Add a listener to the input box to save on "Enter"
+        const newListInput = document.getElementById('new-list-input');
+        if (newListInput) {
+            newListInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && newListInput.value.trim() !== '') {
+                    event.preventDefault();
+                    // This is where you would call your API in a real app
+                    console.log(`New list created (mock): ${newListInput.value.trim()}`);
+                    newListInput.value = ''; // Clear input
+                    document.getElementById('new-list-container').classList.remove('visible'); // Hide box
+                }
+            });
+        }
+    }
+
+    // --- Set the default view when the app loads ---
+    switchView('translate');
+
 });
-
-
-// === LEGACY & GLOBAL FUNCTIONS ===
-// These functions are still needed for parts of the UI we haven't refactored yet,
-// or for global actions like switching panes.
-
-function switchRightPaneView(viewToShow) {
-    const dashboardContainer = document.querySelector('.dashboard-container');
-    const flashcardContainer = document.getElementById('flashcard-view-container');
-    const notesContainer = document.getElementById('notes-view-container');
-    const mediaContainer = document.getElementById('media-search-view-container');
-    const flashcardButton = document.getElementById('show-flashcard-view');
-    const notesButton = document.getElementById('show-notes-view');
-    const mediaButton = document.getElementById('show-media-search-view');
-
-    if (dashboardContainer) {
-        dashboardContainer.classList.toggle('discover-mode-active', viewToShow === 'media');
-    }
-
-    if (flashcardButton) flashcardButton.classList.toggle('active', viewToShow === 'flashcards');
-    if (notesButton) notesButton.classList.toggle('active', viewToShow === 'notes');
-    if (mediaButton) mediaButton.classList.toggle('active', viewToShow === 'media');
-
-    if (flashcardContainer) flashcardContainer.classList.toggle('hidden', viewToShow !== 'flashcards');
-    if (notesContainer) notesContainer.classList.toggle('hidden', viewToShow !== 'notes');
-    if (mediaContainer) mediaContainer.classList.toggle('hidden', viewToShow !== 'media');
-}
-
-async function handleOnPageTranslate() {
-    const input = document.getElementById('translate-input');
-    const output = document.getElementById('translate-output');
-    if (!input.value.trim()) return;
-    output.value = "Translating...";
-    try {
-        const response = await fetch(`${API_BASE_URL}/translate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: input.value.trim() })
-        });
-        if (!response.ok) throw new Error("Translation failed");
-        const result = await response.json();
-        output.value = result.translated_text;
-    } catch (error) {
-        output.value = "Error during translation.";
-        console.error("Translation error:", error);
-    }
-}
-
-async function handleSaveToListClick() {
-    const textInput = document.getElementById('translate-input');
-    const selectedStackId = document.getElementById('stack-select-dropdown').value;
-    if (!textInput.value.trim()) return alert("Textbox is empty.");
-    if (!selectedStackId) return alert("Please select a list.");
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/stacks/${selectedStackId}/items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: textInput.value.trim(), sourceUrl: window.location.href, pageTitle: document.title })
-        });
-        if (!response.ok) throw new Error((await response.json()).detail);
-        alert("Item saved successfully!");
-        textInput.value = '';
-    } catch (error) {
-        console.error("Failed to save item:", error);
-        alert(`Error: ${error.message}`);
-    }
-}
-
-function populateTextboxFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const text = params.get('text');
-    if (text) {
-        const translateInput = document.getElementById('translate-input');
-        if (translateInput) translateInput.value = text;
-    }
-}
-
-async function fetchAndPopulateStacksDropdown() {
-    const dropdown = document.getElementById('stack-select-dropdown');
-    if (!dropdown) return;
-    try {
-        const response = await fetch(`${API_BASE_URL}/users/${appState.userId}/stacks`);
-        const stacks = await response.json();
-        
-        // This function still manually updates the DOM, but that's okay for now.
-        appState.collections.stacks = stacks; // Also update state
-        
-        dropdown.innerHTML = '<option value="" disabled selected>Select a list</option>';
-        stacks.forEach(s => {
-            dropdown.innerHTML += `<option value="${s.stack_id}">${s.stack_name}</option>`;
-        });
-    } catch (error) {
-        console.error("Error fetching stacks for dropdown:", error);
-    }
-}
