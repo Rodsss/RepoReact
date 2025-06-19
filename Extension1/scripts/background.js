@@ -1,5 +1,3 @@
-// FILE: Extension1/scripts/background.js (Final Version)
-
 chrome.runtime.onInstalled.addListener(() => {
     console.log("1Project extension installed/updated successfully.");
 });
@@ -22,9 +20,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
     }
     
-    // --- Handler for the "Collect" Action ---
+    // --- MODIFIED: Handler for the "Collect" Action, now supports both button workflows ---
     if (request.type === "COLLECT_TEXT") { 
-        const { selectedText } = request.data || {};
+        const { selectedText, shouldOpenTab } = request.data || {};
         if (!selectedText) return;
 
         const webAppUrl = "http://127.0.0.1:8000/";
@@ -32,16 +30,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // This logic finds your app tab or creates a new one
         chrome.tabs.query({ url: `${webAppUrl}*` }, (tabs) => {
             if (tabs.length > 0) {
-                // If the tab is found, focus it and send the text to it.
+                // If the tab is found, always send the text to it.
                 const appTab = tabs[0];
                 chrome.tabs.sendMessage(appTab.id, { type: "TEXT_COLLECTED", text: selectedText });
-                chrome.tabs.update(appTab.id, { active: true });
-                chrome.windows.update(appTab.windowId, { focused: true });
+                
+                // ADDED: Only focus the tab if the 'Collect' button was pressed
+                if (shouldOpenTab) {
+                    chrome.tabs.update(appTab.id, { active: true });
+                    chrome.windows.update(appTab.windowId, { focused: true });
+                }
             } else {
-                // If the app is not open, open a new tab with the text.
-                const urlWithText = `${webAppUrl}?text=${encodeURIComponent(selectedText)}`;
-                chrome.tabs.create({ url: urlWithText });
+                // If the app is not open, only create a new tab if the 'Collect' button was pressed
+                if (shouldOpenTab) {
+                    const urlWithText = `${webAppUrl}?text=${encodeURIComponent(selectedText)}`;
+                    chrome.tabs.create({ url: urlWithText });
+                }
             }
         });
+        return true; // Indicates you intend to send a response asynchronously.
     }
 });

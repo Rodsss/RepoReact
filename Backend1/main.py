@@ -1,15 +1,20 @@
-# FILE: src/Backend1/main.py (Final Modularized Version)
-
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 import os
-from Backend1.api.routers import collections, auth, notes, history # ... etc.
 
-# Import all routers from their new locations
-from Backend1.api.routers import collections, auth, notes, flashcards, media_search, translation
+# Consolidated import for all routers
+from Backend1.api.routers import (
+    auth, 
+    collections, 
+    notes, 
+    flashcards, 
+    media_search, 
+    translation, 
+    history
+)
 
 # Import database and models for initial table creation
 from Backend1.database import Base, engine
