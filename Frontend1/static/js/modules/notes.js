@@ -1,188 +1,321 @@
-// FILE: Frontend1/static/js/modules/notes.js (Final Corrected Version)
+// FILE: Frontend1/static/js/modules/notes.js (Final Consolidated Version)
 
-import { fetchWithAuth } from '../services/apiService.js'; // <-- IMPORTANT: Import the authenticated fetch service
+import { fetchWithAuth } from "../services/apiService.js";
 
 let state = null;
 let renderApp = null;
 
 // --- State Initializer ---
 function initializeState() {
-    if (!state.notes) {
-        state.notes = {
-            folders: [],
-            notesByFolder: {},
-            expandedFolders: new Set(),
-            activeNoteId: null,
-            activeFolderId: null,
-            isLoading: true,
-            editor: { title: '', content: '' }
-        };
-    }
+  if (!state.notes) {
+    state.notes = {
+      folders: [],
+      notesByFolder: {},
+      expandedFolders: new Set(),
+      activeNoteId: null,
+      activeFolderId: null,
+      isLoading: true,
+      editor: { title: "", content: "" },
+    };
+  }
 }
 
 // --- Main Rendering Logic ---
 export function renderNotes() {
-    const container = document.getElementById('notes-folder-list');
-    const titleInput = document.getElementById('note-title-input');
-    const editor = document.getElementById('note-editor');
-    if (!container || !titleInput || !editor) return;
+  const container = document.getElementById("notes-folder-list");
+  const titleInput = document.getElementById("note-title-input");
+  const editor = document.getElementById("note-editor");
+  if (!container || !titleInput || !editor) return;
 
-    if (state.notes.isLoading) {
-        container.innerHTML = '<p>Loading...</p>';
-    } else {
-        container.innerHTML = state.notes.folders.map(FolderComponent).join('');
-    }
+  if (state.notes.isLoading) {
+    container.innerHTML = "<p>Loading...</p>";
+  } else {
+    container.innerHTML = state.notes.folders.map(FolderComponent).join("");
+  }
 
-    titleInput.value = state.notes.editor.title;
-    editor.innerHTML = state.notes.editor.content;
+  titleInput.value = state.notes.editor.title;
+  editor.innerHTML = state.notes.editor.content;
 }
 
 // --- Event Handling and State Changes ---
 export function initializeNotesFeature(appState, mainRenderCallback) {
-    state = appState;
-    renderApp = mainRenderCallback;
-    initializeState();
+  state = appState;
+  renderApp = mainRenderCallback;
+  initializeState();
 
-    const notesContainer = document.getElementById('notes-view-container');
-    if (notesContainer) {
-        notesContainer.addEventListener('click', handleDelegatedEvents);
-    }
-    
-    const titleInput = document.getElementById('note-title-input');
-    const editor = document.getElementById('note-editor');
-    if (titleInput) titleInput.addEventListener('input', () => state.notes.editor.title = titleInput.value);
-    if (editor) editor.addEventListener('input', () => state.notes.editor.content = editor.innerHTML);
+  const notesContainer = document.getElementById("notes-view-container");
+  if (notesContainer) {
+    notesContainer.addEventListener("click", handleDelegatedEvents);
+  }
 
-    initializeNotesEditorToolbar();
-    fetchFolders();
+  const titleInput = document.getElementById("note-title-input");
+  const editor = document.getElementById("note-editor");
+  if (titleInput) {
+    titleInput.addEventListener(
+      "input",
+      () => (state.notes.editor.title = titleInput.value),
+    );
+  }
+  if (editor) {
+    editor.addEventListener(
+      "input",
+      () => (state.notes.editor.content = editor.innerHTML),
+    );
+  }
+
+  initializeNotesEditorToolbar();
+  fetchFolders();
 }
 
 async function handleDelegatedEvents(event) {
-    const target = event.target;
-    const action = target.dataset.action || target.closest('[data-action]')?.dataset.action;
+  const target = event.target;
+  const action =
+    target.dataset.action || target.closest("[data-action]")?.dataset.action;
 
-    switch (action) {
-        case 'toggle-folder':
-            toggleFolder(parseInt(target.closest('[data-folder-id]').dataset.folderId, 10));
-            break;
-        case 'select-note':
-            event.preventDefault();
-            loadNoteIntoEditor(parseInt(target.dataset.noteId, 10));
-            break;
-        case 'delete-note':
-            handleDeleteNoteClick(parseInt(target.dataset.noteId, 10), parseInt(target.dataset.folderId, 10));
-            break;
-        case 'delete-folder':
-            event.stopPropagation();
-            handleDeleteFolderClick(parseInt(target.dataset.folderId, 10), target.dataset.folderName);
-            break;
-        case 'create-folder':
-            handleCreateFolderClick();
-            break;
-        case 'create-note':
-            handleNewNoteClick();
-            break;
-        case 'save-note':
-            saveNote();
-            break;
-    }
+  switch (action) {
+    case "toggle-folder":
+      toggleFolder(
+        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
+      );
+      break;
+    case "select-note":
+      event.preventDefault();
+      loadNoteIntoEditor(parseInt(target.dataset.noteId, 10));
+      break;
+    case "delete-note":
+      handleDeleteNoteClick(
+        parseInt(target.dataset.noteId, 10),
+        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
+      );
+      break;
+    case "delete-folder":
+      event.stopPropagation();
+      handleDeleteFolderClick(
+        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
+        target.closest("[data-folder-name]").dataset.folderName,
+      );
+      break;
+    case "create-folder":
+      handleCreateFolderClick();
+      break;
+    case "create-note":
+      handleNewNoteClick();
+      break;
+    case "save-note":
+      saveNote();
+      break;
+  }
 }
 
-// --- Data Fetching Functions (Now using fetchWithAuth) ---
+// --- Data Fetching Functions ---
 
 async function fetchFolders() {
-    state.notes.isLoading = true;
-    renderApp();
-    try {
-        state.notes.folders = await fetchWithAuth('/notes/folders');
-    } catch (error) { console.error('Error loading folders:', error); }
-    state.notes.isLoading = false;
-    renderApp();
+  state.notes.isLoading = true;
+  renderApp();
+  try {
+    state.notes.folders = await fetchWithAuth("/notes/folders");
+  } catch (error) {
+    console.error("Error loading folders:", error);
+  }
+  state.notes.isLoading = false;
+  renderApp();
 }
 
 async function fetchNotesForFolder(folderId) {
-    try {
-        state.notes.notesByFolder[folderId] = await fetchWithAuth(`/notes/folders/${folderId}/notes`);
-    } catch (error) { console.error(`Error fetching notes for folder ${folderId}:`, error); }
+  try {
+    state.notes.notesByFolder[folderId] = await fetchWithAuth(
+      `/notes/folders/${folderId}/notes`,
+    );
+  } catch (error) {
+    console.error(`Error fetching notes for folder ${folderId}:`, error);
+  }
 }
 
 async function loadNoteIntoEditor(noteId) {
-    state.notes.activeNoteId = noteId;
-    // ... (logic remains the same, but any internal fetch calls should use fetchWithAuth)
-    try {
-        const noteToLoad = await fetchWithAuth(`/notes/${noteId}`);
-        if (noteToLoad) {
-            state.notes.editor.title = noteToLoad.title || "Untitled Note";
-            state.notes.editor.content = noteToLoad.content || "";
-            state.notes.activeFolderId = noteToLoad.folder_id;
-        }
-    } catch (error) { console.error("Could not load note:", error); }
-    renderApp();
+  state.notes.activeNoteId = noteId;
+  try {
+    const noteToLoad = await fetchWithAuth(`/notes/${noteId}`);
+    if (noteToLoad) {
+      state.notes.editor.title = noteToLoad.title || "Untitled Note";
+      state.notes.editor.content = noteToLoad.content || "";
+      state.notes.activeFolderId = noteToLoad.folder_id;
+    }
+  } catch (error) {
+    console.error("Could not load note:", error);
+  }
+  renderApp();
 }
 
-// --- Action Handlers (Now using fetchWithAuth) ---
+// --- Action Handlers ---
 
 async function handleCreateFolderClick() {
-    const folderName = prompt("Enter a name for the new folder:");
-    if (!folderName || !folderName.trim()) return;
-    try {
-        await fetchWithAuth('/notes/folders', {
-            method: 'POST',
-            body: JSON.stringify({ folder_name: folderName.trim() })
-        });
-        await fetchFolders(); // Refetch all folders
-    } catch (error) { alert(`Error creating folder: ${error.message}`); }
+  const folderName = prompt("Enter a name for the new folder:");
+  if (!folderName || !folderName.trim()) return;
+  try {
+    await fetchWithAuth("/notes/folders", {
+      method: "POST",
+      body: JSON.stringify({ folder_name: folderName.trim() }),
+    });
+    await fetchFolders(); // Refetch all folders
+  } catch (error) {
+    alert(`Error creating folder: ${error.message}`);
+  }
 }
 
 async function saveNote() {
-    const { activeNoteId, activeFolderId, editor } = state.notes;
-    if (!activeFolderId) return alert("A folder must be selected to save a note.");
+  const { activeNoteId, activeFolderId, editor } = state.notes;
+  if (!activeFolderId)
+    return alert("A folder must be selected to save a note.");
 
-    const payload = { title: editor.title, content: editor.content, folder_id: activeFolderId };
-    const endpoint = activeNoteId ? `/notes/${activeNoteId}` : '/notes/';
-    const method = activeNoteId ? 'PUT' : 'POST';
+  const payload = {
+    title: editor.title,
+    content: editor.content,
+    folder_id: activeFolderId,
+  };
+  const endpoint = activeNoteId ? `/notes/${activeNoteId}` : "/notes/";
+  const method = activeNoteId ? "PUT" : "POST";
 
-    try {
-        const savedNote = await fetchWithAuth(endpoint, { method, body: JSON.stringify(payload) });
-        state.notes.activeNoteId = savedNote.note_id;
-        await fetchNotesForFolder(activeFolderId);
-        renderApp();
-    } catch (error) { alert(error.message); }
+  try {
+    const savedNote = await fetchWithAuth(endpoint, {
+      method,
+      body: JSON.stringify(payload),
+    });
+    state.notes.activeNoteId = savedNote.note_id;
+    await fetchNotesForFolder(activeFolderId);
+    renderApp();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 async function handleDeleteNoteClick(noteId, folderId) {
-    if (!confirm(`Are you sure you want to delete this note?`)) return;
-    try {
-        await fetchWithAuth(`/notes/${noteId}`, { method: 'DELETE' });
-        if (state.notes.activeNoteId === noteId) {
-            state.notes.activeNoteId = null;
-            state.notes.editor = { title: '', content: '' };
-        }
-        await fetchNotesForFolder(folderId);
-        renderApp();
-    } catch (error) { alert('Failed to delete note.'); }
+  if (!confirm(`Are you sure you want to delete this note?`)) return;
+  try {
+    await fetchWithAuth(`/notes/${noteId}`, { method: "DELETE" });
+    if (state.notes.activeNoteId === noteId) {
+      state.notes.activeNoteId = null;
+      state.notes.editor = { title: "", content: "" };
+    }
+    await fetchNotesForFolder(folderId);
+    renderApp();
+  } catch (error) {
+    alert("Failed to delete note.");
+  }
 }
 
 async function handleDeleteFolderClick(folderId, folderName) {
-    if (!confirm(`Delete folder "${folderName}" and all its notes? This cannot be undone.`)) return;
-    try {
-        await fetchWithAuth(`/notes/folders/${folderId}`, { method: 'DELETE' });
-        await fetchFolders(); // Refetch to update the folder list
-        // Reset editor if the active note was in the deleted folder
-        if (state.notes.activeFolderId === folderId) {
-            state.notes.activeFolderId = null;
-            state.notes.activeNoteId = null;
-            state.notes.editor = { title: '', content: '' };
-        }
-    } catch (error) { alert('Failed to delete folder.'); }
-    renderApp();
+  if (
+    !confirm(
+      `Delete folder "${folderName}" and all its notes? This cannot be undone.`,
+    )
+  )
+    return;
+  try {
+    await fetchWithAuth(`/notes/folders/${folderId}`, { method: "DELETE" });
+    await fetchFolders(); // Refetch to update the folder list
+    if (state.notes.activeFolderId === folderId) {
+      state.notes.activeFolderId = null;
+      state.notes.activeNoteId = null;
+      state.notes.editor = { title: "", content: "" };
+    }
+  } catch (error) {
+    alert("Failed to delete folder.");
+  }
+  renderApp();
 }
 
+// --- IMPLEMENTED HELPER AND COMPONENT FUNCTIONS ---
 
-// --- Unchanged Helper Functions ---
+/**
+ * Attaches event listeners to the rich text editor toolbar buttons.
+ * This is a basic implementation.
+ */
+function initializeNotesEditorToolbar() {
+  const toolbar = document.getElementById("notes-toolbar");
+  if (toolbar) {
+    toolbar.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      const command = button.dataset.command;
+      if (command) {
+        event.preventDefault();
+        document.execCommand(command, false, null);
+      }
+    });
+  }
+}
 
-function initializeNotesEditorToolbar() { /* ... same as before ... */ }
-function handleNewNoteClick() { /* ... same as before ... */ }
-function toggleFolder(folderId) { /* ... same as before ... */ }
-function FolderComponent(folder) { /* ... same as before ... */ }
-function NoteItemComponent(note) { /* ... same as before ... */ }
+/**
+ * Clears the editor state to prepare for a new, unsaved note.
+ * A folder must be selected first.
+ */
+function handleNewNoteClick() {
+  if (!state.notes.activeFolderId) {
+    return alert("Please select a folder before creating a new note.");
+  }
+  state.notes.activeNoteId = null; // This indicates it's a new note
+  state.notes.editor.title = "New Note";
+  state.notes.editor.content = "";
+  renderApp();
+  document.getElementById("note-title-input").focus();
+}
+
+/**
+ * Toggles the expanded/collapsed state of a folder.
+ * @param {number} folderId The ID of the folder to toggle.
+ */
+function toggleFolder(folderId) {
+  if (state.notes.expandedFolders.has(folderId)) {
+    state.notes.expandedFolders.delete(folderId);
+  } else {
+    state.notes.expandedFolders.add(folderId);
+    if (!state.notes.notesByFolder[folderId]) {
+      fetchNotesForFolder(folderId).then(() => renderApp());
+    }
+  }
+  renderApp();
+}
+
+/**
+ * Renders the HTML for a single folder item.
+ * @param {object} folder The folder object from the state.
+ * @returns {string} The HTML string for the folder.
+ */
+function FolderComponent(folder) {
+  const isExpanded = state.notes.expandedFolders.has(folder.folder_id);
+  const notesForFolder = state.notes.notesByFolder[folder.folder_id] || [];
+
+  return `
+        <div class="folder-item">
+            <div class="folder-header ${isExpanded ? "expanded" : ""}" data-action="toggle-folder" data-folder-id="${folder.folder_id}">
+                <i class="bi bi-chevron-right folder-icon"></i>
+                <span class="folder-name">${folder.folder_name}</span>
+                <button class="delete-item-btn" data-action="delete-folder" data-folder-id="${folder.folder_id}" data-folder-name="${folder.folder_name}">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <div class="notes-list-wrapper ${isExpanded ? "expanded" : ""}">
+                ${notesForFolder.map(NoteItemComponent).join("")}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Renders the HTML for a single note item within a folder.
+ * @param {object} note The note object from the state.
+ * @returns {string} The HTML string for the note item.
+ */
+function NoteItemComponent(note) {
+  const isActive = state.notes.activeNoteId === note.note_id;
+  return `
+        <div class="notes-list-item">
+            <a href="#" class="${isActive ? "active" : ""}" data-action="select-note" data-note-id="${note.note_id}">
+                ${note.title || "Untitled Note"}
+            </a>
+            <button class="delete-item-btn" data-action="delete-note" data-note-id="${note.note_id}" data-folder-id="${note.folder_id}">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+}

@@ -1,12 +1,18 @@
 // In Frontend1/static/scss/main.scss
 
-// Import variables first so they are available to all other partials
-@use 'variables';
+// 1. Import variables first so they are available to all other partials.
+@use "variables";
 
-// 1. Import your original layout styles first to form the base.
-@use 'layout';
+// 2. Import core layout styles.
+@use "layout";
 
-// 2. Import the new custom search bar styles.
-@use 'search-bar';
+// 3. Import generic, reusable components.
+@use "buttons";
+@use "search-bar";
 
-// As you create more custom components, you will add them here.
+// 4. Import feature-specific component styles.
+@use "auth";
+@use "notes";
+@use "flashcards";
+@use "discover";
+// As you create more components, you will add their style partials here.

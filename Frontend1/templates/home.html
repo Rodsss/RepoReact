@@ -1,121 +1,185 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/main_style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='css/main_style.css') }}"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <div class="app-container">
-        <nav class="sidebar">
-            <ul class="sidebar-nav">
-                <li>
-                    <button class="menu-button" data-view="settings" title="Settings">
-                        <span class="nav-icon">&#9881;</span>
-                        <span class="nav-text">Settings</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="menu-button active" data-view="translate" title="Translate">
-                        <span class="nav-icon">&#127760;</span>
-                        <span class="nav-text">Translate</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="menu-button" data-view="desk" title="Desk">
-                        <span class="nav-icon">&#128188;</span>
-                        <span class="nav-text">Desk</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="menu-button" data-view="navigate" title="Navigate">
-                        <span class="nav-icon">&#128279;</span>
-                        <span class="nav-text">Navigate</span>
-                    </button>
-                </li>
-            </ul>
-        </nav>
+      <nav class="sidebar">
+        <ul class="sidebar-nav">
+          <li>
+            <button class="menu-button" data-view="settings" title="Settings">
+              <span class="nav-icon">&#9881;</span>
+              <span class="nav-text">Settings</span>
+            </button>
+          </li>
+          <li>
+            <button
+              class="menu-button active"
+              data-view="translate"
+              title="Translate"
+            >
+              <span class="nav-icon">&#127760;</span>
+              <span class="nav-text">Translate</span>
+            </button>
+          </li>
+          <li>
+            <button class="menu-button" data-view="desk" title="Desk">
+              <span class="nav-icon">&#128188;</span>
+              <span class="nav-text">Desk</span>
+            </button>
+          </li>
+          <li>
+            <button class="menu-button" data-view="navigate" title="Navigate">
+              <span class="nav-icon">&#128279;</span>
+              <span class="nav-text">Navigate</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
 
-        <main class="main-content">
-            <div id="translate-view" class="view active">
-
-                <div class="pane pane-one">
-                    <div class="translator-container">
-                        <div class="split-textbox">
-                            <div class="textbox-half" id="source-text" contenteditable="true" data-placeholder="Text from extension..."></div>
-                            <div class="textbox-half" id="translated-text" contenteditable="true" data-placeholder="Translation..."></div>
-                        </div>
-                        <button class="action-button icon-button" title="Save or Bookmark">&#9733;</button>
-                    </div>
-                    <div class="details-section">
-                        <div class="collapsible-menu">
-                            <h4 class="collapsible-header">Definition</h4>
-                            <div class="collapsible-content"><p>Detailed definition will appear here...</p></div>
-                        </div>
-                        <div class="collapsible-menu">
-                            <h4 class="collapsible-header">Uses/Context</h4>
-                            <div class="collapsible-content"><p>Examples of the word used in different contexts will appear here...</p></div>
-                        </div>
-                        <div class="collapsible-menu">
-                            <h4 class="collapsible-header">Read</h4>
-                            <div class="collapsible-content"><p>Full text source or reading material will appear here...</p></div>
-                        </div>
-                    </div>
+      <main class="main-content">
+        <div id="translate-view" class="view active">
+          <div class="pane pane-one">
+            <div class="translator-container">
+              <div class="split-textbox">
+                <div
+                  class="textbox-half"
+                  id="source-text"
+                  contenteditable="true"
+                  data-placeholder="Text from extension..."
+                ></div>
+                <div
+                  class="textbox-half"
+                  id="translated-text"
+                  contenteditable="true"
+                  data-placeholder="Translation..."
+                ></div>
+              </div>
+              <button
+                class="action-button icon-button"
+                title="Save or Bookmark"
+              >
+                &#9733;
+              </button>
+            </div>
+            <div class="details-section">
+              <div class="collapsible-menu">
+                <h4 class="collapsible-header">Definition</h4>
+                <div class="collapsible-content">
+                  <p>Detailed definition will appear here...</p>
                 </div>
-
-                <div class="pane pane-two">
-                    <div class="pane-header">
-                        <button class="pane-header-btn active" data-pane-view="lists">Lists</button>
-                        <button class="pane-header-btn" data-pane-view="history">History</button>
-                    </div>
-                    <div class="pane-content">
-                        <div class="action-bar">
-                            <button class="action-button icon-button back-button hidden" title="Back to lists">&#8592;</button>
-                            <div class="action-bar-buttons">
-                                <button class="action-button icon-button" title="Create new list">+</button>
-                                <button class="action-button icon-button" title="Delete selected">&#128465;</button>
-                            </div>
-                        </div>
-                        <div id="new-list-container" class="input-container">
-                              <input type="text" id="new-list-input" placeholder="New list name...">
-                            </div>
-                        <div id="collections-container" class="scrollable-content">
-                            <p>Your word lists will appear here...</p>
-                        </div>
-                    </div>
+              </div>
+              <div class="collapsible-menu">
+                <h4 class="collapsible-header">Uses/Context</h4>
+                <div class="collapsible-content">
+                  <p>
+                    Examples of the word used in different contexts will appear
+                    here...
+                  </p>
                 </div>
-
-                <div class="pane pane-three">
-                    </div>
+              </div>
+              <div class="collapsible-menu">
+                <h4 class="collapsible-header">Read</h4>
+                <div class="collapsible-content">
+                  <p>
+                    Full text source or reading material will appear here...
+                  </p>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div id="desk-view" class="view" style="display: none;">
-                <h1>Desk Dashboard</h1>
+          <div class="pane pane-two">
+            <div class="pane-header">
+              <button class="pane-header-btn active" data-pane-view="lists">
+                Lists
+              </button>
+              <button class="pane-header-btn" data-pane-view="history">
+                History
+              </button>
             </div>
-
-            <div id="navigate-view" class="view" style="display: none;">
-                <h1>Navigate Dashboard</h1>
+            <div class="pane-content">
+              <div class="action-bar">
+                <button
+                  class="action-button icon-button back-button hidden"
+                  title="Back to lists"
+                >
+                  &#8592;
+                </button>
+                <div class="action-bar-buttons">
+                  <button
+                    class="action-button icon-button"
+                    title="Create new list"
+                  >
+                    +
+                  </button>
+                  <button
+                    class="action-button icon-button"
+                    title="Delete selected"
+                  >
+                    &#128465;
+                  </button>
+                </div>
+              </div>
+              <div id="new-list-container" class="input-container">
+                <input
+                  type="text"
+                  id="new-list-input"
+                  placeholder="New list name..."
+                />
+              </div>
+              <div id="collections-container" class="scrollable-content">
+                <p>Your word lists will appear here...</p>
+              </div>
             </div>
-        </main>
+          </div>
 
+          <div class="pane pane-three"></div>
+        </div>
+
+        <div id="desk-view" class="view" style="display: none">
+          <h1>Desk Dashboard</h1>
+        </div>
+
+        <div id="navigate-view" class="view" style="display: none">
+          <h1>Navigate Dashboard</h1>
+        </div>
+      </main>
     </div>
 
     <div id="save-to-list-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Save to a List</h3>
-            <div id="modal-lists-container" class="modal-lists">
-                </div>
-            <div class="modal-actions">
-                <input type="text" id="modal-new-list-input" placeholder="Or create a new list...">
-                <button id="modal-create-list-btn" class="action-button">Create & Save</button>
-            </div>
-            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+      <div class="modal-content">
+        <h3>Save to a List</h3>
+        <div id="modal-lists-container" class="modal-lists"></div>
+        <div class="modal-actions">
+          <input
+            type="text"
+            id="modal-new-list-input"
+            placeholder="Or create a new list..."
+          />
+          <button id="modal-create-list-btn" class="action-button">
+            Create & Save
+          </button>
         </div>
+        <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+      </div>
     </div>
-    <script type="module" src="{{ url_for('static', path='js/dashboard_app.js') }}"></script>
-</body>
+    <script
+      type="module"
+      src="{{ url_for('static', path='js/dashboard_app.js') }}"
+    ></script>
+  </body>
 </html>

@@ -20,9 +20,6 @@ from Backend1.api.routers import (
 from Backend1.database import Base, engine
 from Backend1 import models
 
-# This line tells SQLAlchemy to create all tables defined in models.py
-# that inherit from Base. This replaces your old create_tables_if_not_exist() function.
-models.Base.metadata.create_all(bind=engine)
 
 # --- Path Configuration ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

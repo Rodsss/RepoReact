@@ -1,492 +1,282 @@
-/* --- Root Variables (Your Color Palette) --- */
+/* --- 1. Variables & Base Theme --- */
 :root {
-    --bg-dark-blue: #081730;
-    --accent-pink: #e94560;
-    --font-color-light: #ffffff;
-    --border-color: #2a3447;
+  --primary-bg: #1a1a2e;
+  --pane-bg: #16213e;
+  --sidebar-bg: #0f192a;
+  --sidebar-text: #e0e0e0;
+  --sidebar-active-bg: #e94560;
+  --main-text: #e0e0e0;
+  --secondary-text: #a8a8a8;
+  --border-color: #4a4a58;
+  --accent-color: #e94560;
+  --success-color: var(
+    --accent-color
+  ); /* Now "success" uses your theme color */
+  --danger-color: #c0392b;
 }
 
-/* --- Basic Reset & Body Styles --- */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
+/* === CORE LAYOUT STYLESHEET === */
+/* --- Base Styles --- */
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark-blue);
-    color: var(--font-color-light);
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  margin: 0;
+  background-color: var(--primary-bg);
+  color: var(--main-text);
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* --- Main App Layout (Using Flexbox for smoother toggle) --- */
-.app-container {
-    display: flex;
-    height: 100%;
+.hidden {
+  display: none !important;
 }
 
-/* --- Collapsible Sidebar --- */
+h1,
+h2,
+h3,
+h4 {
+  color: #ffffff;
+  font-weight: 300;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* --- Main App Layout --- */
 .sidebar {
-    width: 65px; /* Collapsed width */
-    background-color: var(--bg-dark-blue);
-    border-right: 1px solid var(--border-color);
-    padding-top: 20px;
-    transition: width 0.3s ease-in-out; /* Smoother transition on width */
-    overflow-x: hidden; /* Hide overflowing text */
-    flex-shrink: 0; /* Prevent sidebar from shrinking */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width 0.3s ease-in-out;
+  z-index: 1000;
 }
 
-.sidebar:hover {
-    width: 200px; /* Expanded width */
-}
-
-.sidebar-nav {
-    list-style: none;
-}
-
-.menu-button {
-    display: flex;
-    align-items: center;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid transparent;
-    color: var(--font-color-light);
-    font-size: 1.5em;
-    width: 200px; /* Set fixed width to prevent text wrapping */
-    height: 50px;
-    padding: 0 20px;
-    cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
-}
-
-.menu-button:hover {
-    color: var(--accent-pink);
-}
-
-.menu-button.active {
-    border-bottom: 1px solid var(--accent-pink);
-}
-
-.nav-icon {
-    font-size: 1.2em;
-    min-width: 24px;
-    text-align: center;
-}
-
-.nav-text {
-    margin-left: 20px;
-    font-size: 0.8em;
-}
-
-/* --- Main Content Area --- */
 .main-content {
-    flex-grow: 1;
-    overflow: hidden;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 220px;
+  height: 100vh;
+  transition: left 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
-.pane {
-    background-color: var(--bg-dark-blue);
-    padding: 20px;
-    overflow-y: auto;
+.sidebar.collapsed {
+  width: 60px;
 }
 
-/* --- CORRECTED Styles for Pane One Components --- */
-
-.translator-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 30px;
+.main-content.collapsed {
+  left: 60px;
 }
 
-/* Changed from a full outline to a single top line */
-.split-textbox {
-    flex-grow: 1;
-    border-top: 1px solid var(--accent-pink); /* Pink top line */
-    background: transparent;
-    font-size: 1.1em;
+.content-wrapper {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.textbox-half {
-    padding: 15px;
-    min-height: 60px;
-    outline: none;
-    color: var(--font-color-light);
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
 }
 
-/* The divider line between the two boxes */
-#source-text {
-    border-bottom: 1px solid var(--border-color); /* Subtle divider */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 350px 0.8fr 2.2fr;
+  gap: 1rem;
+  flex-grow: 1;
+  overflow: hidden;
+  transition: grid-template-columns 0.4s ease;
 }
 
-[contenteditable="true"]:empty:before {
-    content: attr(data-placeholder);
-    color: #6a7183;
-    pointer-events: none;
-    display: block;
-}
-
-.icon-button {
-    background: transparent;
-    border: none; /* This removes the outline */
-    color: var(--font-color-light);
-    padding: 8px 10px;
-    font-size: 1.3em;
-    line-height: 1;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: color 0.2s; /* Added a transition for the hover effect */
-}
-
-.icon-button:hover {
-    color: var(--accent-pink);
-    background-color: rgba(233, 69, 96, 0.1);
-}
-
-.collapsible-menu {
-    background: transparent;
-}
-
-.collapsible-header {
-    border-top: 1px solid var(--accent-pink);
-    color: var(--font-color-light);
-    width: 100%;
-    padding: 12px 10px;
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.collapsible-content {
-    /* Hidden by default */
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease-out, padding 0.3s ease-out;
-
-    /* Your existing styles are good */
-    padding: 0 15px; /* Set padding to 0 when collapsed */
-    background-color: rgba(233, 69, 96, 0.05);
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-}
-
-/* When the .collapsible-menu has the .active class, the content expands */
-.collapsible-menu.active .collapsible-content {
-    max-height: 500px; /* Animate to this height */
-    padding: 15px;
-    border-bottom: 1px solid var(--border-color); /* Add a bottom border when open */
-}
-
-/* --- Styles for Pane Two --- */
-
-.pane-header {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 15px;
-}
-
-.pane-header-btn {
-    background: transparent;
-    border: none;
-    color: var(--font-color-dark);
-    font-size: 1em;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s, border-color 0.2s;
-}
-
-.pane-header-btn:hover {
-    color: var(--font-color-light);
-}
-
-.pane-header-btn.active {
-    color: var(--accent-pink);
-    border-bottom-color: var(--accent-pink);
-}
-
-.pane-content {
-    height: calc(100% - 50px); /* Adjust based on header height */
-    display: flex;
-    flex-direction: column;
-}
-
-.action-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 10px;
-}
-
-.action-bar-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.back-button.hidden {
-    display: none;
+.dashboard-pane {
+  background: var(--pane-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .scrollable-content {
-    flex-grow: 1;
-    overflow-y: auto;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
 }
 
-/* Style for the list items that will be generated by JavaScript */
-.list-item-button {
-    display: block;
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--font-color-dark);
-    padding: 15px 10px;
-    text-align: left;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s;
+/* --- Sidebar Content --- */
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.list-item-button:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--font-color-light);
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--secondary-text);
+  text-decoration: none;
+  transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
-/* --- Styles for the "Add New List" Input Box --- */
-
-.input-container {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.05);
-    
-    /* Animation properties */
-    overflow: hidden;
-    max-height: 0; /* Hidden by default */
-    padding: 0 10px;
-    opacity: 0;
-    margin-bottom: 0;
-    transition: max-height 0.4s ease, padding 0.4s ease, margin-bottom 0.4s ease, opacity 0.3s ease;
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  background-color: var(--sidebar-active-bg);
+  color: #fff;
 }
 
-.input-container.visible {
-    max-height: 60px; /* Animate to this height */
-    opacity: 1;
-    padding: 10px;
-    margin-bottom: 10px;
+.sidebar .link-text,
+.sidebar .brand-text {
+  transition:
+    opacity 0.2s ease,
+    width 0.1s ease;
 }
 
-#new-list-input {
-    flex-grow: 1;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--font-color-light);
-    padding: 8px 5px;
-    font-size: 1em;
+.sidebar.collapsed .link-text,
+.sidebar.collapsed .brand-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
 }
 
-#new-list-input:focus {
-    outline: none;
-    border-bottom-color: var(--accent-pink);
+.sidebar-toggle-container {
+  margin-top: auto;
+  padding: 1rem;
+  text-align: center;
 }
 
-/* --- Fix for the 3-Pane View Layout --- */
-#translate-view.view.active {
-    display: grid;
-    /* This creates the 1/4, 1/4, and 1/2 widths */
-    grid-template-columns: 1fr 1fr 2fr;
-    gap: 1px;
-    background-color: var(--border-color);
-    height: 100%;
+#sidebar-toggle {
+  background: #34495e;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-/* --- Styles for the "Save to List" Modal --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+.sidebar.collapsed #sidebar-toggle {
+  transform: rotate(180deg);
 }
 
-.modal-overlay:not(.hidden) {
-    opacity: 1;
-    pointer-events: all;
+/* === Generic Component Styles === */
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
 }
 
-.modal-content {
-    /* Now uses absolute positioning */
-    position: absolute;
-    background-color: var(--bg-dark-blue);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    width: 90%;
-    max-width: 300px; /* A bit smaller for a pop-up */
-    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+.collection-item {
+  display: flex;
+  align-items: left;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.modal-content h3 {
-    margin-bottom: 20px;
-    text-align: center;
+.collection-item .item-content.clickable:hover {
+  color: var(--accent-color);
+  cursor: pointer;
 }
 
-.modal-lists {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+/* === Right Pane Feature Navigation === */
+.pane-main-nav {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
-.modal-list-item {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background: transparent;
-    border: none;
-    color: var(--font-color-dark);
-    text-align: left;
-    cursor: pointer;
+.pane-nav-button {
+  flex-grow: 1;
+  background-color: transparent;
+  color: var(--secondary-text);
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 1rem;
 }
 
-.modal-list-item:hover {
-    background-color: rgba(233, 69, 96, 0.1);
-    color: var(--accent-pink);
+.pane-nav-button:hover {
+  color: var(--main-text);
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
+.pane-nav-button.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
 }
 
-#modal-new-list-input {
-    flex-grow: 1;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--font-color-light);
-    padding: 8px 10px;
-    border-radius: 4px;
+.custom-search-bar {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0.75rem;
 }
 
-.modal-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    color: var(--font-color-dark);
-    font-size: 1.8em;
-    cursor: pointer;
+.custom-search-input {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--main-text);
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 8px 35px 8px 5px;
+  transition: border-color 0.3s ease;
+}
+.custom-search-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent-color);
+}
+.custom-search-input::placeholder {
+  color: var(--secondary-text);
+  opacity: 1;
 }
 
-/* SNIPPET TO BE INSERTED */
-
-/* --- Styles for the "Save to List" Modal --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+.custom-search-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.custom-search-btn .bi-search {
+  font-size: 1.2rem;
+  color: var(--secondary-text);
+  transition: color 0.3s ease;
+}
+.custom-search-btn:hover .bi-search {
+  color: var(--accent-color);
 }
 
-.modal-overlay:not(.hidden) {
-    opacity: 1;
-    pointer-events: all;
-}
-
-.modal-content {
-    background-color: #081730; /* --bg-dark-blue */
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #2a3447; /* --border-color */
-    width: 90%;
-    max-width: 350px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-    position: relative;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay:not(.hidden) .modal-content {
-    transform: scale(1);
-}
-
-.modal-content h3 {
-    margin-bottom: 20px;
-    text-align: center;
-    color: #ffffff; /* --font-color-light */
-}
-
-.modal-lists {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-    border-top: 1px solid #2a3447; /* --border-color */
-    border-bottom: 1px solid #2a3447; /* --border-color */
-}
-
-.modal-list-item {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #2a3447;
-    color: #ffffff; /* --font-color-light */
-    text-align: left;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.modal-list-item:hover {
-    background-color: rgba(233, 69, 96, 0.1);
-    color: #e94560; /* --accent-pink */
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-}
-
-#modal-new-list-input {
-    flex-grow: 1;
-    background: transparent;
-    border: 1px solid #2a3447; /* --border-color */
-    color: #ffffff; /* --font-color-light */
-    padding: 8px 10px;
-    border-radius: 4px;
-}
-
-.modal-close-btn {
-    position: absolute;
-    top: 5px;
-    right: 15px;
-    background: none;
-    border: none;
-    color: #6a7183;
-    font-size: 2em;
-    line-height: 1;
-    cursor: pointer;
-    padding: 5px;
-}
+/*# sourceMappingURL=main_style.css.map */
