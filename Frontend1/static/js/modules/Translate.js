@@ -34,6 +34,10 @@ export async function handleIncomingText(text) {
     sourceTextBox.textContent = text;
     translatedTextBox.textContent = ''; // Clear previous translation
 
+    // --- ADDED: The following actions are commented out to decouple them from the initial text display. ---
+    // --- This allows the user to manually trigger logging and translation later. ---
+
+    /*
     // 2. Log the collected text to history via the backend
     try {
         await fetchWithAuth('/history/log', {
@@ -57,4 +61,5 @@ export async function handleIncomingText(text) {
     } catch (error) {
         translatedTextBox.textContent = 'Translation failed.';
     }
+    */
 }

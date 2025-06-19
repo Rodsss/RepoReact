@@ -1,169 +1,87 @@
-// Using a mock fetch for design purposes. Replace with your actual apiService import.
-const fetchWithAuth = async (endpoint, options) => {
-    console.log(`Fetching (mock): ${endpoint}`, options);
-    if (endpoint === '/collections/stacks' && options?.method === 'POST') {
-        return Promise.resolve({ success: true });
-    }
-    if (endpoint === '/collections/stacks') {
-        return Promise.resolve([
-            { stack_id: 1, stack_name: 'My First List' },
-            { stack_id: 2, stack_name: 'Spanish Verbs' }
-        ]);
-    }
-    if (endpoint.includes('/stacks/')) {
-        return Promise.resolve([{ text: 'Hola' }, { text: 'Mundo' }]);
-    }
-    return Promise.resolve([]);
-};
+// This module will now handle all logic for fetching, rendering, and creating lists.
 
-let state = null;
-let renderApp = null;
+const userId = "default-user"; // Use a dynamic user ID in a real app
 let collectionsContainer = null;
-let backButton = null;
+let newListInput = null;
 
 // --- Initialization ---
-export function initializeCollectionsFeature(appState, mainRenderCallback) {
-    state = appState;
-    renderApp = mainRenderCallback;
-    
-    if (!state.collections) {
-        state.collections = {
-            view: 'all-lists',
-            lists: [],
-            currentListId: null,
-            currentListWords: []
-        };
-    }
-
+// This function will be called by dashboard_app.js to set everything up.
+export function initializeCollectionsModule() {
     collectionsContainer = document.getElementById('collections-container');
-    backButton = document.querySelector('.pane-two .back-button');
-
+    newListInput = document.getElementById('new-list-input');
     const paneTwo = document.querySelector('.pane-two');
-    if (paneTwo) {
-        paneTwo.addEventListener('click', handlePaneEvents);
-    }
 
-    // --- NEW: Add event listener for the input box ---
-    const newListInput = document.getElementById('new-list-input');
-    if (newListInput) {
-        newListInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Prevent default form submission
-                handleSaveNewList();
+    if (paneTwo) {
+        // Listen for clicks on the '+' button
+        paneTwo.addEventListener('click', (event) => {
+            if (event.target.closest('.action-button[title="Create new list"]')) {
+                const container = document.getElementById('new-list-container');
+                container.classList.toggle('visible');
+                if (container.classList.contains('visible')) {
+                    newListInput.focus();
+                }
             }
         });
     }
 
-    fetchLists();
-}
-
-// --- Main Render Function ---
-export function renderCollections() {
-    if (!collectionsContainer || !state.collections) return;
-    if (state.collections.view === 'all-lists') {
-        renderAllListsView();
-    } else if (state.collections.view === 'single-list') {
-        renderSingleListView();
-    }
-}
-
-// --- Event Handling ---
-function handlePaneEvents(event) {
-    const target = event.target;
-    const listItem = target.closest('.list-item-button');
-    if (listItem) {
-        viewSingleList(listItem.dataset.listId);
-        return;
-    }
-    if (target.closest('.back-button')) {
-        viewAllLists();
-        return;
-    }
-    if (target.closest('.action-button[title="Create new list"]')) {
-        toggleNewListBox(true);
-        return;
-    }
-}
-
-// --- State and View Changers ---
-function viewAllLists() {
-    state.collections.view = 'all-lists';
-    backButton.classList.add('hidden');
-    renderCollections();
-}
-
-async function viewSingleList(listId) {
-    state.collections.view = 'single-list';
-    state.collections.currentListId = listId;
-    backButton.classList.remove('hidden');
-    try {
-        state.collections.currentListWords = await fetchWithAuth(`/collections/stacks/${listId}/flashcards`);
-    } catch (error) {
-        state.collections.currentListWords = [];
-    }
-    renderCollections();
-}
-
-function toggleNewListBox(show) {
-    const container = document.getElementById('new-list-container');
-    const input = document.getElementById('new-list-input');
-    if (show) {
-        container.classList.add('visible');
-        input.focus();
-    } else {
-        container.classList.remove('visible');
-    }
-}
-
-async function handleSaveNewList() {
-    const input = document.getElementById('new-list-input');
-    const newListName = input.value.trim();
-    if (!newListName) {
-        toggleNewListBox(false); // Hide box if input is empty
-        return;
-    }
-
-    try {
-        await fetchWithAuth('/collections/stacks', {
-            method: 'POST',
-            body: JSON.stringify({ stack_name: newListName })
+    if (newListInput) {
+        // Listen for 'Enter' key to create a new list
+        newListInput.addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const newListName = newListInput.value.trim();
+                if (newListName) {
+                    await createNewList(newListName);
+                    newListInput.value = ''; // Clear input
+                    document.getElementById('new-list-container').classList.remove('visible'); // Hide box
+                }
+            }
         });
-        input.value = '';
-        toggleNewListBox(false);
-        await fetchLists(); // Refetch lists to show the new one
-    } catch (error) {
-        alert("Failed to create list.");
     }
+
+    // Fetch and display the lists when the module is first loaded
+    fetchAndRenderLists();
 }
 
-// --- Data Fetching ---
-async function fetchLists() {
+
+// --- Data Fetching and Rendering ---
+
+async function fetchAndRenderLists() {
     try {
-        state.collections.lists = await fetchWithAuth('/collections/stacks');
+        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/${userId}/stacks`);
+        if (!response.ok) throw new Error('Failed to fetch lists.');
+        let lists = await response.json();
+
+        // Sort lists alphabetically by name
+        lists.sort((a, b) => a.stack_name.localeCompare(b.stack_name));
+
+        if (collectionsContainer) {
+            collectionsContainer.innerHTML = lists.length > 0
+                ? lists.map(list => `<button class="list-item-button" data-stack-id="${list.stack_id}">${list.stack_name}</button>`).join('')
+                : '<p style="padding: 15px; color: #6a7183;">No lists found. Click the \'+\' icon to create one.</p>';
+        }
     } catch (error) {
-        state.collections.lists = [];
+        console.error("Failed to render lists:", error);
+        if (collectionsContainer) {
+            collectionsContainer.innerHTML = '<p style="padding: 15px; color: #e94560;">Error loading lists.</p>';
+        }
     }
-    renderCollections();
 }
 
-// --- DOM Rendering ---
-function renderAllListsView() {
-    collectionsContainer.innerHTML = state.collections.lists.length === 0
-        ? `<p style="padding: 10px;">No lists found. Create one with the '+' button!</p>`
-        : state.collections.lists.map(list => `
-            <button class="list-item-button" data-list-id="${list.stack_id}">
-                ${list.stack_name}
-            </button>
-        `).join('');
-}
+async function createNewList(listName) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/v1/stacks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stack_name: listName })
+        });
+        if (!response.ok) throw new Error('API call failed.');
 
-function renderSingleListView() {
-    collectionsContainer.innerHTML = state.collections.currentListWords.length === 0
-        ? `<p style="padding: 10px;">This list is empty.</p>`
-        : state.collections.currentListWords.map(word => `<div class="word-item">${word.text}</div>`).join('');
-}
+        // Refresh the list display after successful creation
+        await fetchAndRenderLists();
 
-// Add a simple style for the word items once
-const wordItemStyle = document.createElement('style');
-wordItemStyle.innerHTML = `.word-item { padding: 12px 10px; border-bottom: 1px solid var(--border-color); }`;
-document.head.appendChild(wordItemStyle);
+    } catch (error) {
+        console.error("Failed to create new list:", error);
+        alert("Error: Could not create the new list.");
+    }
+}
