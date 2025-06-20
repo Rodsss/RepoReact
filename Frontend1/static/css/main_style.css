@@ -1,17 +1,106 @@
-/* Error: Can't find stylesheet to import.
- *    ,
- * 20 | @use 'collapsible-menu'; // <-- ADD THIS LINE
- *    | ^^^^^^^^^^^^^^^^^^^^^^^
- *    '
- *   Frontend1\static\scss\main.scss 20:1  root stylesheet */
+/* General Body and Layout */
+body {
+  display: flex;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+}
 
-body::before {
-  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
-      "Droid Sans Mono", monospace, monospace;
-  white-space: pre;
-  display: block;
-  padding: 1em;
-  margin-bottom: 1em;
-  border-bottom: 2px solid black;
-  content: "Error: Can't find stylesheet to import.\a    \2577 \a 20 \2502  @use 'collapsible-menu'; // <-- ADD THIS LINE\a    \2502  ^^^^^^^^^^^^^^^^^^^^^^^\a    \2575 \a   Frontend1\\static\\scss\\main.scss 20:1  root stylesheet";
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: #fff;
+  border-right: 1px solid #dee2e6;
+  transition: width 0.3s ease;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 24px;
+  transition: margin-left 0.3s ease;
+}
+
+/* This is the direct wrapper of the content and where the grid is created */
+.content-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr;
+  gap: 24px;
+  height: calc(100vh - 48px);
+}
+
+.pane {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.pane h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Styles for Pane 1 Content */
+#pane-one {
+  padding-top: 0; /* Adjust padding to align header */
+}
+#pane-one h2 {
+    padding-top: 20px; /* Add padding back to the header */
+}
+
+.rake-container {
+  flex-grow: 1;
+  display: flex;
+  gap: 15px;
+}
+
+.textbox-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+#source-text-area,
+#pane-one textarea {
+  width: 100%;
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: none;
+}
+
+.star-button {
+  background: transparent;
+  border: 1px solid #ccc;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  color: #6c757d;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-top: 15px;
+  transition: all 0.2s ease-in-out;
+}
+
+.star-button:hover {
+  background-color: #f8f9fa;
+  border-color: #888;
+  color: #ffc107;
+}
+
+/* Ensure the Bootstrap Icons are sized correctly */
+.bi {
+    vertical-align: -0.125em;
 }
