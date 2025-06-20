@@ -1,0 +1,40 @@
+/* === DISCOVER FEATURE STYLES === */
+#fake-player-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+#fake-player-screen,
+#fake-player-controls {
+  flex-shrink: 0;
+}
+.caption-wrapper {
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#caption-box {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+#fake-player-screen {
+  height: 360px;
+  background-color: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  border-radius: 8px;
+}
+#caption-box p {
+  transition: background-color 0.2s ease-in-out;
+  padding: 4px;
+  border-radius: 4px;
+}
+#caption-box p.active-caption {
+  background-color: var(--accent-color);
+  color: #fff;
+}

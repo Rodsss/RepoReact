@@ -12,10 +12,10 @@
   background-color: transparent;
   border: none;
   border-radius: 0; // Ensure sharp corners, no default rounding
-  
+
   // --- The Bottom Line ---
   border-bottom: 2px solid var(--border-color); // Default line color
-  
+
   // --- Font & Text Styling ---
   color: var(--main-text); // Color of the text the user types
   width: 100%;
@@ -49,7 +49,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  
+
   // --- Icon Styling ---
   .bi-search {
     font-size: 1.2rem;
@@ -57,7 +57,7 @@
     color: var(--secondary-text); // Start with a muted color
     transition: color 0.3s ease;
   }
-  
+
   // --- Change icon color when hovering over the button ---
   &:hover .bi-search {
     color: var(--accent-color);

@@ -1,7 +1,7 @@
 /* --- 1. Variables & Base Theme --- */
 :root {
-    --primary-bg: #1a1a2e;
-    --pane-bg: #16213e;
+    --primary-bg: #0f192a; /* UPDATED to the new dark blue */
+    --pane-bg: #152145;
     --sidebar-bg: #0f192a;
     --sidebar-text: #e0e0e0;
     --sidebar-active-bg: #e94560;
@@ -9,6 +9,6 @@
     --secondary-text: #a8a8a8;
     --border-color: #4a4a58;
     --accent-color: #e94560;
-    --success-color: var(--accent-color); /* Now "success" uses your theme color */
+    --success-color: var(--accent-color);
     --danger-color: #c0392b;
 }

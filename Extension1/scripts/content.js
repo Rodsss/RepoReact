@@ -1,3 +1,6 @@
+//
+// FILE: Extension1/scripts/content.js (Final Consolidated Version)
+//
 let activeIcon = null;
 let activeMenu = null;
 let hideMenuTimeout = null;
@@ -31,7 +34,7 @@ function createIcon(x, y, text) {
 }
 
 /**
- * MODIFIED: Creates, positions, and displays the menu with "Translate" and "Collect" buttons.
+ * Creates, positions, and displays the menu with "Translate" and "Raking" buttons.
  */
 function showMenu(iconElement, selectedText) {
     if (activeMenu) return;
@@ -61,14 +64,14 @@ function showMenu(iconElement, selectedText) {
     translateBtn.dataset.action = 'translate-text';
     translateBtn.style.cssText = 'background: #333; border: 1px solid #777; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px;';
     
-    // --- Collect Button ---
-    const collectBtn = document.createElement('button');
-    collectBtn.textContent = 'Collect';
-    collectBtn.dataset.action = 'collect-text';
-    collectBtn.style.cssText = 'background: #333; border: 1px solid #777; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px;';
+    // --- Raking Button ---
+    const rakingBtn = document.createElement('button');
+    rakingBtn.textContent = 'Raking';
+    rakingBtn.dataset.action = 'rake-text';
+    rakingBtn.style.cssText = 'background: #333; border: 1px solid #777; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px;';
 
     buttonContainer.appendChild(translateBtn);
-    buttonContainer.appendChild(collectBtn);
+    buttonContainer.appendChild(rakingBtn);
     activeMenu.appendChild(buttonContainer);
 
     // --- Translation Result Area ---
@@ -81,7 +84,7 @@ function showMenu(iconElement, selectedText) {
         margin-top: 5px;
         min-height: 20px;
         font-size: 14px;
-        display: none; /* Hidden by default */
+        display: none;
     `;
     activeMenu.appendChild(translationResultDiv);
     
@@ -102,25 +105,32 @@ function showMenu(iconElement, selectedText) {
 }
 
 /**
- * ADDED: New helper function to perform in-page translation.
+ * Asks the background script to perform the translation API call.
  */
 async function getTranslation(text) {
     const resultDiv = document.getElementById('project1-translation-result');
     if (!resultDiv) return;
 
-    resultDiv.style.display = 'block'; // Show the result area
+    resultDiv.style.display = 'block';
     resultDiv.textContent = 'Translating...';
+    
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/translate", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
+        const response = await chrome.runtime.sendMessage({
+            type: "API_REQUEST",
+            payload: {
+                endpoint: "/translate",
+                options: {
+                    method: 'POST',
+                    body: JSON.stringify({ text: text })
+                }
+            }
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+
+        if (response.error) {
+            throw new Error(response.error);
         }
-        const data = await response.json();
-        resultDiv.textContent = data.translated_text;
+        
+        resultDiv.textContent = response.data.translated_text;
     } catch (error) {
         console.error("Translation request failed:", error);
         resultDiv.textContent = 'Translation failed.';
@@ -128,31 +138,21 @@ async function getTranslation(text) {
 }
 
 /**
- * MODIFIED: This function now handles the two different button actions.
+ * Handles clicks on the "Translate" and "Raking" buttons.
  */
 function handleMenuAction(action, text) {
     if (action === 'translate-text') {
-        // Perform the in-page translation
         getTranslation(text);
-        // Send text to dashboard in the background
-        chrome.runtime.sendMessage({
-            type: 'COLLECT_TEXT',
-            data: {
-                selectedText: text,
-                shouldOpenTab: false // Do not open a new tab
-            }
-        });
-        // Do not close the menu immediately, so the user can see the translation
+        // Keep the menu open so the user can see the translation
         clearTimeout(hideMenuTimeout); 
         hideMenuTimeout = setTimeout(removeExistingIconAndMenu, 2000); // Close after 2 seconds
         
-    } else if (action === 'collect-text') {
-        // Send text to dashboard and open it for inspection
+    } else if (action === 'rake-text') {
+        // Send the text to the background script to be opened in a new tab
         chrome.runtime.sendMessage({
-            type: 'COLLECT_TEXT',
+            type: 'RAKE_TEXT',
             data: {
-                selectedText: text,
-                shouldOpenTab: true // Open a new tab
+                selectedText: text
             }
         });
         removeExistingIconAndMenu(); // Close menu immediately
