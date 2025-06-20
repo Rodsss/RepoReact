@@ -1,0 +1,56 @@
+// In Frontend1/static/scss/_language-view.scss
+
+.rake-container {
+    position: relative; // Needed to position the star button
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.rake-text-boxes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.rake-box {
+    background-color: transparent;
+    color: var(--main-text);
+    padding: 10px 5px;
+    font-size: 1.1rem;
+    border: none;
+    border-top: 1px solid var(--accent-color); // Reddish-pink top line
+    min-height: 40px; // Ensure it has some height even when empty
+
+    &:focus {
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    // Placeholder text style
+    &:empty:before {
+        content: attr(data-placeholder);
+        color: var(--secondary-text);
+        cursor: text;
+    }
+}
+
+.star-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: transparent;
+    border: none;
+    color: var(--secondary-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease-in-out;
+
+    &:hover {
+        color: var(--accent-color);
+    }
+}

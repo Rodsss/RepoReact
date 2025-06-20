@@ -1,185 +1,138 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', path='css/main_style.css') }}"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div class="app-container">
-      <nav class="sidebar">
-        <ul class="sidebar-nav">
-          <li>
-            <button class="menu-button" data-view="settings" title="Settings">
-              <span class="nav-icon">&#9881;</span>
-              <span class="nav-text">Settings</span>
-            </button>
-          </li>
-          <li>
-            <button
-              class="menu-button active"
-              data-view="translate"
-              title="Translate"
-            >
-              <span class="nav-icon">&#127760;</span>
-              <span class="nav-text">Translate</span>
-            </button>
-          </li>
-          <li>
-            <button class="menu-button" data-view="desk" title="Desk">
-              <span class="nav-icon">&#128188;</span>
-              <span class="nav-text">Desk</span>
-            </button>
-          </li>
-          <li>
-            <button class="menu-button" data-view="navigate" title="Navigate">
-              <span class="nav-icon">&#128279;</span>
-              <span class="nav-text">Navigate</span>
-            </button>
-          </li>
-        </ul>
-      </nav>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>1Project Dashboard</title>
+        <link rel="stylesheet" href="{{ url_for('static', path='css/main_style.css') }}" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+    </head>
+<body>
+    <div id="auth-container" class="hidden"></div>
 
-      <main class="main-content">
-        <div id="translate-view" class="view active">
-          <div class="pane pane-one">
-            <div class="translator-container">
-              <div class="split-textbox">
-                <div
-                  class="textbox-half"
-                  id="source-text"
-                  contenteditable="true"
-                  data-placeholder="Text from extension..."
-                ></div>
-                <div
-                  class="textbox-half"
-                  id="translated-text"
-                  contenteditable="true"
-                  data-placeholder="Translation..."
-                ></div>
-              </div>
-              <button
-                class="action-button icon-button"
-                title="Save or Bookmark"
-              >
-                &#9733;
-              </button>
+    <div id="main-app-container" class="app-container hidden">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span class="brand-text">1Project</span>
             </div>
-            <div class="details-section">
-              <div class="collapsible-menu">
-                <h4 class="collapsible-header">Definition</h4>
-                <div class="collapsible-content">
-                  <p>Detailed definition will appear here...</p>
-                </div>
-              </div>
-              <div class="collapsible-menu">
-                <h4 class="collapsible-header">Uses/Context</h4>
-                <div class="collapsible-content">
-                  <p>
-                    Examples of the word used in different contexts will appear
-                    here...
-                  </p>
-                </div>
-              </div>
-              <div class="collapsible-menu">
-                <h4 class="collapsible-header">Read</h4>
-                <div class="collapsible-content">
-                  <p>
-                    Full text source or reading material will appear here...
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pane pane-two">
-            <div class="pane-header">
-              <button class="pane-header-btn active" data-pane-view="lists">
-                Lists
-              </button>
-              <button class="pane-header-btn" data-pane-view="history">
-                History
-              </button>
-            </div>
-            <div class="pane-content">
-              <div class="action-bar">
-                <button
-                  class="action-button icon-button back-button hidden"
-                  title="Back to lists"
-                >
-                  &#8592;
+            <ul class="sidebar-nav">
+                <li>
+                    <button class="menu-button active" data-view="translate" title="Language">
+                        <i class="bi bi-translate"></i>
+                        <span class="nav-text">Language</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="menu-button" data-view="flashcards" title="Decks">
+                        <i class="bi bi-stack"></i>
+                        <span class="nav-text">Decks</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="menu-button" data-view="discover" title="Discover">
+                        <i class="bi bi-compass"></i>
+                        <span class="nav-text">Discover</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                 <button class="menu-button" data-view="settings" title="Settings">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Settings</span>
                 </button>
-                <div class="action-bar-buttons">
-                  <button
-                    class="action-button icon-button"
-                    title="Create new list"
-                  >
-                    +
-                  </button>
-                  <button
-                    class="action-button icon-button"
-                    title="Delete selected"
-                  >
-                    &#128465;
-                  </button>
-                </div>
-              </div>
-              <div id="new-list-container" class="input-container">
-                <input
-                  type="text"
-                  id="new-list-input"
-                  placeholder="New list name..."
-                />
-              </div>
-              <div id="collections-container" class="scrollable-content">
-                <p>Your word lists will appear here...</p>
-              </div>
+                <button id="logout-button" class="menu-button" title="Logout">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span class="nav-text">Logout</span>
+                </button>
             </div>
-          </div>
+        </nav>
 
-          <div class="pane pane-three"></div>
-        </div>
+        <main class="main-content">
+            <div class="workspace-container">
+                <div id="translate-view" class="view">
+                    <div class="pane pane-one">
+                        <div class="rake-container">
+                            <div class="rake-text-boxes">
+                                <div id="source-text" class="rake-box" contenteditable="true" data-placeholder="Text from Rake..."></div>
+                                <div id="translated-text" class="rake-box" contenteditable="true" data-placeholder="Translation..."></div>
+                            </div>
+                            <button id="save-to-list-btn" class="star-button" title="Save to a list" data-action="open-save-modal">
+                                <i class="bi bi-star-fill"></i>
+                            </button>
+                        </div>
+                        <div class="details-section">
+                            <div class="collapsible-menu">
+                                <h4 class="collapsible-header">Definition</h4>
+                                <div class="collapsible-content"><p>Detailed definition will appear here...</p></div>
+                            </div>
+                            <div class="collapsible-menu">
+                                <h4 class="collapsible-header">Syn/Ant</h4>
+                                <div class="collapsible-content"><p>Synonyms and Antonyms will appear here...</p></div>
+                            </div>
+                            <div class="collapsible-menu">
+                                <h4 class="collapsible-header">Uses/Context</h4>
+                                <div class="collapsible-content"><p>Examples will appear here...</p></div>
+                            </div>
+                            <div class="collapsible-menu">
+                                <h4 class="collapsible-header">Read</h4>
+                                <div class="collapsible-content"><p>Full text source will appear here...</p></div>
+                            </div>
+                        </div>
+                    </div>
 
-        <div id="desk-view" class="view" style="display: none">
-          <h1>Desk Dashboard</h1>
-        </div>
+                    <div id="pane-two-content" class="pane pane-two">
+                        <div class="pane-header">
+                            <button class="pane-header-btn active" data-pane-view="lists">Lists</button>
+                            <div class="pane-actions">
+                                <button class="icon-button" title="Show Rake History" data-action="show-rake-history"><i class="bi bi-clock-history"></i></button>
+                                <button class="icon-button" title="Create new list" data-action="toggle-list-creator"><i class="bi bi-plus-lg"></i></button>
+                            </div>
+                        </div>
+                        <div class="pane-content">
+                            <div id="new-list-container" class="input-container hidden">
+                                <input type="text" id="new-list-input" placeholder="New list name...">
+                            </div>
+                            <div id="collections-container" class="scrollable-content"></div>
+                        </div>
+                    </div>
 
-        <div id="navigate-view" class="view" style="display: none">
-          <h1>Navigate Dashboard</h1>
-        </div>
-      </main>
+                    <div class="pane pane-three">
+                        <div class="pane-header-nav">
+                            <button class="pane-nav-btn active" data-pane3-view="notes">Notes</button>
+                            <button class="pane-nav-btn" data-pane3-view="flashcards">Flashcards</button>
+                            <button class="pane-nav-btn" data-pane3-view="watch">Watch/Listen</button>
+                            <button class="pane-nav-btn" data-pane3-view="connect">Connect</button>
+                            <button class="pane-nav-btn" data-pane3-view="read">Read</button>
+                        </div>
+                        <div class="pane-content-area">
+                            <div id="pane3-notes-view" class="pane3-view active"><p>Notes for the selected word...</p></div>
+                            <div id="pane3-flashcards-view" class="pane3-view" style="display: none;"><p>Flashcards for the selected word...</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="flashcards-view" class="view" style="display: none;"></div>
+                <div id="discover-view" class="view" style="display: none;"></div>
+                <div id="settings-view" class="view" style="display: none;"></div>
+            </div>
+        </main>
     </div>
 
     <div id="save-to-list-modal" class="modal-overlay hidden">
-      <div class="modal-content">
-        <h3>Save to a List</h3>
-        <div id="modal-lists-container" class="modal-lists"></div>
-        <div class="modal-actions">
-          <input
-            type="text"
-            id="modal-new-list-input"
-            placeholder="Or create a new list..."
-          />
-          <button id="modal-create-list-btn" class="action-button">
-            Create & Save
-          </button>
+        <div class="modal-content">
+            <h3>Save to a List</h3>
+            <div id="modal-lists-container" class="modal-lists"></div>
+            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
         </div>
-        <button id="modal-close-btn" class="modal-close-btn">&times;</button>
-      </div>
     </div>
-    <script
-      type="module"
-      src="{{ url_for('static', path='js/dashboard_app.js') }}"
-    ></script>
-  </body>
+    <div id="list-options-menu" class="context-menu hidden">
+        <button class="context-menu-btn" data-action="rename-list"><i class="bi bi-pencil-fill"></i> Rename</button>
+        <button class="context-menu-btn" data-action="delete-list"><i class="bi bi-trash-fill"></i> Delete</button>
+    </div>
+
+    <script type="module" src="{{ url_for('static', path='js/dashboard_app.js') }}"></script>
+</body>
 </html>

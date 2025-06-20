@@ -16,3 +16,8 @@
 @use "flashcards";
 @use "discover";
 // As you create more components, you will add their style partials here.
+@use 'language-view'; // <-- ADD THIS LINE
+@use 'collapsible-menu'; // <-- ADD THIS LINE
+@use 'pane-navigation'; // <-- ADD THIS LINE
+@use 'modals'; // <-- ADD THIS LINE
+@use 'context-menu'; // <-- ADD THIS LINE

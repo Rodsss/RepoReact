@@ -1,9 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Project 1",
-  "version": "1.0",
+  "version": "1.1.0",
   "description": "A browser extension for Project 1.",
-  "permissions": ["activeTab", "storage", "scripting"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
   "background": {
     "service_worker": "scripts/background.js",
     "type": "module"
@@ -15,16 +20,12 @@
       "css": ["css/content.css"]
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["images/icon-16.png"],
-      "matches": ["<all_urls>"]
-    }
-  ],
+  "web_accessible_resources": [{
+    "resources": ["images/icon-16.png"],
+    "matches": ["<all_urls>"]
+  }],
   "action": {
     "default_popup": "html/options.html",
-    "default_icon": {
-      "16": "images/icon-16.png"
-    }
+    "default_icon": { "16": "images/icon-16.png" }
   }
 }

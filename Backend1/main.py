@@ -26,6 +26,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Paths are relative to this file's location inside 'src'
 static_path = os.path.join(BASE_DIR, "../Frontend1/static")
 templates_path = os.path.join(BASE_DIR, "../Frontend1/templates")
+shared_path = os.path.join(BASE_DIR, "../shared") # <-- ADD THIS LINE
 
 
 # --- FastAPI App Instance ---
@@ -46,6 +47,7 @@ app.add_middleware(
 
 # --- Static Files and Templates ---
 app.mount("/static", StaticFiles(directory=static_path), name="static")
+app.mount("/shared", StaticFiles(directory=shared_path), name="shared") # <-- ADD THIS LINE
 templates = Jinja2Templates(directory=templates_path)
 
 # --- Include All Routers ---
