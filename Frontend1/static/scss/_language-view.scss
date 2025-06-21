@@ -1,56 +1,72 @@
-// In Frontend1/static/scss/_language-view.scss
+// In _language-view.scss
+#pane-one { padding: 0; }
+.rake-container { flex-grow: 1; display: flex; gap: 15px; padding: 20px; }
+.textbox-container { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
+#pane-one textarea { width: 100%; flex-grow: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; font-size: 14px; resize: none; background-color: var(--background-color); color: var(--text-color); }
+#pane-two { padding: 0; }
+#new-list-input-container { padding: 10px 20px; border-bottom: 1px solid var(--border-color); }
+#new-list-input { width: 100%; padding: 8px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--background-color); color: var(--text-color); }
+.list-group { list-style: none; margin: 0; padding: 0; }
+.list-group-item { padding: 12px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 15px; font-weight: 500; color: var(--text-color); }
+.list-group-item:hover { background-color: var(--pane-background); }
+.list-group-item.active { background-color: var(--primary-color); color: var(--text-color); font-weight: 600; }
+.word-list { list-style: none; padding: 5px 0 10px 20px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+.list-group-item.active + .word-list { max-height: 500px; }
+.word-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 20px; color: var(--secondary-text); }
+.word-item:hover { background-color: var(--pane-background); }
+.word-item .word-text { cursor: pointer; flex-grow: 1; font-size: 14px; }
+.hidden { display: none; }
 
-.rake-container {
-    position: relative; // Needed to position the star button
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+// ...at the end of the file
+#new-list-input-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.rake-text-boxes {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+#new-list-input {
+  flex-grow: 1; // Allows the input to take up available space
 }
 
-.rake-box {
-    background-color: transparent;
+// ...at the end of the file
+
+// --- Collapsible Menus ---
+.collapsible-menu-container {
+  padding: 0 20px 20px 20px;
+  overflow: auto;
+}
+
+.collapsible-trigger {
+  background-color: transparent;
+  color: var(--secondary-text);
+  cursor: pointer;
+  padding: 15px 5px;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+
+  &:hover {
     color: var(--main-text);
-    padding: 10px 5px;
-    font-size: 1.1rem;
-    border: none;
-    border-top: 1px solid var(--accent-color); // Reddish-pink top line
-    min-height: 40px; // Ensure it has some height even when empty
+  }
 
-    &:focus {
-        outline: none;
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-
-    // Placeholder text style
-    &:empty:before {
-        content: attr(data-placeholder);
-        color: var(--secondary-text);
-        cursor: text;
-    }
+  &.active {
+    color: var(--accent-color);
+  }
 }
 
-.star-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: transparent;
-    border: none;
-    color: var(--secondary-text);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s ease-in-out;
+.collapsible-content {
+  padding: 0 5px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  background-color: transparent;
 
-    &:hover {
-        color: var(--accent-color);
-    }
+  p {
+    padding: 15px 0;
+  }
 }

@@ -1,247 +1,189 @@
-//
-// FILE: Frontend1/static/js/modules/collections.js (Final Consolidated Version)
-//
-import { fetchWithAuth } from '../services/apiService.js';
+const CollectionsModule = (() => {
+  // --- DOM Elements ---
+  const listsContainer = document.getElementById('lists-container');
+  const addListBtn = document.getElementById('add-list-btn');
+  const newListInputContainer = document.getElementById('new-list-input-container');
+  const newListInput = document.getElementById('new-list-input');
 
-let state = null;
-let renderApp = null;
+  // --- State ---
+  let listsData = [
+    { name: "Fruits", words: ["Apple", "Banana", "Cherry"] },
+    { name: "Animals", words: ["Dog", "Cat", "Elephant"] }
+  ];
+  let activeListIndex = -1;
 
-// --- State Initializer ---
-function initializeState() {
-    if (!state.collections) {
-        state.collections = {
-            lists: [],
-            isLoading: true,
-            error: null,
-            isCreatorVisible: false,
-        };
-    }
-    if (!state.modal) {
-        state.modal = {
-            isSaveToListVisible: false,
-        };
-    }
-    // NEW: State for the list options context menu
-    if (!state.listOptionsMenu) {
-        state.listOptionsMenu = {
-            isVisible: false,
-            top: 0,
-            left: 0,
-            listId: null
-        };
-    }
-}
+  // --- RENDER Function ---
+  const render = () => {
+    listsContainer.innerHTML = '';
+    listsData.forEach((list, listIndex) => {
+      const listGroup = document.createElement('ul');
+      listGroup.className = 'list-group';
 
+      const listItem = document.createElement('li');
+      listItem.className = 'list-group-item';
+      listItem.textContent = list.name;
+      listItem.dataset.index = listIndex;
+      if (listIndex === activeListIndex) {
+        listItem.classList.add('active');
+      }
+      listGroup.appendChild(listItem);
 
-// --- Component Renderers ---
+      const wordList = document.createElement('ul');
+      wordList.className = 'word-list';
+      list.words.forEach((word, wordIndex) => {
+        const wordItem = document.createElement('li');
+        wordItem.className = 'word-item';
+        wordItem.dataset.listIndex = listIndex;
+        wordItem.dataset.wordIndex = wordIndex;
+        
+        const wordText = document.createElement('span');
+        wordText.className = 'word-text';
+        wordText.textContent = word;
 
-// This component renders the main list view in Pane 2
-export function CollectionsComponent() {
-    if (state.collections.isLoading && state.collections.lists.length === 0) {
-        return "<p>Loading lists...</p>";
-    }
-    if (state.collections.error) {
-        return `<p style="padding: 15px; color: #e94560;">${state.collections.error}</p>`;
-    }
+        const wordActions = document.createElement('div');
+        wordActions.className = 'word-actions';
 
-    const listsHtml = state.collections.lists.length > 0
-        ? state.collections.lists.map(list => `
-            <div class="list-item-container">
-                <button class="list-item-button" data-action="select-list" data-stack-id="${list.stack_id}">
-                    ${list.stack_name}
-                </button>
-                <button class="icon-button list-options-btn" data-action="open-list-options" data-stack-id="${list.stack_id}" title="More options">
-                    <i class="bi bi-three-dots-vertical"></i>
-                </button>
+        const editBtn = document.createElement('button');
+        editBtn.className = 'word-action-btn edit-word-btn';
+        editBtn.title = 'Edit word';
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'word-action-btn delete-word-btn';
+        deleteBtn.title = 'Delete word';
+
+        wordActions.appendChild(editBtn);
+        wordActions.appendChild(deleteBtn);
+
+        wordItem.appendChild(wordText);
+        wordItem.appendChild(wordActions);
+        wordList.appendChild(wordItem);
+      });
+      listGroup.appendChild(wordList);
+      listsContainer.appendChild(listGroup);
+    });
+  };
+
+  // --- Event Handlers ---
+  const setupEventListeners = () => {
+    const handleCreateList = () => {
+      const listName = newListInput.value.trim();
+      if (listName) {
+        listsData.push({ name: listName, words: [] });
+        newListInput.value = '';
+        newListInputContainer.classList.add('hidden');
+        render();
+      }
+    };
+
+    addListBtn.addEventListener('click', () => {
+      newListInputContainer.classList.toggle('hidden');
+      if (!newListInputContainer.classList.contains('hidden')) {
+        newListInput.focus();
+      }
+    });
+
+    newListInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        handleCreateList();
+      }
+    });
+
+    listsContainer.addEventListener('click', (event) => {
+      const target = event.target;
+      const wordItem = target.closest('.word-item');
+      
+      // If the click is not on a word item or its children, handle list expansion.
+      if (!wordItem) {
+          const listItem = target.closest('.list-group-item');
+          if (listItem) {
+              const index = parseInt(listItem.dataset.index, 10);
+              activeListIndex = (activeListIndex === index) ? -1 : index;
+              render();
+          }
+          return;
+      }
+
+      const listIndex = parseInt(wordItem.dataset.listIndex, 10);
+      const wordIndex = parseInt(wordItem.dataset.wordIndex, 10);
+
+      // --- Handle Word Edit ---
+      if (target.closest('.edit-word-btn')) {
+        wordItem.innerHTML = `
+          <input type="text" class="word-edit-input" value="${listsData[listIndex].words[wordIndex]}" />
+          <div class="word-actions">
+            <button class="word-action-btn save-edit-btn"></button>
+            <button class="word-action-btn cancel-edit-btn"></button>
+          </div>
+        `;
+        wordItem.querySelector('.word-edit-input').focus();
+        return; // Stop further processing
+      }
+
+      // --- Handle Word Delete Confirmation ---
+      if (target.closest('.delete-word-btn')) {
+          wordItem.innerHTML = `
+            <span class="word-text-confirm">Delete?</span>
+            <div class="word-actions">
+                <button class="word-action-btn confirm-delete-btn button-text">Yes</button>
+                <button class="word-action-btn cancel-delete-btn button-text">No</button>
             </div>
-        `).join('')
-        : "<p style=\"padding: 15px; color: #6a7183;\">No lists found. Click the '+' icon to create one.</p>";
-
-    const creatorVisibilityClass = state.collections.isCreatorVisible ? "" : "hidden";
-    const creatorHtml = `
-        <div id="new-list-container" class="input-container ${creatorVisibilityClass}">
-            <input type="text" id="new-list-input" placeholder="New list name..." />
-        </div>
-    `;
-
-    return listsHtml + creatorHtml;
-}
-
-// This component renders the content for the "Save to List" modal
-export function ModalListsComponent() {
-    if (state.collections.isLoading) {
-        return '<p>Loading lists...</p>';
-    }
-    if (state.collections.lists.length === 0) {
-        return '<p>No lists found. Create one in the main view.</p>';
-    }
-    return state.collections.lists
-        .map(
-            (list) =>
-                `<button class="modal-list-item" data-action="save-to-list" data-stack-id="${list.stack_id}">${list.stack_name}</button>`
-        )
-        .join('');
-}
-
-
-// --- Event Handling and Feature Initialization ---
-
-export function initializeCollectionsFeature(appState, mainRenderCallback) {
-    state = appState;
-    renderApp = mainRenderCallback;
-    initializeState();
-
-    const collectionsPane = document.getElementById('pane-two-content'); // Assuming a container ID
-    if (collectionsPane) {
-        collectionsPane.addEventListener('click', handleDelegatedEvents);
-        collectionsPane.addEventListener('keydown', handleDelegatedEvents);
-    }
-
-    fetchLists();
-}
-
-async function handleDelegatedEvents(event) {
-    if (event.type === 'keydown' && event.key === 'Enter' && event.target.id === 'new-list-input') {
-        event.preventDefault();
-        const newListName = event.target.value.trim();
-        if (newListName) {
-            await createNewList(newListName);
+          `;
+          return; // Stop further processing
+      }
+      
+      // --- Handle Save Edit ---
+      if (target.closest('.save-edit-btn')) {
+        const newWord = wordItem.querySelector('.word-edit-input').value.trim();
+        if (newWord) {
+          listsData[listIndex].words[wordIndex] = newWord;
         }
-        return;
-    }
+        render();
+        return; // Stop further processing
+      }
+      
+      // --- Handle Confirm Delete ---
+      if(target.closest('.confirm-delete-btn')) {
+        listsData[listIndex].words.splice(wordIndex, 1);
+        render();
+        return; // Stop further processing
+      }
 
-    if (event.type !== 'click') return;
-    const action = event.target.dataset.action || event.target.closest('[data-action]')?.dataset.action;
+      // --- Handle Cancel Edit/Delete ---
+      if (target.closest('.cancel-edit-btn') || target.closest('.cancel-delete-btn')) {
+        render();
+        return; // Stop further processing
+      }
+      
+      // --- Handle Clicking Word Text ---
+      if (target.closest('.word-text')) {
+        document.dispatchEvent(new CustomEvent('wordSelected', { detail: { text: target.textContent } }));
+      }
+    });
+  };
 
-    switch (action) {
-        case "toggle-list-creator":
-            state.collections.isCreatorVisible = !state.collections.isCreatorVisible;
-            renderApp();
-            if (state.collections.isCreatorVisible) {
-                setTimeout(() => document.getElementById("new-list-input")?.focus(), 0);
-            }
-            break;
-        case "select-list":
-            console.log("Selected list with ID:", event.target.dataset.stackId);
-            break;
-        case 'open-list-options':
-            const listId = event.target.closest('[data-stack-id]').dataset.stackId;
-            openListOptionsMenu(event, parseInt(listId, 10));
-            break;
-        case 'delete-list':
-            deleteList(state.listOptionsMenu.listId);
-            break;
-        case 'rename-list':
-            // Placeholder for future rename functionality
-            renameList(state.listOptionsMenu.listId);
-            break;
-    }
-}
+  // --- Public API ---
+  const init = () => {
+    render();
+    setupEventListeners();
+  };
 
+  const getLists = () => {
+    return listsData.map(list => list.name);
+  };
+  
+  const addWordToList = (word, listName) => {
+      const list = listsData.find(l => l.name === listName);
+      if (list && !list.words.includes(word)) {
+          list.words.push(word);
+          render();
+          return true;
+      }
+      return false;
+  };
 
-// --- Actions ---
-
-export async function openSaveToListModal() {
-    const textToSave = document.getElementById('source-text')?.textContent?.trim();
-    if (!textToSave) {
-        alert('There is no text to save.');
-        return;
-    }
-    state.modal.isSaveToListVisible = true;
-    state.collections.isLoading = true;
-    renderApp();
-    await fetchLists();
-    state.collections.isLoading = false;
-    renderApp();
-}
-
-export function closeModal() {
-    state.modal.isSaveToListVisible = false;
-    renderApp();
-}
-
-export async function saveItemToStack(stackId) {
-    const textToSave = document.getElementById('source-text').textContent.trim();
-    if (!textToSave) return;
-    try {
-        await fetchWithAuth(`/stacks/${stackId}/items`, {
-            method: 'POST',
-            body: JSON.stringify({ text: textToSave }),
-        });
-        alert(`Saved to list successfully!`);
-        closeModal();
-    } catch (error) {
-        alert("Error: Could not save the item.");
-    }
-}
-
-export function openListOptionsMenu(event, listId) {
-    const rect = event.target.getBoundingClientRect();
-    state.listOptionsMenu.isVisible = true;
-    state.listOptionsMenu.top = rect.bottom + window.scrollY;
-    state.listOptionsMenu.left = rect.left - 150 + rect.width; // Position menu to the left of the button
-    state.listOptionsMenu.listId = listId;
-    renderApp();
-}
-
-export function closeListOptionsMenu() {
-    if (state.listOptionsMenu.isVisible) {
-        state.listOptionsMenu.isVisible = false;
-        renderApp();
-    }
-}
-
-export async function deleteList(listId) {
-    if (!listId) return;
-    if (confirm("Are you sure you want to delete this list and all its contents?")) {
-        try {
-            await fetchWithAuth(`/stacks/${listId}`, { method: 'DELETE' });
-            await fetchLists(); // Refetch to update the UI
-        } catch (error) {
-            alert("Error: Could not delete the list.");
-        }
-    }
-    closeListOptionsMenu();
-}
-
-async function renameList(listId) {
-    if (!listId) return;
-    const currentList = state.collections.lists.find(l => l.stack_id === listId);
-    const newName = prompt("Enter a new name for the list:", currentList.stack_name);
-
-    if (newName && newName.trim() !== "") {
-        // This requires a new backend endpoint: PUT /stacks/{stack_id}
-        console.log(`Placeholder: Would rename list ${listId} to "${newName}"`);
-        // await fetchWithAuth(`/stacks/${listId}`, { method: 'PUT', body: JSON.stringify({ stack_name: newName.trim() }) });
-        // await fetchLists();
-    }
-    closeListOptionsMenu();
-}
-
-async function fetchLists() {
-    state.collections.isLoading = true;
-    try {
-        const lists = await fetchWithAuth(`/users/${state.userId}/stacks`);
-        lists.sort((a, b) => a.stack_name.localeCompare(b.stack_name));
-        state.collections.lists = lists;
-        state.collections.error = null;
-    } catch (error) {
-        state.collections.error = "Error loading lists.";
-    }
-    state.collections.isLoading = false;
-    renderApp();
-}
-
-async function createNewList(listName) {
-    try {
-        await fetchWithAuth("/stacks", {
-            method: "POST",
-            body: JSON.stringify({ stack_name: listName }),
-        });
-        state.collections.isCreatorVisible = false;
-        document.getElementById('new-list-input').value = '';
-        await fetchLists();
-    } catch (error) {
-        alert("Error: Could not create the new list.");
-    }
-}
+  return {
+    init,
+    getLists,
+    addWordToList
+  };
+})();

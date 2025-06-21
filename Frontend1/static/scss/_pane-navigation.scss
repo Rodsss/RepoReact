@@ -1,35 +1,49 @@
-// In Frontend1/static/scss/_pane-navigation.scss
-
-.pane-header-nav {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
-    flex-shrink: 0;
+// Styles for the tabbed menu system in Pane 3
+.pane-nav-header {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 15px;
+  // This element will automatically be placed in the first grid row of the pane
 }
 
-.pane-nav-btn {
-    flex: 1 1 0; // Allow buttons to grow and shrink equally
-    background-color: transparent;
-    color: var(--secondary-text);
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 12px 10px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    font-size: 0.95rem;
-    white-space: nowrap;
+.pane-nav-button {
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--secondary-text);
+  padding: 15px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
 
-    &:hover {
-        color: var(--main-text);
-    }
+  &:hover {
+    color: var(--main-text);
+  }
 
-    &.active {
-        color: var(--accent-color);
-        border-bottom-color: var(--accent-color); // The reddish-pink bottom line
-    }
+  &.active {
+    color: var(--main-text);
+    border-bottom-color: var(--accent-color);
+  }
 }
 
-.pane-content-area {
-    flex-grow: 1;
-    overflow-y: auto;
+.pane-content-container {
+  padding: 20px;
+  overflow-y: auto; // Allow content to scroll if it's too long
+  // This element will automatically be placed in the second grid row, which fills all available space
+}
+
+.pane-nav-content {
+  display: none;
+  animation: fadeIn 0.5s;
+
+  &.active {
+    display: block;
+  }
+}
+
+// Simple fade-in animation
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
