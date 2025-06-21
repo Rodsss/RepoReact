@@ -1,157 +1,39 @@
-/* === CORE LAYOUT STYLESHEET === */
+// General reset and body background
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* --- Base Styles --- */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    margin: 0;
-    background-color: var(--primary-bg);
-    color: var(--main-text);
-    height: 100vh;
-    overflow: hidden;
+  font-family: sans-serif;
+  display: flex;
+  height: 100vh;
+  background-color: var(--primary-bg); // Applying the main dark blue background
+  color: var(--main-text); // Setting the default font color to white
 }
 
-.hidden { display: none !important; }
-h1, h2, h3, h4 { color: #ffffff; font-weight: 300; }
-a { color: var(--accent-color); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* --- Main App Layout --- */
-.sidebar {
-    position: fixed; top: 0; left: 0;
-    width: 60px; /* Start collapsed */
-    height: 100vh;
-    background: var(--sidebar-bg);
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s ease-in-out;
-    z-index: 1000;
-    overflow-x: hidden;
-}
-.sidebar:hover {
-    width: 220px; /* Expand on hover */
-}
+// Main content grid
 .main-content {
-    position: absolute; top: 0; right: 0; bottom: 0;
-    left: 60px; /* Start with collapsed width */
-    height: 100vh;
-    transition: left 0.3s ease-in-out;
-    display: flex;
-    flex-direction: column;
-}
-.sidebar:hover + .main-content {
-    left: 220px; /* Push content when sidebar expands */
+  flex-grow: 1;
+  display: grid;
+  // This line is the only change. It sets the column proportions.
+  grid-template-columns: 1fr 1fr 2fr; // First two panes get 1 part, the third gets 2 parts.
+  gap: 20px;
+  padding: 20px;
+  overflow: auto;
 }
 
-.content-wrapper { 
-    padding: 1rem; 
-    display: flex; 
-    flex-direction: column; 
-    height: 100%; 
-    box-sizing: border-box; 
-}
-.workspace-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    min-height: 0;
-}
-.dashboard-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr 2fr; /* 1/4, 1/4, 1/2 ratio */
-    gap: 1rem;
-    flex-grow: 1;
-    overflow: hidden;
-    transition: grid-template-columns 0.4s ease;
-}
-.dashboard-pane {
-    background: var(--pane-bg);
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-.scrollable-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 10px;
+// Styling for the sidebar and the three panes
+.sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
 }
 
-/* --- Sidebar Content --- */
-.sidebar nav ul { list-style: none; padding: 0; margin: 0; }
-.sidebar .nav-link { /* This can be adapted for the new menu-button style */
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    color: var(--secondary-text);
-    text-decoration: none;
-    transition: background-color 0.2s;
-    white-space: nowrap;
-}
-.sidebar .nav-link:hover, .sidebar .nav-link.active {
-    background-color: var(--sidebar-active-bg);
-    color: #fff;
-}
-.sidebar .link-text, .sidebar .brand-text { transition: opacity 0.2s ease-in-out; }
-.sidebar:not(:hover) .nav-text,
-.sidebar:not(:hover) .brand-text {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
+.pane {
+  background-color: var(--pane-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
 }
 
-/* === Generic Component Styles === */
-.pane-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 10px;
-}
-.list-item-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border-color);
-}
-.list-item-button {
-    flex-grow: 1;
-    text-align: left;
-    background: none;
-    border: none;
-    color: var(--main-text);
-    padding: 12px 10px;
-    cursor: pointer;
-    &:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-}
 
-/* === Pane 2 Actions (Added from previous step) === */
-.pane-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.icon-button {
-    background: transparent;
-    border: none;
-    color: var(--secondary-text);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-        color: var(--main-text);
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-}

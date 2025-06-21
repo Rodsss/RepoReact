@@ -1,43 +1,139 @@
-/*
-========================================
-UNIFIED BUTTON STYLES
-========================================
-*/
-.btn-base {
-  padding: 8px 12px;
+// _buttons.scss
+@use 'variables' as *;
+
+
+// The rest of your .sidebar .nav-button, .button-text, .word-action-btn styles follow...
+// Main navigation button in the sidebar
+.sidebar .nav-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--accent-color);
+  color: var(--main-text);
+  border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-weight: bold;
+  font-size: 16px;
   text-align: center;
-  transition: all 0.2s ease-in-out;
-  border: 1px solid transparent;
-  display: inline-flex;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// Text-based button with an underline, used for inline forms
+.button-text {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--accent-color);
+  color: var(--main-text);
+  padding: 8px 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+  
+  &:hover {
+    color: var(--accent-color);
+  }
+}
+
+// Circular "add" button for creating new lists
+.add-button {
+  background-color: var(--success-color);
+  color: var(--main-text);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 28px;
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s ease-in-out;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// Star button in Pane 1
+.star-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  color: var(--subtle-text-color);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: var(--pane-bg);
+    border-color: var(--accent-color);
+    color: #ffc107; // Keeping the yellow star color on hover
+  }
 }
-.btn-custom-outline {
-  background: transparent;
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+
+// SVG Icon Button System for word actions (edit, delete, save, cancel)
+.word-action-btn {
+  // Base style for the icon buttons
+  background-color: var(--secondary-text); // This sets the color of the icon
+  width: 16px;
+  height: 16px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease-in-out;
+
+  // Using the SVG as a mask allows us to change its color with background-color
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+
+  &:hover {
+    background-color: var(--accent-color); // Changes icon color on hover
+  }
+
+  // Assign the specific icon SVG (defined in _variables.scss) to each button type
+  &.edit-word-btn   { mask-image: $icon-edit;   -webkit-mask-image: $icon-edit; }
+  &.delete-word-btn { mask-image: $icon-delete; -webkit-mask-image: $icon-delete; }
+  &.save-edit-btn   { mask-image: $icon-save;   -webkit-mask-image: $icon-save; }
+  &.cancel-edit-btn { mask-image: $icon-cancel; -webkit-mask-image: $icon-cancel; }
 }
-.btn-custom-outline:hover {
-  background-color: var(--accent-color);
-  color: white;
-}
-.btn-custom-filled {
-  background-color: #4a4a58;
-  color: white;
-  border-color: #4a4a58;
-}
-.btn-custom-filled:hover {
-  filter: brightness(1.2);
-}
-.btn-custom-danger {
-  background-color: var(--danger-color);
-  color: white;
-  border-color: var(--danger-color);
-}
-.btn-custom-danger:hover {
-  filter: brightness(1.2);
+
+// ...at the end of the file
+
+// Style for the new full-width header button in Pane 3
+.pane-header-button {
+  background-color: transparent;
+  width: 100%;
+  padding: 20px 25px;
+  border: none;
+  border-bottom: 1px solid var(--border-color); // A subtle default underline
+  
+  color: var(--main-text);
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: left; // Align text to the left like a header
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    // On hover, we use the accent color for the underline as you requested
+    border-bottom-color: var(--accent-color);
+    background-color: var(--pane-bg); // A very subtle background change
+  }
 }

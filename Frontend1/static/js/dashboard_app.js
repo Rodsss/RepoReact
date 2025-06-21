@@ -1,99 +1,43 @@
-//
-// FILE: Frontend1/static/js/dashboard_app.js (Final Consolidated Version)
-//
-import { initializeAuthFeature, AuthComponent, logout } from './modules/auth.js';
-import { initializeNotesFeature, renderNotes } from './modules/notes.js';
-import { initializeCollectionsFeature, CollectionsComponent } from './modules/collections.js';
-import { initializeFlashcardsFeature, renderFlashcards } from './modules/flashcards.js';
-import { initializeMediaSearchFeature, renderMediaSearch } from './modules/media_search.js';
-import { initializeTranslateFeature, TranslateComponent } from './modules/Translate.js';
+document.addEventListener('DOMContentLoaded', () => {
 
-const state = {
-    userId: 'default-user',
-    currentView: 'translate',
-};
+  
+  
 
-function renderApp() {
-    const authContainer = document.getElementById('auth-container');
-    const mainAppContainer = document.getElementById('main-app-container');
 
-    if (state.auth && state.auth.isAuthenticated) {
-        authContainer.classList.add('hidden');
-        mainAppContainer.classList.remove('hidden');
-    } else {
-        mainAppContainer.classList.add('hidden');
-        authContainer.classList.remove('hidden');
-        authContainer.innerHTML = AuthComponent();
-        return;
-    }
 
-    const viewContainer = document.querySelector('.main-content');
-    if (viewContainer) {
-        viewContainer.querySelectorAll('.view').forEach(view => {
-            view.style.display = 'none';
-        });
-        const newView = document.getElementById(`${state.currentView}-view`);
-        if (newView) {
-            newView.style.display = (state.currentView === 'translate') ? 'grid' : 'block';
-        }
-    }
 
-    const navButtons = document.querySelectorAll('.menu-button[data-view]');
-    navButtons.forEach(button => {
-        if (button.dataset.view === state.currentView) {
-            button.classList.add('active');
-        } else {
-            button.classList.remove('active');
-        }
+
+
+
+
+  
+
+  // --- Controller for Pane 3 Tab Navigation ---
+  const pane3 = document.getElementById('pane-three');
+  if (pane3) {
+    pane3.addEventListener('click', (event) => {
+      const targetButton = event.target.closest('.pane-nav-button');
+
+      // If the click wasn't on a button, do nothing.
+      if (!targetButton) return;
+
+      // Get all buttons and content panels within Pane 3 at the time of the click.
+      const allNavButtons = pane3.querySelectorAll('.pane-nav-button');
+      const allContentPanels = pane3.querySelectorAll('.pane-nav-content');
+      
+      // Deactivate all buttons and panels.
+      allNavButtons.forEach(btn => btn.classList.remove('active'));
+      allContentPanels.forEach(panel => panel.classList.remove('active'));
+
+      // Activate the clicked button.
+      targetButton.classList.add('active');
+
+      // Activate the corresponding content panel.
+      const targetId = targetButton.dataset.target;
+      const targetPanel = pane3.querySelector(targetId); // Search only within Pane 3
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
     });
-
-    renderNotes();
-    renderFlashcards();
-    renderMediaSearch();
-    TranslateComponent();
-    
-    const collectionsContainer = document.getElementById('collections-container');
-    if (collectionsContainer) {
-        collectionsContainer.innerHTML = CollectionsComponent();
-    }
-}
-
-function initializeApp() {
-    const initializeMainFeatures = () => {
-        initializeNotesFeature(state, renderApp);
-        initializeCollectionsFeature(state, renderApp);
-        initializeFlashcardsFeature(state, renderApp);
-        initializeMediaSearchFeature(state, renderApp);
-        initializeTranslateFeature(state, renderApp);
-        renderApp();
-    };
-
-    initializeAuthFeature(state, renderApp, initializeMainFeatures);
-
-    document.querySelectorAll('.menu-button[data-view]').forEach(button => {
-        button.addEventListener('click', (event) => {
-            event.preventDefault();
-            const view = button.dataset.view;
-            if (state.currentView !== view) {
-                state.currentView = view;
-                renderApp();
-            }
-        });
-    });
-
-    const paneOne = document.querySelector('.pane-one');
-    if (paneOne) {
-        paneOne.addEventListener('click', (event) => {
-            const header = event.target.closest('.collapsible-header');
-            if (header) {
-                header.parentElement.classList.toggle('active');
-            }
-        });
-    }
-
-    document.getElementById('logout-button').addEventListener('click', () => logout(state, renderApp));
-
-    renderApp();
-}
-
-document.addEventListener('DOMContentLoaded', initializeApp);
+  }
+});

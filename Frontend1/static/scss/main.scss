@@ -1,23 +1,19 @@
-// In Frontend1/static/scss/main.scss
+// main.scss for the new UI design
 
-// 1. Import variables first so they are available to all other partials.
+// 1. Import the theme variables. This is the foundation.
 @use "variables";
 
-// 2. Import core layout styles.
+// 2. Import the new core layout structure (sidebar, panes, etc.).
 @use "layout";
 
-// 3. Import generic, reusable components.
+// 3. Import the new button styles (star button, add button, etc.).
 @use "buttons";
-@use "search-bar";
 
-// 4. Import feature-specific component styles.
-@use "auth";
-@use "notes";
-@use "flashcards";
-@use "discover";
-// As you create more components, you will add their style partials here.
-@use 'language-view'; // <-- ADD THIS LINE
-@use 'collapsible-menu'; // <-- ADD THIS LINE
-@use 'pane-navigation'; // <-- ADD THIS LINE
-@use 'modals'; // <-- ADD THIS LINE
-@use 'context-menu'; // <-- ADD THIS LINE
+// 4. Import the modal style for the "Save to list" feature.
+@use "modals";
+
+// 5. Import the specific styles for the translate and collections panes.
+@use "language-view";
+
+// All other imports for old features like 'auth', 'notes', 'discover', etc.,
+// have been removed as requested to focus only on the new design.

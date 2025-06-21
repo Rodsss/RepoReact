@@ -1,74 +1,81 @@
-// scripts/options.js
+//
+// FILE: Extension1/scripts/content.js (REVISED)
+//
+let activeButton = null;
 
-// Define a default language for the options page, can be same as background's default
-const OPTIONS_DEFAULT_LANGUAGE = "en";
+/**
+ * Removes the button from the page if it exists.
+ */
+function removeButton() {
+    if (activeButton) {
+        activeButton.remove();
+        activeButton = null;
+    }
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  const targetLanguageSelect = document.getElementById("targetLanguageSelect");
-  const saveButton = document.getElementById("saveButton");
-  const statusMessageDiv = document.getElementById("statusMessage");
+/**
+ * Creates the "extension" button on the page when text is double-clicked.
+ * @param {MouseEvent} event - The mouse event from the double-click.
+ * @param {string} selectedText - The text that was selected.
+ */
+function createExtensionButton(event, selectedText) {
+    // Remove any existing button first
+    removeButton();
 
-  // Function to save options to chrome.storage
-  function saveOptions() {
-    const selectedLanguage = targetLanguageSelect.value;
-    chrome.storage.local.set(
-      {
-        userTargetLanguage: selectedLanguage,
-      },
-      () => {
-        if (chrome.runtime.lastError) {
-          console.error("Error saving settings:", chrome.runtime.lastError);
-          displayStatus("Error saving settings! Check console.", "error");
-          return;
-        }
-        displayStatus("Settings saved successfully!", "success");
-      },
-    );
-  }
+    // Create the button element
+    activeButton = document.createElement('button');
+    activeButton.id = 'project1-extension-button';
+    activeButton.textContent = 'extension';
 
-  // Function to load options from chrome.storage
-  function loadOptions() {
-    // We get 'userTargetLanguage'. If it's not set, result.userTargetLanguage will be undefined.
-    chrome.storage.local.get(["userTargetLanguage"], (result) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error loading settings:", chrome.runtime.lastError);
-        displayStatus("Error loading settings! Check console.", "error");
-        // Set to a sensible default if loading fails or nothing is stored
-        targetLanguageSelect.value = OPTIONS_DEFAULT_LANGUAGE;
-        return;
-      }
-      // If userTargetLanguage is stored, use it. Otherwise, use our options page default.
-      targetLanguageSelect.value =
-        result.userTargetLanguage || OPTIONS_DEFAULT_LANGUAGE;
+    // Basic styling to position the button
+    activeButton.style.cssText = `
+        position: absolute;
+        z-index: 999999;
+        cursor: pointer;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        left: ${event.clientX + window.scrollX + 5}px;
+        top: ${event.clientY + window.scrollY + 5}px;
+    `;
+
+    // Add the button to the page
+    document.body.appendChild(activeButton);
+
+    // --- Define Button Action ---
+    // Currently, it only logs the selected text. We can define the real action later.
+    activeButton.addEventListener('click', () => {
+        console.log('Button clicked for text:', selectedText);
+        // The original menu had "Translate" and "Raking" actions.
+        // We can add that logic here.
+        removeButton(); // Remove the button after it's clicked.
     });
-  }
 
-  // Function to display status messages
-  function displayStatus(message, type = "success") {
-    // type can be 'success' or 'error'
-    statusMessageDiv.textContent = message;
-    statusMessageDiv.className = type; // Use class for styling
-    statusMessageDiv.style.display = "block";
-
-    // Hide the message after a few seconds
+    // Add a listener to remove the button if the user clicks elsewhere on the page
     setTimeout(() => {
-      statusMessageDiv.style.display = "none";
-      statusMessageDiv.textContent = "";
-      statusMessageDiv.className = "";
-    }, 3000); // Display for 3 seconds
-  }
+        document.addEventListener('click', handleDocumentClick, { once: true });
+    }, 100);
+}
 
-  // Add event listener for the save button
-  if (saveButton) {
-    saveButton.addEventListener("click", saveOptions);
-  } else {
-    console.error("Save button not found.");
-  }
+/**
+ * Removes the button if a click occurs outside of it.
+ * @param {MouseEvent} event - The mouse click event.
+ */
+function handleDocumentClick(event) {
+    if (activeButton && !activeButton.contains(event.target)) {
+        removeButton();
+    }
+}
 
-  // Load saved options when the DOM is fully loaded
-  if (targetLanguageSelect) {
-    loadOptions();
-  } else {
-    console.error("Target language select dropdown not found.");
-  }
+
+// --- Main Event Listener ---
+// Listens for a double-click anywhere on the page.
+document.addEventListener('dblclick', (event) => {
+    const selectedText = window.getSelection().toString().trim();
+    if (selectedText.length > 0) {
+        // When text is selected, create the button.
+        createExtensionButton(event, selectedText);
+    }
 });

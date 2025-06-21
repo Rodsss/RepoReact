@@ -1,180 +1,93 @@
-//
-// FILE: Extension1/scripts/content.js (Final Consolidated Version)
-//
-let activeIcon = null;
-let activeMenu = null;
-let hideMenuTimeout = null;
+let activeButton = null;
 
 /**
- * Creates the icon on the page when text is double-clicked.
+ * Removes the button from the page if it currently exists.
  */
-function createIcon(x, y, text) {
-    removeExistingIconAndMenu();
-    activeIcon = document.createElement('img');
-    activeIcon.id = 'project1-icon';
-    activeIcon.style.cssText = `position: absolute; z-index: 999999; cursor: pointer; width: 24px; height: 24px; left: ${x + window.scrollX + 5}px; top: ${y + window.scrollY + 5}px;`;
-
-    chrome.runtime.sendMessage({ type: "GET_ICON_URL" }, (response) => {
-        if (response && response.success) {
-            activeIcon.src = response.url;
-        } else {
-            console.error("Content script could not get icon URL.");
-        }
-    });
-
-    document.body.appendChild(activeIcon);
-
-    activeIcon.addEventListener('mouseenter', () => {
-        clearTimeout(hideMenuTimeout);
-        showMenu(activeIcon, text);
-    });
-    activeIcon.addEventListener('mouseleave', () => {
-        hideMenuTimeout = setTimeout(removeExistingIconAndMenu, 300);
-    });
+function removeExistingButton() {
+    if (activeButton) {
+        activeButton.remove();
+        activeButton = null;
+    }
+    // Remove the click-away listener to avoid memory leaks
+    document.removeEventListener('click', handleDocumentClick);
 }
 
 /**
- * Creates, positions, and displays the menu with "Translate" and "Raking" buttons.
+ * Handles clicks on the document to remove the button if the click is outside of it.
+ * @param {MouseEvent} event
  */
-function showMenu(iconElement, selectedText) {
-    if (activeMenu) return;
-
-    // --- Main Menu Container ---
-    activeMenu = document.createElement('div');
-    activeMenu.id = 'project1-menu';
-    activeMenu.style.cssText = `
-        position: absolute; 
-        background: #2a3447; 
-        border: 1px solid #4a4e54; 
-        border-radius: 5px; 
-        padding: 5px; 
-        z-index: 1000000; 
-        display: flex; 
-        flex-direction: column;
-        gap: 5px;
-    `;
-
-    // --- Button Container ---
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.cssText = `display: flex; gap: 5px;`;
-    
-    // --- Translate Button ---
-    const translateBtn = document.createElement('button');
-    translateBtn.textContent = 'Translate';
-    translateBtn.dataset.action = 'translate-text';
-    translateBtn.style.cssText = 'background: #333; border: 1px solid #777; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px;';
-    
-    // --- Raking Button ---
-    const rakingBtn = document.createElement('button');
-    rakingBtn.textContent = 'Raking';
-    rakingBtn.dataset.action = 'rake-text';
-    rakingBtn.style.cssText = 'background: #333; border: 1px solid #777; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px;';
-
-    buttonContainer.appendChild(translateBtn);
-    buttonContainer.appendChild(rakingBtn);
-    activeMenu.appendChild(buttonContainer);
-
-    // --- Translation Result Area ---
-    const translationResultDiv = document.createElement('div');
-    translationResultDiv.id = 'project1-translation-result';
-    translationResultDiv.style.cssText = `
-        color: #e94560; 
-        padding-top: 5px; 
-        border-top: 1px solid #4a4e54; 
-        margin-top: 5px;
-        min-height: 20px;
-        font-size: 14px;
-        display: none;
-    `;
-    activeMenu.appendChild(translationResultDiv);
-    
-    // --- Positioning and Event Handling ---
-    const iconRect = iconElement.getBoundingClientRect();
-    document.body.appendChild(activeMenu);
-    activeMenu.style.left = `${iconRect.left + window.scrollX}px`;
-    activeMenu.style.top = `${iconRect.bottom + window.scrollY + 5}px`;
-
-    activeMenu.addEventListener('mouseenter', () => clearTimeout(hideMenuTimeout));
-    activeMenu.addEventListener('mouseleave', () => hideMenuTimeout = setTimeout(removeExistingIconAndMenu, 300));
-    activeMenu.addEventListener('click', (event) => {
-        const button = event.target.closest('button');
-        if (button && button.dataset.action) {
-            handleMenuAction(button.dataset.action, selectedText);
-        }
-    });
-}
-
-/**
- * Asks the background script to perform the translation API call.
- */
-async function getTranslation(text) {
-    const resultDiv = document.getElementById('project1-translation-result');
-    if (!resultDiv) return;
-
-    resultDiv.style.display = 'block';
-    resultDiv.textContent = 'Translating...';
-    
-    try {
-        const response = await chrome.runtime.sendMessage({
-            type: "API_REQUEST",
-            payload: {
-                endpoint: "/translate",
-                options: {
-                    method: 'POST',
-                    body: JSON.stringify({ text: text })
-                }
-            }
-        });
-
-        if (response.error) {
-            throw new Error(response.error);
-        }
-        
-        resultDiv.textContent = response.data.translated_text;
-    } catch (error) {
-        console.error("Translation request failed:", error);
-        resultDiv.textContent = 'Translation failed.';
+function handleDocumentClick(event) {
+    if (activeButton && !activeButton.contains(event.target)) {
+        removeExistingButton();
     }
 }
 
+
 /**
- * Handles clicks on the "Translate" and "Raking" buttons.
+ * Creates and displays a single "extension" button on the page next to the
+ * user's selected text.
+ *
+ * @param {MouseEvent} event The dblclick event object.
+ * @param {string} selectedText The text that was highlighted by the user.
  */
-function handleMenuAction(action, text) {
-    if (action === 'translate-text') {
-        getTranslation(text);
-        // Keep the menu open so the user can see the translation
-        clearTimeout(hideMenuTimeout); 
-        hideMenuTimeout = setTimeout(removeExistingIconAndMenu, 2000); // Close after 2 seconds
-        
-    } else if (action === 'rake-text') {
-        // Send the text to the background script to be opened in a new tab
+function createExtensionButton(event, selectedText) {
+    // First, remove any button that might already be on the page.
+    removeExistingButton();
+
+    // Create a <button> element.
+    activeButton = document.createElement('button');
+    activeButton.id = 'project1-inpage-button';
+    activeButton.textContent = 'extension';
+
+    // Style the button to appear where the user clicked.
+    activeButton.style.cssText = `
+        position: absolute;
+        z-index: 2147483647;
+        cursor: pointer;
+        background: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 5px 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        left: ${event.clientX + window.scrollX + 5}px;
+        top: ${event.clientY + window.scrollY + 5}px;
+    `;
+
+    // Add the button to the document.
+    document.body.appendChild(activeButton);
+
+    // Add a click listener to the new button.
+    activeButton.addEventListener('click', () => {
+        // Send a message to the background script to open a new tab with the text
         chrome.runtime.sendMessage({
-            type: 'RAKE_TEXT',
-            data: {
-                selectedText: text
-            }
+            type: 'OPEN_APP_WITH_TEXT',
+            text: selectedText
         });
-        removeExistingIconAndMenu(); // Close menu immediately
-    }
-}
+        
+        // Remove the button from the page after clicking
+        removeExistingButton();
+    });
 
+    // Add a listener to remove the button if the user clicks anywhere else on the page.
+    // We wrap this in a timeout to prevent the original click from immediately closing it.
+    setTimeout(() => {
+        document.addEventListener('click', handleDocumentClick, { once: true });
+    }, 100);
+}
 
 /**
- * Removes the icon and menu from the page.
+ * Main event listener for the entire page.
  */
-function removeExistingIconAndMenu() {
-    if (activeIcon) activeIcon.remove();
-    if (activeMenu) activeMenu.remove();
-    activeIcon = null;
-    activeMenu = null;
-    clearTimeout(hideMenuTimeout);
-}
-
-// --- Main Event Listener ---
 document.addEventListener('dblclick', function(event) {
+    // Don't show the button if the user is double-clicking inside an input field or textarea
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.isContentEditable) {
+        return;
+    }
+
     const selectedText = window.getSelection().toString().trim();
+
+    // If text is selected, call the function to create our button.
     if (selectedText.length > 0) {
-        createIcon(event.clientX, event.clientY, selectedText);
+        createExtensionButton(event, selectedText);
     }
 });
