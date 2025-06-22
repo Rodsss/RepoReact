@@ -69,6 +69,7 @@ export function initializeNotesFeature(appState, mainRenderCallback) {
   fetchFolders();
 }
 
+
 async function handleDelegatedEvents(event) {
   const target = event.target;
   const action =
@@ -85,12 +86,15 @@ async function handleDelegatedEvents(event) {
       loadNoteIntoEditor(parseInt(target.dataset.noteId, 10));
       break;
     case "delete-note":
+      // This case is now handled by the right-click menu, but we can leave it
+      // in case you want to add back a button later.
       handleDeleteNoteClick(
         parseInt(target.dataset.noteId, 10),
         parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
       );
       break;
     case "delete-folder":
+      // This case is also handled by the right-click menu.
       event.stopPropagation();
       handleDeleteFolderClick(
         parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
@@ -342,18 +346,18 @@ function toggleFolder(folderId) {
  * @param {object} folder The folder object from the state.
  * @returns {string} The HTML string for the folder.
  */
-function FolderComponent(folder) {
-  const isExpanded = state.notes.expandedFolders.has(folder.folder_id);
-  const notesForFolder = state.notes.notesByFolder[folder.folder_id] || [];
+// In /static/js/modules/notes.js
 
-  return `
+function FolderComponent(folder) {
+    const isExpanded = state.notes.expandedFolders.has(folder.folder_id);
+    const notesForFolder = state.notes.notesByFolder[folder.folder_id] || [];
+
+    // The <button> for the trashcan has been deleted from this template string.
+    return `
         <div class="folder-item">
-            <div class="folder-header ${isExpanded ? "expanded" : ""}" data-action="toggle-folder" data-folder-id="${folder.folder_id}">
+            <div class="folder-header ${isExpanded ? "expanded" : ""}" data-action="toggle-folder" data-folder-id="${folder.folder_id}" data-folder-name="${folder.folder_name}">
                 <i class="bi bi-chevron-right folder-icon"></i>
                 <span class="folder-name">${folder.folder_name}</span>
-                <button class="delete-item-btn" data-action="delete-folder" data-folder-id="${folder.folder_id}" data-folder-name="${folder.folder_name}">
-                    <i class="bi bi-trash"></i>
-                </button>
             </div>
             <div class="notes-list-wrapper ${isExpanded ? "expanded" : ""}">
                 ${notesForFolder.map(NoteItemComponent).join("")}
@@ -367,16 +371,19 @@ function FolderComponent(folder) {
  * @param {object} note The note object from the state.
  * @returns {string} The HTML string for the note item.
  */
+// In notes.js
+
 function NoteItemComponent(note) {
-  const isActive = state.notes.activeNoteId === note.note_id;
-  return `
+    const isActive = state.notes.activeNoteId === note.note_id;
+    // The dataset now includes folderId so the context menu can find it
+    return `
         <div class="notes-list-item">
-            <a href="#" class="${isActive ? "active" : ""}" data-action="select-note" data-note-id="${note.note_id}">
+            <a href="#" class="${isActive ? "active" : ""}" 
+               data-action="select-note" 
+               data-note-id="${note.note_id}" 
+               data-folder-id="${note.folder_id}">
                 ${note.title || "Untitled Note"}
             </a>
-            <button class="delete-item-btn" data-action="delete-note" data-note-id="${note.note_id}" data-folder-id="${note.folder_id}">
-                <i class="bi bi-trash"></i>
-            </button>
         </div>
     `;
 }

@@ -1,9 +1,49 @@
-// _buttons.scss
-@use 'variables' as *;
+// _buttons.scss (Corrected with necessary import)
+@use 'variables' as *; // <-- THIS LINE IS THE FIX. It must be at the top.
+
+// --- NEW: Standard Icon Action Button ---
+// This is the new base class for small, square icon buttons like Add, Star, Edit, Delete etc.
+.icon-action-btn {
+  // --- Sizing & Shape ---
+  width: 32px;
+  height: 32px;
+  border-radius: 6px; // Slightly rounded square, not a circle
+
+  // --- Appearance ---
+  background-color: var(--secondary-text); // This sets the icon color
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  flex-shrink: 0; // Prevent it from shrinking in a flex container
+  padding: 0;
+
+  // --- The SVG Masking Magic ---
+  mask-size: 60%; // Make the icon slightly smaller than the button area
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: 60%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  
+  // --- Transitions ---
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    border-color: var(--accent-color);
+    background-color: var(--accent-color); // Icon color changes on hover
+  }
+}
+
+// --- Icon Modifiers ---
+// Apply the specific icon shape using the variables from _variables.scss
+.icon-action-btn.icon-add   { mask-image: $icon-add;   -webkit-mask-image: $icon-add; }
+.icon-action-btn.icon-star  { mask-image: $icon-star;  -webkit-mask-image: $icon-star; }
+.icon-action-btn.icon-edit  { mask-image: $icon-edit;  -webkit-mask-image: $icon-edit; width: 24px; height: 24px; }
+.icon-action-btn.icon-delete{ mask-image: $icon-delete;-webkit-mask-image: $icon-delete; width: 24px; height: 24px; }
+.icon-action-btn.icon-save  { mask-image: $icon-save;  -webkit-mask-image: $icon-save;   width: 24px; height: 24px; }
+.icon-action-btn.icon-cancel{ mask-image: $icon-cancel;-webkit-mask-image: $icon-cancel; width: 24px; height: 24px; }
 
 
-// The rest of your .sidebar .nav-button, .button-text, .word-action-btn styles follow...
-// Main navigation button in the sidebar
+// --- Other Button Styles (Unchanged) ---
 .sidebar .nav-button {
   display: block;
   width: 100%;
@@ -22,7 +62,6 @@
   }
 }
 
-// Text-based button with an underline, used for inline forms
 .button-text {
   background-color: transparent;
   border: none;
@@ -36,104 +75,5 @@
   
   &:hover {
     color: var(--accent-color);
-  }
-}
-
-// Circular "add" button for creating new lists
-.add-button {
-  background-color: var(--success-color);
-  color: var(--main-text);
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 28px;
-  text-align: center;
-  cursor: pointer;
-  padding: 0;
-  transition: opacity 0.2s ease-in-out;
-
-  &:hover {
-    opacity: 0.8;
-  }
-}
-
-// Star button in Pane 1
-.star-button {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  color: var(--subtle-text-color);
-  cursor: pointer;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  line-height: 1;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: var(--pane-bg);
-    border-color: var(--accent-color);
-    color: #ffc107; // Keeping the yellow star color on hover
-  }
-}
-
-// SVG Icon Button System for word actions (edit, delete, save, cancel)
-.word-action-btn {
-  // Base style for the icon buttons
-  background-color: var(--secondary-text); // This sets the color of the icon
-  width: 16px;
-  height: 16px;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: background-color 0.2s ease-in-out;
-
-  // Using the SVG as a mask allows us to change its color with background-color
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-
-  &:hover {
-    background-color: var(--accent-color); // Changes icon color on hover
-  }
-
-  // Assign the specific icon SVG (defined in _variables.scss) to each button type
-  &.edit-word-btn   { mask-image: $icon-edit;   -webkit-mask-image: $icon-edit; }
-  &.delete-word-btn { mask-image: $icon-delete; -webkit-mask-image: $icon-delete; }
-  &.save-edit-btn   { mask-image: $icon-save;   -webkit-mask-image: $icon-save; }
-  &.cancel-edit-btn { mask-image: $icon-cancel; -webkit-mask-image: $icon-cancel; }
-}
-
-// ...at the end of the file
-
-// Style for the new full-width header button in Pane 3
-.pane-header-button {
-  background-color: transparent;
-  width: 100%;
-  padding: 20px 25px;
-  border: none;
-  border-bottom: 1px solid var(--border-color); // A subtle default underline
-  
-  color: var(--main-text);
-  font-size: 1.2em;
-  font-weight: 600;
-  text-align: left; // Align text to the left like a header
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    // On hover, we use the accent color for the underline as you requested
-    border-bottom-color: var(--accent-color);
-    background-color: var(--pane-bg); // A very subtle background change
   }
 }

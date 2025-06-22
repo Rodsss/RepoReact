@@ -1,0 +1,43 @@
+/* /static/scss/_context-menu.scss */
+
+.context-menu {
+  position: fixed; // Positions it relative to the viewport
+  z-index: 2000;  // Ensures it appears on top of all other content
+  width: 220px;
+  background-color: var(--pane-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  padding: 6px;
+  
+  &.hidden {
+    display: none;
+  }
+}
+
+.context-menu-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 5px;
+  color: var(--main-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.1s ease-in-out;
+
+  &:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+  }
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 6px 0;
+}

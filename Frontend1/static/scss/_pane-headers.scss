@@ -1,0 +1,22 @@
+// /static/css/_pane-headers.scss
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; // This pushes the title and actions to opposite ends
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0; // Prevent the header from shrinking
+}
+
+.pane-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pane-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

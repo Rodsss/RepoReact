@@ -9,6 +9,10 @@
 // 3. Import the new button styles (star button, add button, etc.).
 @use "buttons";
 
+@use "pane-headers"; 
+
+@use "pane-navigation";
+
 // 4. Import the modal style for the "Save to list" feature.
 @use "modals";
 
@@ -18,6 +22,8 @@
 // 6. Import styles for all integrated features
 @use "notes";
 @use "discover";
-@use "flashcards"; // <-- ADD THIS LINE
+@use "flashcards"; 
+@use "collections";
 
+@use "context-menu";
 

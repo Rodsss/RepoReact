@@ -1,49 +1,57 @@
-// Styles for the tabbed menu system in Pane 3
-.pane-nav-header {
-  display: flex;
+/* _pane-navigation.scss - DEFINITIVE AND CORRECTED VERSION */
+
+// This targets the specific header for the tab bar in Pane 3
+.pane-header#pane-three-nav {
+  display: flex;       // Use flexbox to arrange the buttons
+  padding: 0;          // Remove parent padding to let buttons manage their own
   border-bottom: 1px solid var(--border-color);
-  padding: 0 15px;
-  // This element will automatically be placed in the first grid row of the pane
+  background-color: var(--pane-bg); // Ensure a consistent background
 }
 
+// Target the navigation buttons with high specificity to avoid conflicts
 .pane-nav-button {
+  // --- Box Model & Sizing ---
+  box-sizing: border-box; // Ensures padding and border are included in the element's total width and height
+  flex-grow: 1;           // This forces all buttons to take up equal space
+  text-align: center;
+  
+  // --- Appearance ---
   background-color: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
   color: var(--secondary-text);
-  padding: 15px;
-  cursor: pointer;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  
+  // --- Spacing & Borders (FIXES THE "STRIKETHROUGH") ---
+  padding: 16px 15px;      // Vertical and horizontal padding
+  border: none;             // Reset all borders first
+  border-bottom: 3px solid transparent; // Inactive tabs have a transparent space-holder border
+  border-right: 1px solid var(--border-color); // The separator line
+  
+  // --- Transitions ---
   transition: all 0.2s ease-in-out;
+
+  // --- States ---
+  &:last-child {
+    border-right: none; // Remove the separator from the very last button
+  }
 
   &:hover {
     color: var(--main-text);
+    background-color: rgba(255, 255, 255, 0.05); // A very subtle hover effect
   }
 
+  // The active tab style
   &.active {
     color: var(--main-text);
-    border-bottom-color: var(--accent-color);
+    border-bottom-color: var(--accent-color); // The solid colored underline
+    background-color: transparent; // Ensure no hover background when active
   }
 }
 
-.pane-content-container {
-  padding: 20px;
-  overflow-y: auto; // Allow content to scroll if it's too long
-  // This element will automatically be placed in the second grid row, which fills all available space
-}
-
-.pane-nav-content {
-  display: none;
-  animation: fadeIn 0.5s;
-
-  &.active {
-    display: block;
-  }
-}
-
-// Simple fade-in animation
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+// Style for the tab currently being dragged
+.pane-nav-button.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+  background: var(--accent-color);
 }
