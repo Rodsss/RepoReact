@@ -7,6 +7,7 @@
   padding: 12px 20px;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0; // Prevent the header from shrinking
+  min-height: 60px;
 }
 
 .pane-title {

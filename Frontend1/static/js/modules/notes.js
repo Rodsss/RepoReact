@@ -137,23 +137,16 @@ async function fetchFolders() {
   renderApp();
 }
 
+// In /static/js/modules/notes.js
+
 async function fetchNotesForFolder(folderId) {
-  console.log(`MOCK: Fetching notes for folder ${folderId}`);
-  await new Promise(resolve => setTimeout(resolve, 300));
-
-  const mockNotes = {
-    1: [ // Notes for folderId 1
-      { note_id: 101, title: "Project Alpha UI Mockups", folder_id: 1 },
-      { note_id: 102, title: "Q3 Marketing Strategy", folder_id: 1 },
-    ],
-    2: [ // Notes for folderId 2
-      { note_id: 201, title: "My Novel Outline", folder_id: 2 },
-    ],
-    3: [], // Folder 3 has no notes
-  };
-
-  state.notes.notesByFolder[folderId] = mockNotes[folderId] || [];
-  console.log(`MOCK: Notes for folder ${folderId} loaded.`);
+    // This is the new, mocked version of the function.
+    console.log(`MOCK: "Fetching" notes for folder ${folderId}. In a real app, this would be an API call. In this mock setup, we assume the state is already correct.`);
+    
+    // In our mock environment, the state is updated directly by other functions (like performSaveToFolder),
+    // so this function can be very simple and doesn't need to modify the state.
+    // It just needs to exist and resolve successfully.
+    return Promise.resolve();
 }
 
 /* --- ORIGINAL FUNCTION (COMMENTED OUT) ---
@@ -299,19 +292,90 @@ async function handleDeleteFolderClick(folderId, folderName) {
 
 
 // This new function handles the actual save after a folder is chosen from the modal
+// In /static/js/modules/notes.js
+
+// This new function handles the actual save after a folder is chosen from the modal
 async function performSaveToFolder(folderId) {
     const { activeNoteId, editor } = state.notes;
-    
-    console.log(`MOCK: Saving note "${editor.title}" to folder ID ${folderId}`);
-    
-    // Simulate a successful save
-    alert(`Note "${editor.title}" saved successfully to the selected folder! (Mocked)`);
+    const noteTitle = editor.title.trim();
+    const noteContent = editor.content;
+    const targetFolderId = parseInt(folderId, 10);
 
-    // Close the modal
+    // MOCK API LOGIC:
+    // In a real app, this would be a POST or PUT request to the server.
+    // Here, we will manipulate the local state directly.
+
+    if (activeNoteId) {
+        // --- LOGIC TO UPDATE AN EXISTING NOTE ---
+        let noteFound = false;
+        let originalFolderId = -1;
+
+        // Find the note in our state across all folders
+        for (const folder of state.notes.folders) {
+            const notesInFolder = state.notes.notesByFolder[folder.folder_id] || [];
+            const noteIndex = notesInFolder.findIndex(n => n.note_id === activeNoteId);
+
+            if (noteIndex > -1) {
+                originalFolderId = folder.folder_id;
+                
+                // If the target folder is DIFFERENT, we move the note
+                if (originalFolderId !== targetFolderId) {
+                    const [noteToMove] = notesInFolder.splice(noteIndex, 1); // Remove from old folder
+                    noteToMove.title = noteTitle;
+                    noteToMove.content = noteContent;
+                    noteToMove.folder_id = targetFolderId;
+
+                    if (!state.notes.notesByFolder[targetFolderId]) {
+                        state.notes.notesByFolder[targetFolderId] = [];
+                    }
+                    state.notes.notesByFolder[targetFolderId].push(noteToMove); // Add to new folder
+                
+                } else {
+                    // Otherwise, just update it in place
+                    notesInFolder[noteIndex].title = noteTitle;
+                    notesInFolder[noteIndex].content = noteContent;
+                }
+                
+                noteFound = true;
+                break;
+            }
+        }
+        if (noteFound) {
+            console.log(`MOCK: Updated existing note ID ${activeNoteId}.`);
+        }
+
+    } else {
+        // --- LOGIC TO CREATE A NEW NOTE ---
+        const newNote = {
+            note_id: Date.now(), // Use timestamp for unique mock ID
+            title: noteTitle,
+            content: noteContent,
+            folder_id: targetFolderId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        
+        if (!state.notes.notesByFolder[targetFolderId]) {
+            state.notes.notesByFolder[targetFolderId] = [];
+        }
+        state.notes.notesByFolder[targetFolderId].push(newNote);
+        
+        // After creating, set it as the active note
+        state.notes.activeNoteId = newNote.note_id;
+        state.notes.activeFolderId = targetFolderId;
+        console.log('MOCK: Created new note:', newNote);
+    }
+
+    // --- UI Cleanup & Refresh ---
+    alert(`Note "${noteTitle}" saved successfully!`);
     document.getElementById('save-note-modal').classList.add('hidden');
-
-    // Refresh the notes in that folder to show the new/updated note
-    await fetchNotesForFolder(folderId); 
+    
+    // Refresh the note list for the target folder to show the change
+    await fetchNotesForFolder(targetFolderId);
+    // If the note was moved, also refresh the original folder's list
+    if (originalFolderId !== -1 && originalFolderId !== targetFolderId) {
+        await fetchNotesForFolder(originalFolderId);
+    }
     renderApp();
 }
 

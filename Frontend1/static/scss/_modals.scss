@@ -1,10 +1,95 @@
-// In _modals.scss
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(234, 66, 66, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-content { background: var(--pane-background); padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-color); }
-.modal-close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: var(--subtle-text-color); }
-.modal-close-btn:hover { color: var(--text-color); }
-.modal-content h3 { margin-top: 0; }
-.modal-lists { margin-top: 15px; max-height: 300px; overflow-y: auto; }
-.modal-list-item { display: block; width: 100%; text-align: left; padding: 12px; border-radius: 5px; border: 1px solid transparent; }
-.modal-list-item:hover { background-color: var(--sidebar-background); }
-.modal-list-item input[type="checkbox"] { margin-right: 12px; transform: scale(1.2); }
+/* /static/scss/_modals.scss - (Redesigned Version) */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+
+  // --- New Background & Layout ---
+  // A dark, semi-transparent color fits the theme better than red.
+  background: rgba(10, 20, 30, 0.4); 
+
+  // The "Frosted Glass" Effect
+  // This blurs whatever content is behind the overlay.
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); // For Safari support
+
+  // --- Positioning ---
+  display: flex;
+  justify-content: center; // Center horizontally
+  
+  // Move modal towards the top instead of dead-center, as requested.
+  align-items: flex-start; 
+  padding-top: 15vh; // 15% from the top of the viewport height
+}
+
+.modal-content {
+  background: rgba(45, 55, 72, 0.85); // A slightly transparent pane background
+  color: var(--main-text); // Ensure white fonts
+  border: 1px solid var(--border-color);
+  border-radius: 12px; // A slightly larger radius for a modern feel
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  width: 90%;
+  max-width: 450px;
+  position: relative;
+  padding: 20px 25px 25px 25px; // Uniform padding
+}
+
+.modal-content h3 {
+  margin: 0 0 20px 0; // Space below the title
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--subtle-text-color);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    color: var(--main-text);
+    transform: scale(1.1);
+  }
+}
+
+.modal-lists {
+  margin-top: 15px;
+  max-height: 350px; // A bit more space for longer lists
+  overflow-y: auto;
+}
+
+.modal-list-item {
+  // --- New Single-Line Spacing & Organization ---
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 12px; // Consistent padding
+  border-radius: 6px;
+  border: 1px solid transparent; // Transparent border to prevent size shift on hover
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+
+  // For the save-to-list modal with checkboxes
+  input[type="checkbox"] {
+    margin-right: 15px;
+    transform: scale(1.2);
+  }
+
+  &:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+  }
+}

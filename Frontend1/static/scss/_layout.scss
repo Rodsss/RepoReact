@@ -36,4 +36,10 @@ body {
   border-radius: 8px;
 }
 
-
+.pane#pane-three {
+  // Apply consistent padding to the pane itself, not the children
+  padding: 25px;
+  // Ensure flex properties are set for the content inside
+  display: flex;
+  flex-direction: column;
+}
