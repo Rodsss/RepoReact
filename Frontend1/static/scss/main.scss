@@ -17,3 +17,8 @@
 
 // All other imports for old features like 'auth', 'notes', 'discover', etc.,
 // have been removed as requested to focus only on the new design.
+
+@use "notes"; // <-- ADD THIS LINE
+
+@use "discover"; // <-- ADD THIS LINE
+

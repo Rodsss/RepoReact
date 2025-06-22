@@ -22,6 +22,8 @@ function initializeState() {
 
 // --- Main Rendering Logic ---
 export function renderNotes() {
+    if (!state) return;
+
   const container = document.getElementById("notes-folder-list");
   const titleInput = document.getElementById("note-title-input");
   const editor = document.getElementById("note-editor");
@@ -110,17 +112,46 @@ async function handleDelegatedEvents(event) {
 // --- Data Fetching Functions ---
 
 async function fetchFolders() {
+  console.log("MOCK: Fetching folders.");
   state.notes.isLoading = true;
   renderApp();
-  try {
-    state.notes.folders = await fetchWithAuth("/notes/folders");
-  } catch (error) {
-    console.error("Error loading folders:", error);
-  }
+  
+  // Simulate a network delay
+  await new Promise(resolve => setTimeout(resolve, 500)); 
+
+  // Provide fake folder data
+  const mockFolders = [
+    { folder_id: 1, folder_name: "Work Projects" },
+    { folder_id: 2, folder_name: "Personal Ideas" },
+    { folder_id: 3, folder_name: "Meeting Notes" },
+  ];
+  
+  state.notes.folders = mockFolders;
   state.notes.isLoading = false;
+  console.log("MOCK: Folders loaded.", state.notes.folders);
   renderApp();
 }
 
+async function fetchNotesForFolder(folderId) {
+  console.log(`MOCK: Fetching notes for folder ${folderId}`);
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  const mockNotes = {
+    1: [ // Notes for folderId 1
+      { note_id: 101, title: "Project Alpha UI Mockups", folder_id: 1 },
+      { note_id: 102, title: "Q3 Marketing Strategy", folder_id: 1 },
+    ],
+    2: [ // Notes for folderId 2
+      { note_id: 201, title: "My Novel Outline", folder_id: 2 },
+    ],
+    3: [], // Folder 3 has no notes
+  };
+
+  state.notes.notesByFolder[folderId] = mockNotes[folderId] || [];
+  console.log(`MOCK: Notes for folder ${folderId} loaded.`);
+}
+
+/* --- ORIGINAL FUNCTION (COMMENTED OUT) ---
 async function fetchNotesForFolder(folderId) {
   try {
     state.notes.notesByFolder[folderId] = await fetchWithAuth(
@@ -130,7 +161,36 @@ async function fetchNotesForFolder(folderId) {
     console.error(`Error fetching notes for folder ${folderId}:`, error);
   }
 }
+*/
 
+async function loadNoteIntoEditor(noteId) {
+    console.log(`MOCK: Loading note ${noteId} into editor.`);
+    state.notes.activeNoteId = noteId;
+    
+    // Find the note from our mock data
+    let noteToLoad;
+    for (const folderId in state.notes.notesByFolder) {
+        const found = state.notes.notesByFolder[folderId].find(n => n.note_id === noteId);
+        if (found) {
+            noteToLoad = found;
+            break;
+        }
+    }
+    
+    if (noteToLoad) {
+        state.notes.editor.title = noteToLoad.title;
+        state.notes.editor.content = `This is the mock content for <b>${noteToLoad.title}</b>.`;
+        state.notes.activeFolderId = noteToLoad.folder_id;
+    } else {
+        console.error("MOCK: Note not found!");
+        state.notes.editor.title = "Error";
+        state.notes.editor.content = "Could not find this note in mock data.";
+    }
+    
+    renderApp();
+}
+
+/* --- ORIGINAL FUNCTION (COMMENTED OUT) ---
 async function loadNoteIntoEditor(noteId) {
   state.notes.activeNoteId = noteId;
   try {
@@ -145,6 +205,7 @@ async function loadNoteIntoEditor(noteId) {
   }
   renderApp();
 }
+*/
 
 // --- Action Handlers ---
 
