@@ -70,6 +70,19 @@ export function initializeNotesFeature(appState, mainRenderCallback) {
 }
 
 
+    // --- Event Listener for the "Save Note" Modal ---
+    document.getElementById('modal-folders-container').addEventListener('click', (event) => {
+        const targetFolder = event.target.closest('[data-folder-id]');
+        if (targetFolder) {
+            const folderId = targetFolder.dataset.folderId;
+            performSaveToFolder(folderId);
+        }
+    });
+
+    document.getElementById('modal-note-close-btn').addEventListener('click', () => {
+        document.getElementById('save-note-modal').classList.add('hidden');
+    });
+
 // In /static/js/modules/notes.js
 
 async function handleDelegatedEvents(event) {
@@ -284,6 +297,25 @@ async function handleDeleteFolderClick(folderId, folderName) {
   renderApp();
 }
 
+
+// This new function handles the actual save after a folder is chosen from the modal
+async function performSaveToFolder(folderId) {
+    const { activeNoteId, editor } = state.notes;
+    
+    console.log(`MOCK: Saving note "${editor.title}" to folder ID ${folderId}`);
+    
+    // Simulate a successful save
+    alert(`Note "${editor.title}" saved successfully to the selected folder! (Mocked)`);
+
+    // Close the modal
+    document.getElementById('save-note-modal').classList.add('hidden');
+
+    // Refresh the notes in that folder to show the new/updated note
+    await fetchNotesForFolder(folderId); 
+    renderApp();
+}
+
+
 // --- IMPLEMENTED HELPER AND COMPONENT FUNCTIONS ---
 
 /**
@@ -382,3 +414,4 @@ function NoteItemComponent(note) {
         </div>
     `;
 }
+
