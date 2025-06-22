@@ -1,7 +1,14 @@
-//
-// FILE: Frontend1/static/js/modules/flashcards.js (Final Consolidated Version)
-//
-import { fetchWithAuth } from "../services/apiService.js"; // <-- ADDED for centralized API calls
+/**
+ * =============================================================================
+ * flashcards.js - FINAL CORRECTED VERSION
+ * * Module for the "Flashcards" tab in Pane 3.
+ *
+ * NOTE: The API calls in this file are currently MOCKED for frontend development.
+ * This version corrects the data lookup for starting a session.
+ * =============================================================================
+ */
+
+import { fetchWithAuth } from "../services/apiService.js";
 
 let state = null;
 let renderApp = null;
@@ -69,6 +76,8 @@ function SessionCompleteComponent() {
 // --- Main Rendering Logic ---
 
 export function renderFlashcards() {
+  if (!state) return;
+
   const dropdown = document.getElementById("deck-menu-dropdown");
   const container = document.getElementById("flashcard-container");
   if (!dropdown || !container) return;
@@ -79,12 +88,10 @@ export function renderFlashcards() {
       : '<p style="padding: 8px 12px;">No decks found.</p>';
 
   if (state.flashcards.isLoading) {
-    container.innerHTML = PlaceholderComponent(
-      `Loading deck: ${state.flashcards.activeDeckName}...`,
-    );
+    container.innerHTML = PlaceholderComponent(`Loading deck: ${state.flashcards.activeDeckName}...`);
   } else if (state.flashcards.sessionComplete) {
     container.innerHTML = SessionCompleteComponent();
-  } else if (state.flashcards.cards.length > 0) {
+  } else if (state.flashcards.cards && state.flashcards.cards.length > 0) {
     container.innerHTML = FlashcardComponent();
   } else {
     container.innerHTML = PlaceholderComponent("Select a deck to begin.");
@@ -99,73 +106,43 @@ export function initializeFlashcardsFeature(appState, mainRenderCallback) {
   initializeState();
 
   document.getElementById("deck-menu-button").addEventListener("click", () => {
-    document.getElementById("deck-menu-dropdown").classList.toggle("hidden");
+    document.querySelector(".action-dropdown").classList.toggle("hidden");
   });
 
-  document
-    .getElementById("flashcard-view-container")
-    .addEventListener("click", handleFlashcardEvents);
+  document.getElementById("flashcard-view-container").addEventListener("click", handleFlashcardEvents);
 
   fetchDecks();
 }
 
 async function handleFlashcardEvents(event) {
-  const deckId = event.target.dataset.deckId;
-  const deckName = event.target.dataset.deckName;
-  const action = event.target.dataset.action;
+    const deckLink = event.target.closest('[data-deck-id]');
+    const actionTarget = event.target.closest('[data-action]');
 
-  if (deckId) {
-    event.preventDefault();
-    await startDeckStudySession(deckId, deckName);
-    document.getElementById("deck-menu-dropdown").classList.add("hidden");
-  }
+    if (deckLink) {
+        event.preventDefault();
+        const deckId = deckLink.dataset.deckId;
+        const deckName = deckLink.dataset.deckName;
+        await startDeckStudySession(deckId, deckName);
+        document.querySelector(".action-dropdown").classList.add("hidden");
+        return;
+    }
 
-  if (action === "flip") {
-    state.flashcards.isFlipped = true;
-    renderApp();
-  } else if (action === "review-correct" || action === "review-incorrect") {
-    handleFlashcardReview(action);
-  } else if (action === "study-again") {
-    await startDeckStudySession(
-      state.flashcards.activeDeckId,
-      state.flashcards.activeDeckName,
-    );
-  }
+    if (actionTarget) {
+        const action = actionTarget.dataset.action;
+        if (action === "flip") {
+            state.flashcards.isFlipped = true;
+            renderApp();
+        } else if (action === "review-correct" || action === "review-incorrect") {
+            handleFlashcardReview(action);
+        } else if (action === "study-again") {
+            await startDeckStudySession(state.flashcards.activeDeckId, state.flashcards.activeDeckName);
+        }
+    }
 }
 
-async function fetchDecks() {
-  try {
-    const decks = await fetchWithAuth(`/users/${state.userId}/stacks`);
-    state.flashcards.decks = decks;
-    renderApp();
-  } catch (e) {
-    console.error("Failed to fetch decks:", e);
-  }
-}
-
-async function startDeckStudySession(deckId, deckName) {
-  state.flashcards.activeDeckId = deckId;
-  state.flashcards.activeDeckName = deckName;
-  state.flashcards.isLoading = true;
-  renderApp();
-  try {
-    const cards = await fetchWithAuth(
-      `/users/${state.userId}/stacks/${deckId}/flashcards`,
-    );
-    state.flashcards.cards = cards.sort(() => Math.random() - 0.5);
-    state.flashcards.currentCardIndex = 0;
-    state.flashcards.isFlipped = false;
-    state.flashcards.sessionComplete = cards.length === 0;
-  } catch (e) {
-    console.error("Could not load deck:", e);
-    state.flashcards.cards = [];
-  }
-  state.flashcards.isLoading = false;
-  renderApp();
-}
-
-function handleFlashcardReview() {
-  // <-- Add underscore to 'outcome'
+// This function now correctly accepts the 'outcome' argument
+function handleFlashcardReview(outcome) {
+  console.log(`Card reviewed as: ${outcome}`); // For future use
   if (state.flashcards.currentCardIndex < state.flashcards.cards.length - 1) {
     state.flashcards.currentCardIndex++;
     state.flashcards.isFlipped = false;
@@ -173,4 +150,47 @@ function handleFlashcardReview() {
     state.flashcards.sessionComplete = true;
   }
   renderApp();
+}
+
+// --- MOCKED API FUNCTIONS ---
+
+async function fetchDecks() {
+    console.log("MOCK: Fetching decks for user:", state.userId);
+    const mockDecks = [
+        { stack_id: "1", stack_name: "Spanish Vocabulary" },
+        { stack_id: "2", stack_name: "Technical Terms" },
+        { stack_id: "3", stack_name: "Project Acronyms (Empty)" }
+    ];
+    state.flashcards.decks = mockDecks;
+    renderApp();
+}
+
+async function startDeckStudySession(deckId, deckName) {
+    state.flashcards.activeDeckId = deckId;
+    state.flashcards.activeDeckName = deckName;
+    state.flashcards.isLoading = true;
+    renderApp();
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const mockCards = {
+        "1": [
+            { card_id: 101, front_text: "Hola", back_text: "Hello" },
+            { card_id: 102, front_text: "Adiós", back_text: "Goodbye" },
+            { card_id: 103, front_text: "Gracias", back_text: "Thank you" }
+        ],
+        "2": [
+            { card_id: 201, front_text: "API", back_text: "Application Programming Interface" },
+            { card_id: 202, front_text: "JSON", back_text: "JavaScript Object Notation" }
+        ],
+        "3": []
+    };
+
+    const cards = mockCards[deckId] || [];
+    state.flashcards.cards = [...cards].sort(() => Math.random() - 0.5); // Use spread to avoid mutating mock
+    state.flashcards.currentCardIndex = 0;
+    state.flashcards.isFlipped = false;
+    state.flashcards.sessionComplete = cards.length === 0;
+
+    state.flashcards.isLoading = false;
+    renderApp();
 }

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>1Project App</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/static/css/main_style.css">
   </head>
   <body>
@@ -13,8 +14,9 @@
     </nav>
 
     <main class="main-content">
+
       <div class="pane" id="pane-one">
-        <div class="pane-header"><h2>Pane 1</h2></div>
+        <div class="pane-header"><h2>Translate</h2></div>
         <div class="rake-container">
           <div class="textbox-container">
               <textarea id="source-text-area" placeholder="Source text will land here..."></textarea>
@@ -22,27 +24,18 @@
           </div>
           <button id="star-btn" class="star-button" title="Save to list">★</button>
         </div>
-
         <div class="collapsible-menu-container">
           <button class="collapsible-trigger">Definition</button>
-          <div class="collapsible-content">
-            <p>Content for Definition will go here...</p>
-          </div>
+          <div class="collapsible-content"><p>Content for Definition will go here...</p></div>
 
           <button class="collapsible-trigger">Syn/Ant</button>
-          <div class="collapsible-content">
-            <p>Content for Synonyms & Antonyms will go here...</p>
-          </div>
+          <div class="collapsible-content"><p>Content for Synonyms & Antonyms will go here...</p></div>
 
           <button class="collapsible-trigger">Uses/Context</button>
-          <div class="collapsible-content">
-            <p>Content for Uses & Context will go here...</p>
-          </div>
+          <div class="collapsible-content"><p>Content for Uses & Context will go here...</p></div>
 
           <button class="collapsible-trigger">Read</button>
-          <div class="collapsible-content">
-            <p>Content for Read will go here...</p>
-          </div>
+          <div class="collapsible-content"><p>Content for Read will go here...</p></div>
         </div>
       </div>
 
@@ -58,21 +51,80 @@
       </div>
 
       <div class="pane" id="pane-three">
-          <button class="pane-header-button">Notes</button>
-        <div class="pane-header"><h2>Pane 3</h2></div>
+        <div class="pane-nav">
+            <button class="pane-nav-button active" data-target="#notes-view-container">Notes</button>
+            <button class="pane-nav-button" data-target="#media-search-view-container">Watch</button>
+            <button class="pane-nav-button" data-target="#flashcard-view-container">Flashcards</button>
+            <button class="pane-nav-button" data-target="#connect-view-container">Connect</button>
+            <button class="pane-nav-button" data-target="#read-view-container">Read</button>
+        </div>
+
+        <div id="notes-view-container" class="pane-nav-content active">
+            <div class="notes-sidebar">
+                <div class="notes-sidebar-header">
+                    <h3>Folders</h3>
+                    <button class="add-button" data-action="create-folder" title="Create New Folder">+</button>
+                </div>
+                <div id="notes-folder-list" class="notes-folder-list-container"></div>
+            </div>
+            <div class="notes-main">
+                <div class="notes-editor-header">
+                    <input type="text" id="note-title-input" placeholder="Note Title...">
+                    <div class="notes-actions">
+                        <button class="action-btn" data-action="create-note" title="New Note"><i class="bi bi-file-earmark-plus"></i></button>
+                        <button class="action-btn" data-action="save-note" title="Save Note"><i class="bi bi-save"></i></button>
+                    </div>
+                </div>
+                <div id="notes-toolbar">
+                    <button data-command="bold" title="Bold"><i class="bi bi-type-bold"></i></button>
+                    <button data-command="italic" title="Italic"><i class="bi bi-type-italic"></i></button>
+                    <button data-command="underline" title="Underline"><i class="bi bi-type-underline"></i></button>
+                </div>
+                <div id="note-editor" contenteditable="true" class="notes-editor-content"></div>
+            </div>
+        </div>
+
+        <div id="media-search-view-container" class="pane-nav-content">
+            <div class="media-search-header">
+                <input type="search" id="media-search-input" class="form-control" placeholder="Search for videos...">
+                <button id="media-search-button" class="btn-base btn-custom">Search</button>
+            </div>
+            <div id="media-search-results" class="media-search-body"></div>
+        </div>
+
+        <div id="flashcard-view-container" class="pane-nav-content">
+            <div id="deck-selector-menu">
+                <button id="deck-menu-button" class="btn-base btn-custom-outline">Select Deck</button>
+                <div id="deck-menu-dropdown" class="action-dropdown hidden"></div>
+            </div>
+            <div id="flashcard-container"></div>
+        </div>
+        
+        <div id="connect-view-container" class="pane-nav-content">
+            </div>
+
+        <div id="read-view-container" class="pane-nav-content">
+            </div>
       </div>
     </main>
 
     <div id="save-to-list-modal" class="modal-overlay hidden">
       <div class="modal-content">
-        <button id="modal-close-btn" class="modal-close-btn"></button> <h3>Save to a List</h3>
+        <button id="modal-close-btn" class="modal-close-btn"></button> 
+        <h3>Save to a List</h3>
         <div id="modal-lists-container" class="modal-lists"></div>
       </div>
     </div>
 
-    <script src="/static/js/modules/translate.js"></script>
-    <script src="/static/js/modules/collections.js"></script>
-    <script src="/static/js/dashboard_app.js"></script>
+    <script type="module" src="/static/js/modules/translate.js"></script>
+    <script type="module" src="/static/js/modules/collections.js"></script>
+    <script type="module" src="/static/js/modules/notes.js"></script>
+    <script type="module" src="/static/js/modules/media_search.js"></script>
+    <script type="module" src="/static/js/modules/flashcards.js"></script>
+    <script type="module" src="/static/js/modules/connect.js"></script>
+    <script type="module" src="/static/js/modules/read.js"></script>
+    
+    <script type="module" src="/static/js/dashboard_app.js"></script>
     
   </body>
 </html>

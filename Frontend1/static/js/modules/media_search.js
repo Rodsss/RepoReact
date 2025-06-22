@@ -1,7 +1,14 @@
-//
-// FILE: Frontend1/static/js/modules/media_search.js (Final Consolidated Version)
-//
-import { fetchWithAuth } from "../services/apiService.js"; // <-- ADDED for centralized API calls
+/**
+ * =============================================================================
+ * media_search.js
+ * * Module for the "Watch" tab in Pane 3.
+ * Handles searching for media and displaying it in a fake player with captions.
+ *
+ * NOTE: The API call in this file is currently MOCKED for frontend development.
+ * =============================================================================
+ */
+
+import { fetchWithAuth } from "../services/apiService.js";
 
 let state = null;
 let renderApp = null;
@@ -9,29 +16,29 @@ let renderApp = null;
 // --- Reusable Component Functions ---
 
 function StatusMessageComponent(message) {
-  return `<p class="p-3">${message}</p>`;
+  return `<p class="media-status-message">${message}</p>`;
 }
 
 function FakePlayerComponent(videoData) {
   return `
-        <div id="fake-player-container" class="p-3">
+        <div id="fake-player-container">
             <div id="fake-player-screen" class="mb-2">
                 <span id="player-status-text">Stopped</span>
             </div>
             <div id="fake-player-controls" class="mb-3">
-                <button class="btn-base btn-custom-outline" data-action="play">
-                    <i class="bi bi-play-fill"></i><span>Play</span>
+                <button class="action-btn" data-action="play" title="Play">
+                    <i class="bi bi-play-fill"></i>
                 </button>
-                <button class="btn-base btn-custom-outline" data-action="stop">
-                    <i class="bi bi-stop-fill"></i><span>Stop</span>
+                <button class="action-btn" data-action="stop" title="Stop">
+                    <i class="bi bi-stop-fill"></i>
                 </button>
-                <button class="btn-base btn-custom-outline" data-action="replay">
-                    <i class="bi bi-arrow-counterclockwise"></i><span>Replay</span>
+                <button class="action-btn" data-action="replay" title="Replay">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </button>
             </div>
             <div class="caption-wrapper">
                 <label class="form-label">Captions</label>
-                <div id="caption-box" class="p-3 border rounded" style="height: 100%; font-size: 16px;">
+                <div id="caption-box">
                     ${(videoData.transcript || []).map((line) => `<p data-start="${line.start}">${line.text}</p>`).join("")}
                 </div>
             </div>
@@ -42,19 +49,25 @@ function FakePlayerComponent(videoData) {
 // --- Main Rendering Logic for this Module ---
 
 export function renderMediaSearch() {
+    if (!state) return;
+
   const container = document.getElementById("media-search-results");
   if (!container) return;
 
-  if (state.searchStatus === "loading") {
-    container.innerHTML = StatusMessageComponent("Searching...");
-  } else if (
-    state.searchStatus === "success" &&
-    state.mediaSearchResults.length > 0
-  ) {
-    container.innerHTML = FakePlayerComponent(state.mediaSearchResults[0]);
+  const currentStatus = state.mediaSearch.searchStatus;
+  const searchResults = state.mediaSearch.mediaSearchResults;
+
+  if (currentStatus === "loading") {
+    container.innerHTML = StatusMessageComponent("Searching for media...");
+  } else if (currentStatus === "success" && searchResults.length > 0) {
+    container.innerHTML = FakePlayerComponent(searchResults[0]);
     attachPlayerEventListeners();
+  } else if (currentStatus === "error") {
+      container.innerHTML = StatusMessageComponent("An error occurred. Please try again.");
+  } else if (currentStatus === "success" && searchResults.length === 0) {
+    container.innerHTML = StatusMessageComponent("No results found for your query.");
   } else {
-    container.innerHTML = StatusMessageComponent("No results found.");
+    container.innerHTML = StatusMessageComponent("Enter a search term to find a video.");
   }
 }
 
@@ -63,18 +76,60 @@ export function renderMediaSearch() {
 export function initializeMediaSearchFeature(appState, mainRenderCallback) {
   state = appState;
   renderApp = mainRenderCallback;
-  state.searchStatus = "idle";
+  
+  const searchButton = document.getElementById("media-search-button");
+  const searchInput = document.getElementById("media-search-input");
 
-  document
-    .getElementById("media-search-button")
-    .addEventListener("click", handleMediaSearch);
+  if (searchButton) {
+      searchButton.addEventListener("click", handleMediaSearch);
+  }
+  if(searchInput){
+      searchInput.addEventListener("keydown", (event) => {
+          if (event.key === 'Enter') {
+              handleMediaSearch();
+          }
+      });
+  }
 }
 
+// --- MOCKED API Handler ---
+// This function simulates a successful API call for frontend development.
 async function handleMediaSearch() {
   const query = document.getElementById("media-search-input").value.trim();
   if (!query) return;
 
-  state.searchStatus = "loading";
+  console.log("MOCK: Searching for media with query:", query);
+  state.mediaSearch.searchStatus = "loading";
+  renderApp();
+  stopPlayback();
+
+  // Simulate a network delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Provide fake data as if the API returned it
+  const mockResults = [{
+      video_id: "mock123",
+      title: "A Mocked Video Result",
+      transcript: [
+          { start: 0, text: "This is the first line of the transcript." },
+          { start: 3, text: "The fake player will highlight this line after 3 seconds." },
+          { start: 6, text: "And this is the third and final line." },
+          { start: 9, text: "The video ends here." }
+      ]
+  }];
+  
+  state.mediaSearch.mediaSearchResults = mockResults;
+  state.mediaSearch.searchStatus = "success";
+  console.log("MOCK: Search successful, rendering results.");
+  renderApp();
+}
+
+/* --- ORIGINAL LIVE API FUNCTION (COMMENTED OUT) ---
+async function handleMediaSearch() {
+  const query = document.getElementById("media-search-input").value.trim();
+  if (!query) return;
+
+  state.mediaSearch.searchStatus = "loading";
   renderApp();
 
   stopPlayback();
@@ -84,15 +139,16 @@ async function handleMediaSearch() {
       `/media-search?query=${encodeURIComponent(query)}`,
     );
 
-    state.mediaSearchResults = results;
-    state.searchStatus = "success";
+    state.mediaSearch.mediaSearchResults = results;
+    state.mediaSearch.searchStatus = "success";
     renderApp();
   } catch (error) {
     console.error("Failed to fetch media search results:", error);
-    state.searchStatus = "error";
+    state.mediaSearch.searchStatus = "error";
     renderApp();
   }
 }
+*/
 
 // --- Fake Player Logic ---
 
@@ -100,15 +156,9 @@ let playerInterval = null;
 let playbackTime = 0;
 
 function attachPlayerEventListeners() {
-  document
-    .querySelector('[data-action="play"]')
-    ?.addEventListener("click", startPlayback);
-  document
-    .querySelector('[data-action="stop"]')
-    ?.addEventListener("click", stopPlayback);
-  document
-    .querySelector('[data-action="replay"]')
-    ?.addEventListener("click", replayPlayback);
+  document.querySelector('[data-action="play"]')?.addEventListener("click", startPlayback);
+  document.querySelector('[data-action="stop"]')?.addEventListener("click", stopPlayback);
+  document.querySelector('[data-action="replay"]')?.addEventListener("click", replayPlayback);
 }
 
 function startPlayback() {
@@ -139,18 +189,28 @@ function replayPlayback() {
 function highlightCurrentCaption() {
   let activeLine = null;
   const captionLines = document.querySelectorAll("#caption-box p");
+  if (captionLines.length === 0) {
+      stopPlayback();
+      return;
+  }
+  
   captionLines.forEach((line) => {
     const startTime = parseFloat(line.dataset.start);
-    if (playbackTime >= startTime) activeLine = line;
+    if (playbackTime >= startTime) {
+        activeLine = line;
+    }
     line.classList.remove("active-caption");
   });
+
   if (activeLine) {
     activeLine.classList.add("active-caption");
-    activeLine.scrollIntoView({ behavior: "smooth", block: "center" });
+    activeLine.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
   }
 }
 
 function updatePlayerStatusText(text) {
   const statusText = document.getElementById("player-status-text");
-  if (statusText) statusText.textContent = text;
+  if (statusText) {
+    statusText.textContent = text;
+  }
 }
