@@ -15,10 +15,9 @@
 // 5. Import the specific styles for the translate and collections panes.
 @use "language-view";
 
-// All other imports for old features like 'auth', 'notes', 'discover', etc.,
-// have been removed as requested to focus only on the new design.
+// 6. Import styles for all integrated features
+@use "notes";
+@use "discover";
+@use "flashcards"; // <-- ADD THIS LINE
 
-@use "notes"; // <-- ADD THIS LINE
-
-@use "discover"; // <-- ADD THIS LINE
 

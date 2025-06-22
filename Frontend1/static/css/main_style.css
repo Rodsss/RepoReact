@@ -733,4 +733,111 @@ body {
   color: #fff;
 }
 
+/* _flashcards.scss - FINAL AND CORRECTED VERSION */
+#flashcard-view-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1.5rem;
+  padding: 25px;
+}
+
+#deck-selector-menu {
+  position: relative;
+  z-index: 20;
+  flex-shrink: 0;
+  /* REMOVED layout-breaking negative margins and sticky positioning */
+}
+
+.action-dropdown {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  z-index: 10;
+  background-color: var(--pane-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  min-width: 220px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.action-dropdown.hidden {
+  display: none;
+}
+.action-dropdown a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--main-text);
+  text-decoration: none;
+}
+.action-dropdown a:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+#flashcard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.flashcard {
+  width: 90%;
+  max-width: 450px;
+  height: 280px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  border-radius: 12px;
+}
+
+.flashcard.is-flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--pane-bg);
+  color: var(--main-text);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+.flashcard-controls, .flashcard-progress {
+  margin-top: 1.5rem;
+}
+
+.flashcard-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  max-width: 450px;
+  height: 280px;
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  color: var(--secondary-text);
+}
+
 /*# sourceMappingURL=main_style.css.map */
