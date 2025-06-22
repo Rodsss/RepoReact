@@ -164,28 +164,27 @@
   }
 }
 
+// In /static/scss/_notes.scss
+
 .notes-actions {
   display: flex;
   gap: 10px;
 
+  // This is the new style for the "naked" icon buttons
   .action-btn {
-    background: transparent;
-    border: 1px solid var(--border-color);
+    background: none;
+    border: none;
     color: var(--secondary-text);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    padding: 5px;               // Gives a larger clickable area around the icon
+    border-radius: 5px;         // A slight rounding looks better than sharp corners
+    font-size: 1.5rem;          // Control the icon size directly
     cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    line-height: 1;             // Ensures the icon is vertically centered
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: var(--accent-color);
       color: var(--accent-color);
-      background-color: var(--pane-bg);
+      background-color: rgba(255, 255, 255, 0.1); // A subtle background on hover
     }
   }
 }

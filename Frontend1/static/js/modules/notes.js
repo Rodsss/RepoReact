@@ -70,45 +70,33 @@ export function initializeNotesFeature(appState, mainRenderCallback) {
 }
 
 
+// In /static/js/modules/notes.js
+
 async function handleDelegatedEvents(event) {
   const target = event.target;
-  const action =
-    target.dataset.action || target.closest("[data-action]")?.dataset.action;
+  // Use .closest() to ensure we get the action even if the user clicks the <i> icon inside the button
+  const action = target.closest('[data-action]')?.dataset.action;
+
+  if (!action) return; // Exit if no action is found
 
   switch (action) {
-    case "toggle-folder":
-      toggleFolder(
-        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
-      );
+    case 'toggle-folder':
+      toggleFolder(parseInt(target.closest('[data-folder-id]').dataset.folderId, 10));
       break;
-    case "select-note":
+    case 'select-note':
       event.preventDefault();
       loadNoteIntoEditor(parseInt(target.dataset.noteId, 10));
       break;
-    case "delete-note":
-      // This case is now handled by the right-click menu, but we can leave it
-      // in case you want to add back a button later.
-      handleDeleteNoteClick(
-        parseInt(target.dataset.noteId, 10),
-        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
-      );
-      break;
-    case "delete-folder":
-      // This case is also handled by the right-click menu.
-      event.stopPropagation();
-      handleDeleteFolderClick(
-        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
-        target.closest("[data-folder-name]").dataset.folderName,
-      );
-      break;
-    case "create-folder":
+    
+    // --- ADDED FUNCTIONALITY ---
+    case 'create-folder':
       handleCreateFolderClick();
       break;
-    case "create-note":
+    case 'create-note':
       handleNewNoteClick();
       break;
-    case "save-note":
-      saveNote();
+    case 'save-note':
+      await saveNote();
       break;
   }
 }
@@ -213,44 +201,51 @@ async function loadNoteIntoEditor(noteId) {
 
 // --- Action Handlers ---
 
+// In /static/js/modules/notes.js
+
+// --- MOCKED Action Handlers ---
+
 async function handleCreateFolderClick() {
   const folderName = prompt("Enter a name for the new folder:");
   if (!folderName || !folderName.trim()) return;
-  try {
-    await fetchWithAuth("/notes/folders", {
-      method: "POST",
-      body: JSON.stringify({ folder_name: folderName.trim() }),
-    });
-    await fetchFolders(); // Refetch all folders
-  } catch (error) {
-    alert(`Error creating folder: ${error.message}`);
-  }
+
+  console.log("MOCK: Creating folder:", folderName.trim());
+  // Simulate adding a new folder to our state
+  const newFolder = {
+    folder_id: Date.now(), // Use timestamp for a unique mock ID
+    folder_name: folderName.trim(),
+  };
+  state.notes.folders.push(newFolder);
+  renderApp(); // Re-render to show the new folder
 }
 
+// In /static/js/modules/notes.js
+
+// This function now opens the "Save to Folder" modal
 async function saveNote() {
-  const { activeNoteId, activeFolderId, editor } = state.notes;
-  if (!activeFolderId)
-    return alert("A folder must be selected to save a note.");
+    const editorTitle = state.notes.editor.title.trim();
+    if (!editorTitle) {
+        return alert("Please enter a title for the note before saving.");
+    }
 
-  const payload = {
-    title: editor.title,
-    content: editor.content,
-    folder_id: activeFolderId,
-  };
-  const endpoint = activeNoteId ? `/notes/${activeNoteId}` : "/notes/";
-  const method = activeNoteId ? "PUT" : "POST";
+    const modal = document.getElementById('save-note-modal');
+    const foldersContainer = document.getElementById('modal-folders-container');
+    
+    // Clear any previous list and show a loading message
+    foldersContainer.innerHTML = '<p>Loading folders...</p>';
+    modal.classList.remove('hidden');
 
-  try {
-    const savedNote = await fetchWithAuth(endpoint, {
-      method,
-      body: JSON.stringify(payload),
-    });
-    state.notes.activeNoteId = savedNote.note_id;
-    await fetchNotesForFolder(activeFolderId);
-    renderApp();
-  } catch (error) {
-    alert(error.message);
-  }
+    // Populate the modal with the current list of folders
+    if (state.notes.folders.length > 0) {
+        foldersContainer.innerHTML = state.notes.folders.map(folder => 
+            `<div class="modal-list-item" data-folder-id="${folder.folder_id}" style="cursor: pointer;">
+                <i class="bi bi-folder" style="margin-right: 10px;"></i>
+                ${folder.folder_name}
+            </div>`
+        ).join('');
+    } else {
+        foldersContainer.innerHTML = '<p>No folders found. Please create a folder first.</p>';
+    }
 }
 
 async function handleDeleteNoteClick(noteId, folderId) {
