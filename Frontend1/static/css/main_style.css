@@ -534,13 +534,6 @@ body {
 }
 
 /* === NOTES FEATURE STYLES === */
-#notes-view-container {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  gap: 20px;
-}
-
 .notes-sidebar {
   width: 280px;
   flex-shrink: 0;
