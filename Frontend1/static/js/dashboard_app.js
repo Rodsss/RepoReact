@@ -89,6 +89,21 @@ function getDragAfterElement(container, x) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
+// In dashboard_app.js
+
+function initializeHoverEffects() {
+    const navButtons = document.querySelectorAll('#pane-three-nav .pane-nav-button');
+    navButtons.forEach(button => {
+        button.addEventListener('mouseenter', () => {
+            button.classList.add('is-hovered');
+        });
+        button.addEventListener('mouseleave', () => {
+            button.classList.remove('is-hovered');
+        });
+    });
+}
+
+
 
 // --- 3. MAIN INITIALIZER & EVENT WIRING ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -104,6 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeConnectFeature(appState, renderApp);
     initializeReadFeature(appState, renderApp);
     initializeDraggableTabs();
+    initializeHoverEffects(); 
+
     console.log("All modules initialized.");
 
     // --- Inter-Module Communication Event Listeners ---

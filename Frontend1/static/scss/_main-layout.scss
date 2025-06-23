@@ -74,31 +74,82 @@ body {
   padding: 8px;
 }
 
-// Tab Buttons ("Pill" Style)
-.pane-nav-button {
-  box-sizing: border-box;
-  flex-grow: 0;
-  text-align: center;
-  background-color: transparent;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 18px;
-  color: var(--secondary-text);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+// Tab Buttons ("Animated" Style)
 
-  &:hover:not(.active) {
-    color: var(--main-text);
-    background-color: rgba(255, 255, 255, 0.1);
+
+// In /static/scss/_main-layout.scss
+
+// Replace your old .pane-nav-button styles with this entire block
+.pane-nav-button {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-right: 1px solid var(--border-color);
+  background-color: transparent;
+  cursor: pointer;
+
+  &:last-child {
+    border-right: none;
   }
 
-  &.active {
-    color: #fff;
+  // --- Inner Text Elements ---
+  .btn-text-original, .btn-text-hover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 2;
+  }
+
+  .btn-text-original {
+    color: var(--secondary-text);
+  }
+
+  .btn-text-hover {
+    color: #0f192a; // High-contrast dark blue text
+    transform: translateY(100%);
+  }
+
+  // --- Background Wipe Element ---
+  .btn-hover-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 110%;
+    height: 100%;
     background-color: var(--accent-color);
+    transform: translateX(-100%) skew(-20deg);
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 1; // Lower z-index places it behind the text
+  }
+
+  // --- States Triggered by JavaScript (CORRECTLY NESTED) ---
+  // The "&" now correctly refers to the parent ".pane-nav-button"
+  &.is-hovered,
+  &.active {
+    .btn-hover-bg {
+      transform: translateX(0) skew(-20deg);
+    }
+    .btn-text-original {
+      transform: translateY(-100%);
+    }
+    .btn-text-hover {
+      transform: translateY(0);
+    }
   }
 }
+
 
 
 // --- CRITICAL TAB SWITCHING LOGIC (High-Power Version) ---
