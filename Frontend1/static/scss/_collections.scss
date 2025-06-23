@@ -1,0 +1,68 @@
+/* /static/css/_collections.scss */
+
+@use 'mixins' as *;
+
+
+
+// Style for the new action bar holding the input and delete button
+.list-actions-bar {
+  display: flex;
+  gap: 10px;
+  padding: 0 20px 20px 20px; // Add padding to align with pane content
+  border-bottom: 1px solid var(--border-color);
+
+  &.hidden {
+    display: none;
+  }
+
+  // Make the input field take up most of the space
+  #new-list-input {
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color); // A slightly different bg
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 1em;
+    color: var(--main-text);
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+  }
+
+  // Style for the disabled state of the delete button
+  #delete-selected-btn:disabled {
+    background-color: var(--border-color);
+    cursor: not-allowed;
+    border-color: transparent;
+  }
+}
+
+// Ensure the list container itself has some padding
+#lists-container.pane-content {
+    padding: 20px;
+}
+
+// --- THIS IS THE STYLE FOR A SELECTED WORD ---
+.word-item.is-selected {
+  background-color: var(--accent-color) !important;
+  border-radius: 4px;
+
+  // Make the text and icon color high-contrast when selected
+  .word-text, .word-action-btn {
+    color: #fff !important;
+    background-color: #fff !important; // For the masked icon
+  }
+}
+
+
+// This makes the main content area of the pane scrollable
+#lists-container.pane-content {
+  padding: 20px;
+  flex-grow: 1;      // Allows the list to fill the available vertical space
+  min-height: 0;     // A critical flexbox property to enable scrolling
+  overflow-y: auto;  // Enable vertical scrolling ONLY when needed
+  overflow-x: hidden;  // Disable horizontal scrolling
+
+  @include invisible-scrollbar; // Apply our new mixin
+}

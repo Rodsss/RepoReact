@@ -1,18 +1,15 @@
-/* _flashcards.scss - FINAL AND CORRECTED VERSION */
+/* === FLASHCARDS FEATURE STYLES === */
+/* Note: Main layout styles like display & padding are now handled by _pane-navigation.scss */
 
-#flashcard-view-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 1.5rem;
-  padding: 25px;
-}
+// The #flashcard-view-container rule that caused conflicts has been removed.
+// We now only style the elements inside the view.
 
+// --- Deck Selector Menu ---
 #deck-selector-menu {
-  position: relative; 
+  position: relative;
   z-index: 20;
   flex-shrink: 0;
-  /* REMOVED layout-breaking negative margins and sticky positioning */
+  margin-bottom: 1.5rem; // Add space between the dropdown and the card
 }
 
 .action-dropdown {
@@ -24,7 +21,9 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   min-width: 220px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   &.hidden {
     display: none;
@@ -42,15 +41,19 @@
   }
 }
 
+// --- Main Flashcard Area ---
 #flashcard-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-grow: 1;
+  justify-content: center;
+  flex-grow: 1; // Allow this to take up remaining space
+  width: 100%;
 }
 
 .flashcard {
-  width: 90%;
+  background-color: transparent;
+  width: 100%;
   max-width: 450px;
   height: 280px;
   perspective: 1000px;
@@ -65,6 +68,7 @@
   transition: transform 0.6s;
   transform-style: preserve-3d;
   border-radius: 12px;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
 }
 
 .flashcard.is-flipped .flashcard-inner {
@@ -76,12 +80,14 @@
   position: absolute;
   width: 100%;
   height: 100%;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   padding: 20px;
+  box-sizing: border-box;
   border-radius: 12px;
   border: 1px solid var(--border-color);
   background-color: var(--pane-bg);
@@ -92,18 +98,29 @@
   transform: rotateY(180deg);
 }
 
-.flashcard-controls, .flashcard-progress {
+.flashcard-controls {
   margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.flashcard-progress {
+  margin-top: 1rem;
+  color: var(--secondary-text);
 }
 
 .flashcard-placeholder {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 90%;
+  text-align: center;
+  gap: 20px;
+  font-size: 1.2em;
+  color: var(--secondary-text);
+  width: 100%;
   max-width: 450px;
   height: 280px;
   border: 2px dashed var(--border-color);
   border-radius: 12px;
-  color: var(--secondary-text);
 }

@@ -69,42 +69,47 @@ export function initializeNotesFeature(appState, mainRenderCallback) {
   fetchFolders();
 }
 
+
+    // --- Event Listener for the "Save Note" Modal ---
+    document.getElementById('modal-folders-container').addEventListener('click', (event) => {
+        const targetFolder = event.target.closest('[data-folder-id]');
+        if (targetFolder) {
+            const folderId = targetFolder.dataset.folderId;
+            performSaveToFolder(folderId);
+        }
+    });
+
+    document.getElementById('modal-note-close-btn').addEventListener('click', () => {
+        document.getElementById('save-note-modal').classList.add('hidden');
+    });
+
+// In /static/js/modules/notes.js
+
 async function handleDelegatedEvents(event) {
   const target = event.target;
-  const action =
-    target.dataset.action || target.closest("[data-action]")?.dataset.action;
+  // Use .closest() to ensure we get the action even if the user clicks the <i> icon inside the button
+  const action = target.closest('[data-action]')?.dataset.action;
+
+  if (!action) return; // Exit if no action is found
 
   switch (action) {
-    case "toggle-folder":
-      toggleFolder(
-        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
-      );
+    case 'toggle-folder':
+      toggleFolder(parseInt(target.closest('[data-folder-id]').dataset.folderId, 10));
       break;
-    case "select-note":
+    case 'select-note':
       event.preventDefault();
       loadNoteIntoEditor(parseInt(target.dataset.noteId, 10));
       break;
-    case "delete-note":
-      handleDeleteNoteClick(
-        parseInt(target.dataset.noteId, 10),
-        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
-      );
-      break;
-    case "delete-folder":
-      event.stopPropagation();
-      handleDeleteFolderClick(
-        parseInt(target.closest("[data-folder-id]").dataset.folderId, 10),
-        target.closest("[data-folder-name]").dataset.folderName,
-      );
-      break;
-    case "create-folder":
+    
+    // --- ADDED FUNCTIONALITY ---
+    case 'create-folder':
       handleCreateFolderClick();
       break;
-    case "create-note":
+    case 'create-note':
       handleNewNoteClick();
       break;
-    case "save-note":
-      saveNote();
+    case 'save-note':
+      await saveNote();
       break;
   }
 }
@@ -132,23 +137,16 @@ async function fetchFolders() {
   renderApp();
 }
 
+// In /static/js/modules/notes.js
+
 async function fetchNotesForFolder(folderId) {
-  console.log(`MOCK: Fetching notes for folder ${folderId}`);
-  await new Promise(resolve => setTimeout(resolve, 300));
-
-  const mockNotes = {
-    1: [ // Notes for folderId 1
-      { note_id: 101, title: "Project Alpha UI Mockups", folder_id: 1 },
-      { note_id: 102, title: "Q3 Marketing Strategy", folder_id: 1 },
-    ],
-    2: [ // Notes for folderId 2
-      { note_id: 201, title: "My Novel Outline", folder_id: 2 },
-    ],
-    3: [], // Folder 3 has no notes
-  };
-
-  state.notes.notesByFolder[folderId] = mockNotes[folderId] || [];
-  console.log(`MOCK: Notes for folder ${folderId} loaded.`);
+    // This is the new, mocked version of the function.
+    console.log(`MOCK: "Fetching" notes for folder ${folderId}. In a real app, this would be an API call. In this mock setup, we assume the state is already correct.`);
+    
+    // In our mock environment, the state is updated directly by other functions (like performSaveToFolder),
+    // so this function can be very simple and doesn't need to modify the state.
+    // It just needs to exist and resolve successfully.
+    return Promise.resolve();
 }
 
 /* --- ORIGINAL FUNCTION (COMMENTED OUT) ---
@@ -209,44 +207,51 @@ async function loadNoteIntoEditor(noteId) {
 
 // --- Action Handlers ---
 
+// In /static/js/modules/notes.js
+
+// --- MOCKED Action Handlers ---
+
 async function handleCreateFolderClick() {
   const folderName = prompt("Enter a name for the new folder:");
   if (!folderName || !folderName.trim()) return;
-  try {
-    await fetchWithAuth("/notes/folders", {
-      method: "POST",
-      body: JSON.stringify({ folder_name: folderName.trim() }),
-    });
-    await fetchFolders(); // Refetch all folders
-  } catch (error) {
-    alert(`Error creating folder: ${error.message}`);
-  }
+
+  console.log("MOCK: Creating folder:", folderName.trim());
+  // Simulate adding a new folder to our state
+  const newFolder = {
+    folder_id: Date.now(), // Use timestamp for a unique mock ID
+    folder_name: folderName.trim(),
+  };
+  state.notes.folders.push(newFolder);
+  renderApp(); // Re-render to show the new folder
 }
 
+// In /static/js/modules/notes.js
+
+// This function now opens the "Save to Folder" modal
 async function saveNote() {
-  const { activeNoteId, activeFolderId, editor } = state.notes;
-  if (!activeFolderId)
-    return alert("A folder must be selected to save a note.");
+    const editorTitle = state.notes.editor.title.trim();
+    if (!editorTitle) {
+        return alert("Please enter a title for the note before saving.");
+    }
 
-  const payload = {
-    title: editor.title,
-    content: editor.content,
-    folder_id: activeFolderId,
-  };
-  const endpoint = activeNoteId ? `/notes/${activeNoteId}` : "/notes/";
-  const method = activeNoteId ? "PUT" : "POST";
+    const modal = document.getElementById('save-note-modal');
+    const foldersContainer = document.getElementById('modal-folders-container');
+    
+    // Clear any previous list and show a loading message
+    foldersContainer.innerHTML = '<p>Loading folders...</p>';
+    modal.classList.remove('hidden');
 
-  try {
-    const savedNote = await fetchWithAuth(endpoint, {
-      method,
-      body: JSON.stringify(payload),
-    });
-    state.notes.activeNoteId = savedNote.note_id;
-    await fetchNotesForFolder(activeFolderId);
-    renderApp();
-  } catch (error) {
-    alert(error.message);
-  }
+    // Populate the modal with the current list of folders
+    if (state.notes.folders.length > 0) {
+        foldersContainer.innerHTML = state.notes.folders.map(folder => 
+            `<div class="modal-list-item" data-folder-id="${folder.folder_id}" style="cursor: pointer;">
+                <i class="bi bi-folder" style="margin-right: 10px;"></i>
+                ${folder.folder_name}
+            </div>`
+        ).join('');
+    } else {
+        foldersContainer.innerHTML = '<p>No folders found. Please create a folder first.</p>';
+    }
 }
 
 async function handleDeleteNoteClick(noteId, folderId) {
@@ -284,6 +289,96 @@ async function handleDeleteFolderClick(folderId, folderName) {
   }
   renderApp();
 }
+
+
+// This new function handles the actual save after a folder is chosen from the modal
+// In /static/js/modules/notes.js
+
+// This new function handles the actual save after a folder is chosen from the modal
+async function performSaveToFolder(folderId) {
+    const { activeNoteId, editor } = state.notes;
+    const noteTitle = editor.title.trim();
+    const noteContent = editor.content;
+    const targetFolderId = parseInt(folderId, 10);
+
+    // MOCK API LOGIC:
+    // In a real app, this would be a POST or PUT request to the server.
+    // Here, we will manipulate the local state directly.
+
+    if (activeNoteId) {
+        // --- LOGIC TO UPDATE AN EXISTING NOTE ---
+        let noteFound = false;
+        let originalFolderId = -1;
+
+        // Find the note in our state across all folders
+        for (const folder of state.notes.folders) {
+            const notesInFolder = state.notes.notesByFolder[folder.folder_id] || [];
+            const noteIndex = notesInFolder.findIndex(n => n.note_id === activeNoteId);
+
+            if (noteIndex > -1) {
+                originalFolderId = folder.folder_id;
+                
+                // If the target folder is DIFFERENT, we move the note
+                if (originalFolderId !== targetFolderId) {
+                    const [noteToMove] = notesInFolder.splice(noteIndex, 1); // Remove from old folder
+                    noteToMove.title = noteTitle;
+                    noteToMove.content = noteContent;
+                    noteToMove.folder_id = targetFolderId;
+
+                    if (!state.notes.notesByFolder[targetFolderId]) {
+                        state.notes.notesByFolder[targetFolderId] = [];
+                    }
+                    state.notes.notesByFolder[targetFolderId].push(noteToMove); // Add to new folder
+                
+                } else {
+                    // Otherwise, just update it in place
+                    notesInFolder[noteIndex].title = noteTitle;
+                    notesInFolder[noteIndex].content = noteContent;
+                }
+                
+                noteFound = true;
+                break;
+            }
+        }
+        if (noteFound) {
+            console.log(`MOCK: Updated existing note ID ${activeNoteId}.`);
+        }
+
+    } else {
+        // --- LOGIC TO CREATE A NEW NOTE ---
+        const newNote = {
+            note_id: Date.now(), // Use timestamp for unique mock ID
+            title: noteTitle,
+            content: noteContent,
+            folder_id: targetFolderId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        
+        if (!state.notes.notesByFolder[targetFolderId]) {
+            state.notes.notesByFolder[targetFolderId] = [];
+        }
+        state.notes.notesByFolder[targetFolderId].push(newNote);
+        
+        // After creating, set it as the active note
+        state.notes.activeNoteId = newNote.note_id;
+        state.notes.activeFolderId = targetFolderId;
+        console.log('MOCK: Created new note:', newNote);
+    }
+
+    // --- UI Cleanup & Refresh ---
+    alert(`Note "${noteTitle}" saved successfully!`);
+    document.getElementById('save-note-modal').classList.add('hidden');
+    
+    // Refresh the note list for the target folder to show the change
+    await fetchNotesForFolder(targetFolderId);
+    // If the note was moved, also refresh the original folder's list
+    if (originalFolderId !== -1 && originalFolderId !== targetFolderId) {
+        await fetchNotesForFolder(originalFolderId);
+    }
+    renderApp();
+}
+
 
 // --- IMPLEMENTED HELPER AND COMPONENT FUNCTIONS ---
 
@@ -342,18 +437,18 @@ function toggleFolder(folderId) {
  * @param {object} folder The folder object from the state.
  * @returns {string} The HTML string for the folder.
  */
-function FolderComponent(folder) {
-  const isExpanded = state.notes.expandedFolders.has(folder.folder_id);
-  const notesForFolder = state.notes.notesByFolder[folder.folder_id] || [];
+// In /static/js/modules/notes.js
 
-  return `
+function FolderComponent(folder) {
+    const isExpanded = state.notes.expandedFolders.has(folder.folder_id);
+    const notesForFolder = state.notes.notesByFolder[folder.folder_id] || [];
+
+    // The <button> for the trashcan has been deleted from this template string.
+    return `
         <div class="folder-item">
-            <div class="folder-header ${isExpanded ? "expanded" : ""}" data-action="toggle-folder" data-folder-id="${folder.folder_id}">
+            <div class="folder-header ${isExpanded ? "expanded" : ""}" data-action="toggle-folder" data-folder-id="${folder.folder_id}" data-folder-name="${folder.folder_name}">
                 <i class="bi bi-chevron-right folder-icon"></i>
                 <span class="folder-name">${folder.folder_name}</span>
-                <button class="delete-item-btn" data-action="delete-folder" data-folder-id="${folder.folder_id}" data-folder-name="${folder.folder_name}">
-                    <i class="bi bi-trash"></i>
-                </button>
             </div>
             <div class="notes-list-wrapper ${isExpanded ? "expanded" : ""}">
                 ${notesForFolder.map(NoteItemComponent).join("")}
@@ -367,16 +462,20 @@ function FolderComponent(folder) {
  * @param {object} note The note object from the state.
  * @returns {string} The HTML string for the note item.
  */
+// In notes.js
+
 function NoteItemComponent(note) {
-  const isActive = state.notes.activeNoteId === note.note_id;
-  return `
+    const isActive = state.notes.activeNoteId === note.note_id;
+    // The dataset now includes folderId so the context menu can find it
+    return `
         <div class="notes-list-item">
-            <a href="#" class="${isActive ? "active" : ""}" data-action="select-note" data-note-id="${note.note_id}">
+            <a href="#" class="${isActive ? "active" : ""}" 
+               data-action="select-note" 
+               data-note-id="${note.note_id}" 
+               data-folder-id="${note.folder_id}">
                 ${note.title || "Untitled Note"}
             </a>
-            <button class="delete-item-btn" data-action="delete-note" data-note-id="${note.note_id}" data-folder-id="${note.folder_id}">
-                <i class="bi bi-trash"></i>
-            </button>
         </div>
     `;
 }
+

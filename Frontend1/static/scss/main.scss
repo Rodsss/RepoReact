@@ -1,23 +1,16 @@
-// main.scss for the new UI design
+// main.scss - (Cleaned Up)
 
-// 1. Import the theme variables. This is the foundation.
+// 1. Foundational Imports
 @use "variables";
-
-// 2. Import the new core layout structure (sidebar, panes, etc.).
-@use "layout";
-
-// 3. Import the new button styles (star button, add button, etc.).
+@use "mixins"; //
+@use "main-layout"; // <-- NEW MASTER LAYOUT FILE
 @use "buttons";
-
-// 4. Import the modal style for the "Save to list" feature.
 @use "modals";
+@use "context-menu";
 
-// 5. Import the specific styles for the translate and collections panes.
+// 2. Component-Specific Style Imports
 @use "language-view";
-
-// 6. Import styles for all integrated features
+@use "collections";
 @use "notes";
 @use "discover";
-@use "flashcards"; // <-- ADD THIS LINE
-
-
+@use "flashcards";

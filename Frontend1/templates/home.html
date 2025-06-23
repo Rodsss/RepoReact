@@ -10,60 +10,67 @@
   </head>
   <body>
     <nav class="sidebar">
-      <button class="nav-button">Language</button>
-    </nav>
+    <button class="nav-button">
+        <i class="bi bi-globe"></i>
+        <span class="nav-button-text">Language</span>
+    </button>
+</nav>
 
     <main class="main-content">
 
       <div class="pane" id="pane-one">
-        <div class="pane-header"><h2>Translate</h2></div>
+        <div class="pane-header">
+            <h2 class="pane-title">Translate</h2>
+        </div>
         <div class="rake-container">
           <div class="textbox-container">
               <textarea id="source-text-area" placeholder="Source text will land here..."></textarea>
               <textarea placeholder="Translation will appear here..."></textarea>
           </div>
-          <button id="star-btn" class="star-button" title="Save to list">★</button>
+          <button id="star-btn" class="icon-action-btn icon-star" title="Save to list"></button>
         </div>
         <div class="collapsible-menu-container">
           <button class="collapsible-trigger">Definition</button>
           <div class="collapsible-content"><p>Content for Definition will go here...</p></div>
-
           <button class="collapsible-trigger">Syn/Ant</button>
           <div class="collapsible-content"><p>Content for Synonyms & Antonyms will go here...</p></div>
-
           <button class="collapsible-trigger">Uses/Context</button>
           <div class="collapsible-content"><p>Content for Uses & Context will go here...</p></div>
-
           <button class="collapsible-trigger">Read</button>
           <div class="collapsible-content"><p>Content for Read will go here...</p></div>
         </div>
       </div>
 
       <div class="pane" id="pane-two">
-        <div class="pane-header">
-            <h2>Lists</h2>
-            <button id="add-list-btn" class="add-button" title="Add new list">+</button>
+    <div class="pane-header">
+        <h2 class="pane-title">Lists</h2>
+        <div class="pane-actions">
+          <button id="add-list-btn" class="icon-action-btn icon-add" title="Add new list"></button>
         </div>
-        <div id="new-list-input-container" class="hidden">
-            <input type="text" id="new-list-input" placeholder="Enter new list name...">
-        </div>
-        <div id="lists-container" class="pane-content"></div>
+    </div>
+
+    <div id="list-actions-container" class="list-actions-bar hidden">
+        <input type="text" id="new-list-input" placeholder="Enter new list name...">
+        <button id="delete-selected-btn" class="icon-action-btn icon-delete" title="Delete selected words" disabled></button>
+    </div>
+    <div id="lists-container" class="pane-content">
       </div>
+    </div>
 
       <div class="pane" id="pane-three">
-        <div class="pane-nav">
-            <button class="pane-nav-button active" data-target="#notes-view-container">Notes</button>
-            <button class="pane-nav-button" data-target="#media-search-view-container">Watch</button>
-            <button class="pane-nav-button" data-target="#flashcard-view-container">Flashcards</button>
-            <button class="pane-nav-button" data-target="#connect-view-container">Connect</button>
-            <button class="pane-nav-button" data-target="#read-view-container">Read</button>
+        <div class="pane-header" id="pane-three-nav">
+            <button class="pane-nav-button active" data-target="#notes-view-container" draggable="true">Notes</button>
+            <button class="pane-nav-button" data-target="#media-search-view-container" draggable="true">Watch</button>
+            <button class="pane-nav-button" data-target="#flashcard-view-container" draggable="true">Flashcards</button>
+            <button class="pane-nav-button" data-target="#connect-view-container" draggable="true">Connect</button>
+            <button class="pane-nav-button" data-target="#read-view-container" draggable="true">Read</button>
         </div>
 
         <div id="notes-view-container" class="pane-nav-content active">
             <div class="notes-sidebar">
                 <div class="notes-sidebar-header">
                     <h3>Folders</h3>
-                    <button class="add-button" data-action="create-folder" title="Create New Folder">+</button>
+                    <button class="icon-action-btn icon-add" data-action="create-folder" title="Create New Folder"></button>
                 </div>
                 <div id="notes-folder-list" class="notes-folder-list-container"></div>
             </div>
@@ -83,7 +90,6 @@
                 <div id="note-editor" contenteditable="true" class="notes-editor-content"></div>
             </div>
         </div>
-
         <div id="media-search-view-container" class="pane-nav-content">
             <div class="media-search-header">
                 <input type="search" id="media-search-input" class="form-control" placeholder="Search for videos...">
@@ -91,7 +97,6 @@
             </div>
             <div id="media-search-results" class="media-search-body"></div>
         </div>
-
         <div id="flashcard-view-container" class="pane-nav-content">
             <div id="deck-selector-menu">
                 <button id="deck-menu-button" class="btn-base btn-custom-outline">Select Deck</button>
@@ -99,14 +104,13 @@
             </div>
             <div id="flashcard-container"></div>
         </div>
-        
-        <div id="connect-view-container" class="pane-nav-content">
-            </div>
-
-        <div id="read-view-container" class="pane-nav-content">
-            </div>
+        <div id="connect-view-container" class="pane-nav-content"></div>
+        <div id="read-view-container" class="pane-nav-content"></div>
       </div>
     </main>
+
+    <div id="context-menu" class="context-menu hidden">
+      </div>
 
     <div id="save-to-list-modal" class="modal-overlay hidden">
       <div class="modal-content">
@@ -116,6 +120,15 @@
       </div>
     </div>
 
+    <div id="save-note-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button id="modal-note-close-btn" class="modal-close-btn">&times;</button> 
+    <h3>Save Note to a Folder</h3>
+    <div id="modal-folders-container" class="modal-lists">
+        </div>
+  </div>
+</div>
+
     <script type="module" src="/static/js/modules/translate.js"></script>
     <script type="module" src="/static/js/modules/collections.js"></script>
     <script type="module" src="/static/js/modules/notes.js"></script>
@@ -123,7 +136,8 @@
     <script type="module" src="/static/js/modules/flashcards.js"></script>
     <script type="module" src="/static/js/modules/connect.js"></script>
     <script type="module" src="/static/js/modules/read.js"></script>
-    
+    <script type="module" src="/static/js/modules/contextMenu.js"></script>
+
     <script type="module" src="/static/js/dashboard_app.js"></script>
     
   </body>
