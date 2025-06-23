@@ -110,6 +110,11 @@ body {
   padding: 25px;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.pane-nav-content::-webkit-scrollbar {
+  display: none;
 }
 
 .pane-nav-content.active {
@@ -533,6 +538,18 @@ body {
   background-color: #fff !important;
 }
 
+#lists-container.pane-content {
+  padding: 20px;
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+#lists-container.pane-content::-webkit-scrollbar {
+  display: none;
+}
+
 /* === NOTES FEATURE STYLES === */
 .notes-sidebar {
   width: 280px;
@@ -561,7 +578,13 @@ body {
 
 .notes-folder-list-container {
   flex-grow: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.notes-folder-list-container::-webkit-scrollbar {
+  display: none;
 }
 
 .folder-item .folder-header {
@@ -689,6 +712,10 @@ body {
   color: var(--main-text);
   outline: none;
   overflow-y: auto;
+  scrollbar-width: none;
+}
+#note-editor::-webkit-scrollbar {
+  display: none;
 }
 
 /* === DISCOVER / WATCH FEATURE STYLES === */

@@ -1,0 +1,11 @@
+// /static/scss/_mixins.scss
+
+// SCSS Mixin for creating an invisible scrollbar
+@mixin invisible-scrollbar {
+  // For Firefox
+  scrollbar-width: none;
+  // For Chrome, Safari, and Edge
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

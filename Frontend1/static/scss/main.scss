@@ -2,6 +2,7 @@
 
 // 1. Foundational Imports
 @use "variables";
+@use "mixins"; //
 @use "main-layout"; // <-- NEW MASTER LAYOUT FILE
 @use "buttons";
 @use "modals";

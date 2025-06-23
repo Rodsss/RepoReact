@@ -1,4 +1,7 @@
 /* === NOTES FEATURE STYLES === */
+@use 'mixins' as *;
+
+
 
 // --- Main Notes Layout ---
 // This container is an active tab panel (.pane-nav-content.active)
@@ -34,7 +37,11 @@
 
 .notes-folder-list-container {
   flex-grow: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+
+  @include invisible-scrollbar;
 }
 
 .folder-item {
@@ -179,4 +186,6 @@
   color: var(--main-text);
   outline: none;
   overflow-y: auto;
+
+  @include invisible-scrollbar;
 }

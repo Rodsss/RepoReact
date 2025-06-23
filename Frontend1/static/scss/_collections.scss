@@ -1,5 +1,9 @@
 /* /static/css/_collections.scss */
 
+@use 'mixins' as *;
+
+
+
 // Style for the new action bar holding the input and delete button
 .list-actions-bar {
   display: flex;
@@ -49,4 +53,16 @@
     color: #fff !important;
     background-color: #fff !important; // For the masked icon
   }
+}
+
+
+// This makes the main content area of the pane scrollable
+#lists-container.pane-content {
+  padding: 20px;
+  flex-grow: 1;      // Allows the list to fill the available vertical space
+  min-height: 0;     // A critical flexbox property to enable scrolling
+  overflow-y: auto;  // Enable vertical scrolling ONLY when needed
+  overflow-x: hidden;  // Disable horizontal scrolling
+
+  @include invisible-scrollbar; // Apply our new mixin
 }
