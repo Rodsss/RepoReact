@@ -1,16 +1,11 @@
-// static/css/_notes.scss
+/* === NOTES FEATURE STYLES === */
 
-// Import variables to use them in this file
-@use 'variables' as *;
+// --- Main Notes Layout ---
+// This container is an active tab panel (.pane-nav-content.active)
+// Its parent already provides padding and layout.
 
-// --- Main Notes Container Layout ---
-#notes-view-container {
-  display: flex;
-  height: 100%; // Make it fill the parent pane
-  background-color: var(--background-color);
-}
 
-// --- Notes Sidebar (Folders) ---
+// --- Sidebar (Folders) ---
 .notes-sidebar {
   width: 280px;
   flex-shrink: 0;
@@ -18,49 +13,43 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-right: 20px;
+}
 
-  .notes-sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
+.notes-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 
-    h3 {
-      margin: 0;
-      font-size: 1em;
-      font-weight: 600;
-    }
-
-    // Uses the existing .add-button style
-    .add-button {
-      width: 24px;
-      height: 24px;
-      font-size: 18px;
-      line-height: 24px;
-    }
-  }
-
-  .notes-folder-list-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 10px 0;
+  h3 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
   }
 }
 
-// --- Folder & Note Items ---
+.notes-folder-list-container {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
 .folder-item {
   .folder-header {
     display: flex;
     align-items: center;
-    padding: 8px 15px;
+    padding: 8px 10px;
+    margin: 2px 0;
     cursor: pointer;
     transition: background-color 0.2s ease;
     user-select: none;
+    border-radius: 6px;
 
     &:hover {
-      background-color: var(--pane-bg);
+      background-color: rgba(255, 255, 255, 0.05);
     }
 
     .folder-icon {
@@ -82,71 +71,46 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
+  padding-left: 15px;
 
   &.expanded {
     max-height: 1000px; // A large value to allow content to show
   }
 }
 
-.notes-list-item {
-  display: flex;
-  align-items: center;
-  padding-left: 30px; // Indent notes
-
-  a {
-    display: block;
-    flex-grow: 1;
-    padding: 6px 15px;
-    text-decoration: none;
-    color: var(--secondary-text);
-    border-radius: 4px;
-    margin: 2px 0;
-    
-    &:hover {
-      background-color: var(--pane-bg);
-      color: var(--main-text);
-    }
-
-    &.active {
-      background-color: var(--accent-color);
-      color: #fff;
-      font-weight: 500;
-    }
-  }
-}
-
-// --- Delete Buttons for Folders/Notes ---
-.delete-item-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--subtle-text-color);
-  padding: 4px;
+.notes-list-item a {
+  display: block;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: var(--secondary-text);
   border-radius: 4px;
-  line-height: 1;
-  opacity: 0.5;
-  transition: all 0.2s ease;
-
+  margin: 2px 0;
+  
   &:hover {
-    opacity: 1;
-    color: var(--error-color); // Use a variable for delete/error states
-    background-color: var(--pane-bg);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--main-text);
+  }
+
+  &.active {
+    background-color: var(--accent-color);
+    color: #fff;
+    font-weight: 500;
   }
 }
 
-
-// --- Notes Main Content Area (Editor) ---
+// --- Main Content (Editor) ---
 .notes-main {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 25px 25px 25px;
 }
 
 .notes-editor-header {
   display: flex;
   align-items: center;
-  padding: 20px 0;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 
   #note-title-input {
@@ -164,34 +128,30 @@
   }
 }
 
-// In /static/scss/_notes.scss
-
 .notes-actions {
   display: flex;
   gap: 10px;
 
-  // This is the new style for the "naked" icon buttons
+  // The "naked" icon button style for New and Save
   .action-btn {
     background: none;
     border: none;
     color: var(--secondary-text);
-    padding: 5px;               // Gives a larger clickable area around the icon
-    border-radius: 5px;         // A slight rounding looks better than sharp corners
-    font-size: 1.5rem;          // Control the icon size directly
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 1.5rem;
     cursor: pointer;
-    line-height: 1;             // Ensures the icon is vertically centered
+    line-height: 1;
     transition: all 0.2s ease;
 
     &:hover {
       color: var(--accent-color);
-      background-color: rgba(255, 255, 255, 0.1); // A subtle background on hover
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 }
 
-// --- Editor Toolbar & Content ---
 #notes-toolbar {
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
   margin-bottom: 10px;
   flex-shrink: 0;
@@ -206,7 +166,7 @@
     color: var(--secondary-text);
 
     &:hover {
-      background-color: var(--pane-bg);
+      background-color: rgba(255, 255, 255, 0.05);
       color: var(--main-text);
     }
   }
@@ -219,64 +179,4 @@
   color: var(--main-text);
   outline: none;
   overflow-y: auto;
-}
-
-// --- Tab Navigation Styling Tweak ---
-// To make the tab navigation in Pane 3 look cleaner
-// In _notes.scss
-
-// --- Tab Navigation Styling Tweak ---
-// --- Tab Navigation Styling Tweak ---
-#pane-three {
-  display: flex;
-  flex-direction: column;
-  height: 100%; // Ensure the pane itself has a defined height
-
-  .pane-nav {
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 25px;
-    flex-shrink: 0;
-  }
-
-  .pane-nav-button {
-    background: none;
-    border: none;
-    padding: 15px 0;
-    margin-right: 25px;
-    font-size: 1em;
-    font-weight: 500;
-    color: var(--secondary-text);
-    cursor: pointer;
-    position: relative;
-    
-    &.active {
-      color: var(--main-text);
-      
-      // Active underline indicator
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background-color: var(--accent-color);
-      }
-    }
-  }
-
-  // --- THIS IS THE FIX ---
-
-  // 1. By default, hide all tab content panels.
-  .pane-nav-content {
-    display: none;
-  }
-
-  // 2. ONLY display the panel that currently has the .active class.
-  //    We use display: flex because its children use flexbox properties.
-  .pane-nav-content.active {
-    display: flex; 
-    flex-grow: 1;
-    overflow: hidden;
-  }
 }

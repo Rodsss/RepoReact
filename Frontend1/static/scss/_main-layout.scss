@@ -1,0 +1,135 @@
+/* /static/scss/_main-layout.scss - (The Single Source of Truth for ALL Layout) */
+
+// --- 1. Global Reset & Body ---
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--primary-bg);
+  color: var(--main-text);
+}
+
+// --- 2. Main App Structure ---
+.main-content {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr; // Pane proportions: 25%, 25%, 50%
+  gap: 20px;
+  padding: 20px;
+  height: 100vh;
+}
+
+.pane {
+  background-color: var(--pane-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// --- 3. Standardized Pane Headers ---
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  height: 54px; // Fixed height for all headers
+  box-sizing: border-box;
+}
+
+.pane-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pane-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// --- 4. Pane 3 Tab Bar & Content Switching Logic ---
+
+// Tab Bar Itself
+.pane-header#pane-three-nav {
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px;
+}
+
+// Tab Buttons ("Pill" Style)
+.pane-nav-button {
+  box-sizing: border-box;
+  flex-grow: 0;
+  text-align: center;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  color: var(--secondary-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover:not(.active) {
+    color: var(--main-text);
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &.active {
+    color: #fff;
+    background-color: var(--accent-color);
+  }
+}
+
+
+// --- CRITICAL TAB SWITCHING LOGIC (High-Power Version) ---
+
+// This rule hides all inactive tab panels.
+// We are adding !important to make it win against all other conflicting styles.
+.pane-nav-content:not(.active) {
+  display: none !important;
+}
+
+// This rule shows ONLY the one panel that has the .active class.
+.pane-nav-content.active {
+  display: flex; 
+  flex-direction: column;
+}
+
+// In /static/scss/_main-layout.scss
+
+// --- CRITICAL TAB SWITCHING LOGIC ---
+
+.pane-nav-content {
+  display: none;
+  padding: 25px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+// This is the default for all active panels
+.pane-nav-content.active {
+  display: flex;
+  flex-direction: column; // All tabs stack content vertically by default
+}
+
+
+// This is the SPECIFIC OVERRIDE for the Notes tab only.
+// Because an ID is more specific, this rule will apply ONLY to the notes view.
+#notes-view-container.active {
+  flex-direction: row; // Force its children (sidebar and main) to be side-by-side
+  gap: 20px;           // Add the gap between the sidebar and main content
+}
