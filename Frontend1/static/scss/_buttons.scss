@@ -1,6 +1,65 @@
 // _buttons.scss (Corrected with necessary import)
 @use 'variables' as *; // <-- THIS LINE IS THE FIX. It must be at the top.
 
+
+// In /static/scss/_buttons.scss
+
+// --- Standard Button System ---
+.btn-base {
+  padding: 10px 24px;
+  font-size: 1em;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  line-height: 1.2;
+}
+
+// In /static/scss/_buttons.scss
+
+// Add this new modifier for a more compact button variant
+.btn-small {
+  padding: 8px 20px;
+  font-size: 0.9em;
+}
+
+
+// Modifier for a primary "call to action" button (solid fill)
+.btn-primary {
+  background-color: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+
+// Modifier for a secondary action (outline)
+.btn-secondary {
+  background-color: transparent;
+  color: var(--secondary-text);
+  border-color: var(--border-color);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-color);
+    color: var(--main-text);
+  }
+}
+
+// Modifier for a "danger" or negative action
+.btn-danger {
+  background-color: #a13434; // A theme-appropriate dark red
+  color: #fff;
+  border-color: #a13434;
+
+  &:hover {
+    filter: brightness(1.15);
+  }
+}
+
 // --- NEW: Standard Icon Action Button ---
 // This is the new base class for small, square icon buttons like Add, Star, Edit, Delete etc.
 .icon-action-btn {

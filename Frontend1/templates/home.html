@@ -72,6 +72,10 @@
                     <h3>Folders</h3>
                     <button class="icon-action-btn icon-add" data-action="create-folder" title="Create New Folder"></button>
                 </div>
+                <div id="new-folder-input-container" class="new-item-input-container hidden">
+        <input type="text" id="new-folder-input" placeholder="New folder name...">
+    </div>
+
                 <div id="notes-folder-list" class="notes-folder-list-container"></div>
             </div>
             <div class="notes-main">
@@ -98,12 +102,23 @@
             <div id="media-search-results" class="media-search-body"></div>
         </div>
         <div id="flashcard-view-container" class="pane-nav-content">
-            <div id="deck-selector-menu">
-                <button id="deck-menu-button" class="btn-base btn-custom-outline">Select Deck</button>
-                <div id="deck-menu-dropdown" class="action-dropdown hidden"></div>
+
+    <div id="deck-dashboard-wrapper">
+        <div class="flashcard-list-header">
+            <h3 class="pane-subtitle">All Decks</h3>
+            <div id="new-deck-input-container" class="new-item-input-container hidden">
+                <input type="text" id="new-deck-input" placeholder="New deck name...">
             </div>
-            <div id="flashcard-container"></div>
+            <button id="add-deck-btn" class="icon-action-btn icon-add" title="Add new deck"></button>
         </div>
+        <div id="deck-list-container">
+            </div>
+    </div>
+
+    <div id="study-session-wrapper" class="hidden">
+        </div>
+
+</div>
         <div id="connect-view-container" class="pane-nav-content"></div>
         <div id="read-view-container" class="pane-nav-content"></div>
       </div>

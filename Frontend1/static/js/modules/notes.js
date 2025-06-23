@@ -67,6 +67,33 @@ export function initializeNotesFeature(appState, mainRenderCallback) {
 
   initializeNotesEditorToolbar();
   fetchFolders();
+
+// Add this block inside the initializeNotesFeature function in notes.js
+
+    const newFolderInputContainer = document.getElementById('new-folder-input-container');
+    const newFolderInput = document.getElementById('new-folder-input');
+
+    // Listen for the "Enter" key on the new input field
+    newFolderInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            const folderName = newFolderInput.value.trim();
+            if (folderName) {
+                // This is the logic from the old handleCreateFolderClick function
+                console.log("MOCK: Creating folder:", folderName);
+                const newFolder = {
+                    folder_id: Date.now(),
+                    folder_name: folderName,
+                };
+                state.notes.folders.push(newFolder);
+                renderApp();
+
+                // Clear the input and hide the container
+                newFolderInput.value = '';
+                newFolderInputContainer.classList.add('hidden');
+            }
+        }
+    });
+
 }
 
 
@@ -102,8 +129,12 @@ async function handleDelegatedEvents(event) {
       break;
     
     // --- ADDED FUNCTIONALITY ---
+    // In the switch statement inside handleDelegatedEvents in notes.js
+
     case 'create-folder':
-      handleCreateFolderClick();
+      // This now toggles the visibility of the input field container
+      document.getElementById('new-folder-input-container').classList.toggle('hidden');
+      document.getElementById('new-folder-input').focus();
       break;
     case 'create-note':
       handleNewNoteClick();
@@ -211,19 +242,7 @@ async function loadNoteIntoEditor(noteId) {
 
 // --- MOCKED Action Handlers ---
 
-async function handleCreateFolderClick() {
-  const folderName = prompt("Enter a name for the new folder:");
-  if (!folderName || !folderName.trim()) return;
 
-  console.log("MOCK: Creating folder:", folderName.trim());
-  // Simulate adding a new folder to our state
-  const newFolder = {
-    folder_id: Date.now(), // Use timestamp for a unique mock ID
-    folder_name: folderName.trim(),
-  };
-  state.notes.folders.push(newFolder);
-  renderApp(); // Re-render to show the new folder
-}
 
 // In /static/js/modules/notes.js
 

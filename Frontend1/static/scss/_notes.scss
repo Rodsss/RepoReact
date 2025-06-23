@@ -35,6 +35,33 @@
   }
 }
 
+
+// Style for the container that appears when adding a new folder
+.new-item-input-container {
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+
+  &.hidden {
+    display: none;
+  }
+
+  input {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 1em;
+    color: var(--main-text);
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+  }
+}
+
+
 .notes-folder-list-container {
   flex-grow: 1;
   min-height: 0;

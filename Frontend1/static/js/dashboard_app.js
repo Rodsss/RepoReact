@@ -19,9 +19,10 @@ import { initializeConnectFeature, renderConnect } from './modules/connect.js';
 import { initializeReadFeature, renderRead } from './modules/read.js';
 import contextMenu from './modules/contextMenu.js';
 
+
 // --- 2. GLOBAL STATE & RENDER ---
 const appState = {
-    // A dummy userId for modules that require it (e.g., Flashcards).
+    // A dummy userId for modules that require it.
     // In a real app, this would be set after user login.
     userId: 1,
 
@@ -122,74 +123,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Custom Right-Click Context Menu Wiring ---
     const mainContent = document.querySelector('.main-content');
     if (mainContent) {
+        mainContent.addEventListener('contextmenu', (event) => {
+            const target = event.target;
+            
+            const wordItem = target.closest('.word-item');
+            const noteItem = target.closest('.notes-list-item a');
+            const folderHeader = target.closest('.folder-header');
+            const listItem = target.closest('.list-group-item');
+            const deckItem = target.closest('.deck-list-item');
 
-    // In dashboard_app.js
+            if (!wordItem && !noteItem && !folderHeader && !listItem && !deckItem) return;
 
-    // In dashboard_app.js
+            event.preventDefault();
+            
+            const options = [];
+            let targetInfo = {};
 
-    mainContent.addEventListener('contextmenu', (event) => {
-        const target = event.target;
+            if (wordItem) {
+                targetInfo = { type: 'word', wordId: wordItem.dataset.wordId, text: wordItem.querySelector('.word-text').textContent };
+                options.push({ label: 'Translate Word', action: 'translate-word', icon: 'bi-translate', targetInfo });
+                options.push({ type: 'separator' });
+                options.push({ label: 'Delete Word', action: 'delete-word', icon: 'bi-trash', targetInfo });
+            } else if (noteItem) {
+                targetInfo = { type: 'note', noteId: noteItem.dataset.noteId, folderId: noteItem.dataset.folderId, title: noteItem.textContent.trim() };
+                options.push({ label: 'Move Note', action: 'move-note', icon: 'bi-folder-symlink', targetInfo });
+                options.push({ type: 'separator' });
+                options.push({ label: 'Delete Note', action: 'delete-note', icon: 'bi-trash', targetInfo });
+            } else if (folderHeader) {
+                targetInfo = { type: 'folder', folderId: folderHeader.dataset.folderId, folderName: folderHeader.dataset.folderName };
+                options.push({ label: 'Rename Folder', action: 'rename-folder', icon: 'bi-pencil-square', targetInfo });
+                options.push({ label: 'Delete Folder', action: 'delete-folder', icon: 'bi-trash', targetInfo });
+            } else if (listItem) {
+                targetInfo = { type: 'list', listIndex: listItem.dataset.index, listName: listItem.dataset.listName };
+                options.push({ label: 'Rename List', action: 'rename-list', icon: 'bi-pencil-square', targetInfo });
+                options.push({ label: 'Delete List', action: 'delete-list', icon: 'bi-trash', targetInfo });
+            } else if (deckItem) {
+                targetInfo = { type: 'deck', deckId: deckItem.dataset.deckId, deckName: deckItem.dataset.deckName };
+                options.push({ label: 'Rename Deck', action: 'rename-deck', icon: 'bi-pencil-square', targetInfo });
+                options.push({ label: 'Delete Deck', action: 'delete-deck', icon: 'bi-trash', targetInfo });
+            }
 
-        // Check for the most specific item that was clicked on
-        const wordItem = target.closest('.word-item');
-        const noteItem = target.closest('.notes-list-item a');
-        const folderHeader = target.closest('.folder-header');
-        const listItem = target.closest('.list-group-item');
-
-        // If we didn't click a relevant item, do nothing
-        if (!wordItem && !noteItem && !folderHeader && !listItem) return;
-
-        event.preventDefault(); // Stop the default browser menu
-        
-        const options = [];
-        let targetInfo = {};
-
-        // --- Build the menu options based on what was clicked ---
-        if (wordItem) {
-            targetInfo = {
-                type: 'word',
-                wordId: wordItem.dataset.wordId,
-                text: wordItem.querySelector('.word-text').textContent
-            };
-            options.push({ label: 'Translate Word', action: 'translate-word', icon: 'bi-translate', targetInfo });
-            options.push({ type: 'separator' });
-            options.push({ label: 'Delete Word', action: 'delete-word', icon: 'bi-trash', targetInfo });
-
-        } else if (noteItem) {
-            targetInfo = {
-                type: 'note',
-                noteId: noteItem.dataset.noteId,
-                folderId: noteItem.dataset.folderId,
-                title: noteItem.textContent.trim()
-            };
-            options.push({ label: 'Move Note', action: 'move-note', icon: 'bi-folder-symlink', targetInfo });
-            options.push({ type: 'separator' });
-            options.push({ label: 'Delete Note', action: 'delete-note', icon: 'bi-trash', targetInfo });
-
-        } else if (folderHeader) {
-            targetInfo = {
-                type: 'folder',
-                folderId: folderHeader.dataset.folderId,
-                folderName: folderHeader.dataset.folderName
-            };
-            options.push({ label: 'Rename Folder', action: 'rename-folder', icon: 'bi-pencil-square', targetInfo });
-            options.push({ label: 'Delete Folder', action: 'delete-folder', icon: 'bi-trash', targetInfo });
-
-        } else if (listItem) {
-            targetInfo = {
-                type: 'list',
-                listIndex: listItem.dataset.index,
-                listName: listItem.dataset.listName
-            };
-            options.push({ label: 'Rename List', action: 'rename-list', icon: 'bi-pencil-square', targetInfo });
-            options.push({ label: 'Delete List', action: 'delete-list', icon: 'bi-trash', targetInfo });
-        }
-
-        // If we have options, show the menu
-        if (options.length > 0) {
-            contextMenu.show(event.pageX, event.pageY, options);
-        }
-    });
+            if (options.length > 0) {
+                contextMenu.show(event.pageX, event.pageY, options);
+            }
+        });
     }
 
     // --- Context Menu Action Handler ---
@@ -197,34 +174,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const { action, targetInfo } = event.detail;
         console.log(`Action selected: ${action}`, targetInfo);
 
-        // In dashboard_app.js, inside the 'contextAction' listener
-
         switch (action) {
+            case 'rename-deck':
+                const newDeckName = prompt(`Enter new name for deck "${targetInfo.deckName}":`, targetInfo.deckName);
+                if (newDeckName && newDeckName.trim()) { alert(`Deck renamed to "${newDeckName.trim()}"! (Mocked)`); }
+                break;
+            case 'delete-deck':
+                if (confirm(`Are you sure you want to delete the deck "${targetInfo.deckName}"?`)) { alert('Deck deleted! (Mocked)'); }
+                break;
             case 'rename-list':
                 const newName = prompt(`Enter a new name for the list "${targetInfo.listName}":`, targetInfo.listName);
-                if (newName && newName.trim() !== '') {
-                    alert(`List renamed to "${newName.trim()}"! (functionality to be fully connected)`);
-                }
+                if (newName && newName.trim() !== '') { alert(`List renamed to "${newName.trim()}"! (functionality to be fully connected)`); }
                 break;
             case 'delete-list':
-                if (confirm(`Are you sure you want to delete the list "${targetInfo.listName}"?`)) {
-                    alert('List deleted! (functionality to be fully connected)');
-                }
+                if (confirm(`Are you sure you want to delete the list "${targetInfo.listName}"?`)) { alert('List deleted! (functionality to be fully connected)'); }
                 break;
             case 'delete-note':
-                if (confirm(`Are you sure you want to delete the note "${targetInfo.title}"?`)) {
-                    alert('Note deleted! (functionality to be fully connected)');
-                }
+                if (confirm(`Are you sure you want to delete the note "${targetInfo.title}"?`)) { alert('Note deleted! (functionality to be fully connected)'); }
                 break;
             case 'delete-word':
-                if (confirm(`Are you sure you want to delete the word "${targetInfo.text}"?`)) {
-                    alert('Word deleted! (functionality to be fully connected)');
-                }
+                if (confirm(`Are you sure you want to delete the word "${targetInfo.text}"?`)) { alert('Word deleted! (functionality to be fully connected)'); }
                 break;
             case 'delete-folder':
-                if (confirm(`Are you sure you want to delete the folder "${targetInfo.folderName}" and all its contents?`)) {
-                    alert('Folder deleted! (functionality to be fully connected)');
-                }
+                if (confirm(`Are you sure you want to delete the folder "${targetInfo.folderName}" and all its contents?`)) { alert('Folder deleted! (functionality to be fully connected)'); }
                 break;
             case 'translate-word':
                 TranslateModule.setText(targetInfo.text);
