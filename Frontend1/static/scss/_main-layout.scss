@@ -26,9 +26,9 @@ body {
 .main-content {
   flex-grow: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr; // Pane proportions: 25%, 25%, 50%
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 15px;      // Reduced from 20px
+  padding: 15px;  // Reduced from 20px
   height: 100vh;
 }
 
@@ -141,4 +141,59 @@ body {
 #notes-view-container.active {
   flex-direction: row; // Force its children (sidebar and main) to be side-by-side
   gap: 20px;           // Add the gap between the sidebar and main content
+}
+
+// In /static/scss/_main-layout.scss
+// Replace the old .sidebar rule with this entire block
+
+.sidebar {
+  // --- Collapsed State (Default) ---
+  width: 60px; 
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  padding: 10px;
+  overflow: hidden; // Hide text that overflows the narrow width
+  // --- Smooth Transition ---
+  transition: width 0.3s ease-in-out;
+
+  // --- Expanded State (On Hover) ---
+  &:hover {
+    width: 200px; // The full width when hovered
+    .nav-button-text {
+      opacity: 1;
+    }
+  }
+
+  .nav-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 44px;
+    padding: 0 10px;
+    background-color: transparent; // Make button transparent
+    border: none;
+    border-radius: 6px;
+    color: var(--secondary-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--main-text);
+    }
+
+    i {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .nav-button-text {
+      margin-left: 15px;
+      font-weight: 500;
+      font-size: 1em;
+      white-space: nowrap; // Prevent text from wrapping
+      opacity: 0; // Hide text by default (in collapsed state)
+      transition: opacity 0.2s ease;
+    }
+  }
 }

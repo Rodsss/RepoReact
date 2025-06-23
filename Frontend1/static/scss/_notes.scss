@@ -110,6 +110,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .notes-editor-header {
@@ -120,19 +121,21 @@
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 
-  #note-title-input {
-    flex-grow: 1;
-    border: none;
-    background: transparent;
-    font-size: 1.8em;
-    font-weight: 600;
-    color: var(--main-text);
-    padding: 0;
+  // In /static/scss/_notes.scss
+#note-title-input {
+  flex-grow: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.6em; // Slightly smaller to make more room
+  font-weight: 600;
+  color: var(--main-text);
+  padding: 0;
+  min-width: 0; // Helps flexbox handle shrinking
 
-    &:focus {
-      outline: none;
-    }
+  &:focus {
+    outline: none;
   }
+}
 }
 
 .notes-actions {
