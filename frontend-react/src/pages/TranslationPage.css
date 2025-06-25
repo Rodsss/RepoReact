@@ -1,0 +1,51 @@
+/* FILE: frontend-react/src/pages/TranslationPage.css */
+.translation-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.translator-io {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.translator-io textarea {
+  width: 50%;
+  height: 200px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1.1em;
+  font-family: sans-serif;
+}
+
+.translator-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.translator-controls select, .translator-controls button {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.translator-controls button {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  border-color: #007bff;
+}
+
+.translator-controls button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.error-message {
+    color: #dc3545;
+    margin-top: 15px;
+}

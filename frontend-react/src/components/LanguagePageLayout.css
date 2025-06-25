@@ -1,0 +1,25 @@
+/* FILE: frontend-react/src/components/DashboardLayout.css */
+.dashboard-layout {
+  display: grid;
+  /* Defines three columns: 
+     - Column 1: min 300px, expands to 1 fractional unit
+     - Column 2: min 250px, expands to 0.8 fractional units
+     - Column 3: min 500px, expands to 2 fractional units
+  */
+  grid-template-columns: minmax(300px, 1fr) minmax(250px, 0.8fr) minmax(500px, 2fr);
+  height: 100vh; /* Full viewport height */
+  width: 100vw; /* Full viewport width */
+  gap: 10px;
+  padding: 10px;
+  box-sizing: border-box; /* Ensures padding doesn't add to the width/height */
+}
+
+/* Basic styling for the panes for visibility */
+.pane-one, .pane-two, .pane-three {
+  background-color: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: auto; /* Add scrollbars if content overflows */
+}
+

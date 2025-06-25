@@ -30,5 +30,8 @@
     "globals": "^16.2.0",
     "prettier": "^3.3.2",
     "sass": "^1.89.2"
+  },
+  "dependencies": {
+    "react-router-dom": "^7.6.2"
   }
 }

@@ -1,0 +1,51 @@
+/* Basic styling for the card container */
+.flashcard {
+  background-color: transparent;
+  width: 500px;
+  height: 300px;
+  perspective: 1000px; /* Gives the 3D effect */
+  border-radius: 18px;
+}
+
+/* This container holds the front and back sides and does the actual flipping */
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  border-radius: 18px;
+}
+
+/* This class is added by React to trigger the flip */
+.flashcard.is-flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+/* Styling for the front and back panels */
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* For Safari */
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.flashcard-front {
+  background-color: #ffffff;
+  color: black;
+}
+
+.flashcard-back {
+  background-color: #007bff;
+  color: white;
+  transform: rotateY(180deg);
+}

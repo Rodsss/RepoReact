@@ -1,0 +1,16 @@
+/* FILE: frontend-react/src/App.css */
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: #f0f2f5;
+}
+
+.app-shell {
+  display: flex;
+}
+
+.main-content {
+  flex-grow: 1; /* Takes up the remaining space */
+  height: 100vh;
+  overflow: auto; /* Adds scrollbars if content is too tall */
+}
